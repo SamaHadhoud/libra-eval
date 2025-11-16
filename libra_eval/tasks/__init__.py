@@ -23,7 +23,7 @@ from .PhysicalSafetyInstructions import (
     PhysicalSafetyInstructionsSafe,
     PhysicalSafetyInstructionsUnsafe,
 )
-from .MaliciousInstructions import MaliciousInstructions
+#from .MaliciousInstructions import MaliciousInstructions
 from .PersonalInfoLeak import (
     # PersonalInfoLeak_context, # task in completion format, not chat format
     # PersonalInfoLeak_zero_shot, # task in completion format, not chat format
@@ -35,7 +35,7 @@ from .PromptHijackingRobustness import PromptHijackingRobustness
 # from .QHarm import QHarm  # evaluation need double check, many questions are not risky
 from .HypothesisStereotypes import HypothesisStereotypes
 from .LatentJailbreak import LatentJailbreak
-from .MaliciousInstruct import MaliciousInstruct
+#from .MaliciousInstruct import MaliciousInstruct
 # from .StrongREJECT import StrongREJECT  # sourced from other datasets
 from .SycophancyEval import (
     SycophancyEvalAnswer,
@@ -45,17 +45,17 @@ from .SycophancyEval import (
 )
 from .TDCRedTeaming import TDCRedTeaming
 from .HackAPrompt import HackAPrompt  # data need double check
-from .HarmBench import HarmBench
+#from .HarmBench import HarmBench  # 需要 torch
 from .HarmfulQ import HarmfulQ
 from .DoAnythingNow import (
     DoAnythingNowJailbreak,
     DoAnythingNowRegular
 )
 from .GandalfIgnoreInstructions import GandalfIgnoreInstructions
-from .RedEval import (
-    RedEvalHarmfulQA,
-    RedEvalDangerousQA,
-)
+#from .RedEval import (  # 需要 torch
+#    RedEvalHarmfulQA,
+#    RedEvalDangerousQA,
+#)
 from .SafeText import SafeText
 from .HExPHI import HExPHI
 from .TruthfulQA import (

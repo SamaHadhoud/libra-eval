@@ -17,7 +17,7 @@ class Task(ABC):
     round_tag = None
     risk_type_tag = None
     llm_eval = False
-    librai_evaluator_name = ""
+    librai_evaluator_name = "Junjie Gao/Harmful_judge/V3"
 
     def __init__(self, debug, output_dir=None, n_samples_per_task=None):
         self.data_df = self.read_task_data()
