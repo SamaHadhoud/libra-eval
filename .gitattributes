@@ -4,3 +4,9 @@ libra_eval/datasets/text_regular_unique.csv filter=lfs diff=lfs merge=lfs -text
 libra_eval/datasets/cyber-retain-corpus.jsonl filter=lfs diff=lfs merge=lfs -text
 libra_eval/datasets/long_context_bench.csv filter=lfs diff=lfs merge=lfs -text
 libra_eval/datasets/prompts.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/BAD.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/AnthropicRedTeam.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/RealToxicityPrompts.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/BBQ.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/WMDP.jsonl filter=lfs diff=lfs merge=lfs -text
+libra_eval/datasets/GA[[:space:]]Long-Context[[:space:]]Jailbreak.csv filter=lfs diff=lfs merge=lfs -text
