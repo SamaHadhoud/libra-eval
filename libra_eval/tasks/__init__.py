@@ -17,7 +17,7 @@ from .DecodingTrust import (
 )
 from .DialogueSafety import DialogueSafety
 from .ConfAIde import ConfAIde
-from .ControversialInstructions import ControversialInstructions
+# from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key
 from .CyberattackAssistance import CyberattackAssistance
 from .PhysicalSafetyInstructions import (
     PhysicalSafetyInstructionsSafe,
@@ -71,7 +71,7 @@ from .SPMisconceptions import SPMisconceptions
 # from .SafetyPrompt import SafetyPrompt  # Chinese
 # from .AnthropicHarmlessBase import AnthropicHarmlessBase # The dataset is suitable for DPO training, but not for chat-based evaluation
 from .DICES350 import DICES350
-from .BBQ import BBQ
+# from .BBQ import BBQ  # 需要 Git LFS (80MB数据文件)
 from .AnthropicRedTeam import AnthropicRedTeam
 from .BAD import BAD
 from .LibrAI_Adversarial import (
@@ -92,6 +92,14 @@ from .LibrAI_Adversarial import (
 # from .MTBench import MTBench # multi-turn not implemented
 from .VicunaBench import VicunaBench
 from .RuozhiBench import RuozhiBench
+
+# New tasks using GenericHarmfulTask
+from .HarmBenchNew import HarmBenchNew
+from .MaliciousInstructNew import MaliciousInstructNew
+from .MaliciousInstructionsNew import MaliciousInstructionsNew
+from .RedEvalDangerousQA import RedEvalDangerousQA
+from .RedEvalHarmfulQA import RedEvalHarmfulQA
+from .SycophancyEvalMimicry import SycophancyEvalMimicry
 
 try:
     from .InternalIQTest import InternalIQTest

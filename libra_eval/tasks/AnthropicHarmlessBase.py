@@ -17,12 +17,10 @@ class AnthropicHarmlessBase(Task):
     risk_type_tag = "broad"
 
     def _single_eval_message(self, instance):
-        user_query = eval_templates["prompt_template"].format(
-            response=instance["response"]
-        )
-        message = [{"role": "system", "content": eval_templates["sys_prompt"]},
-                   {"role": "user", "content": user_query}]
-        return message
+        # Build conversation format for V5 evaluator
+        conversation = instance["messages"].copy()
+        conversation.append({"role": "assistant", "content": instance["response"]})
+        return {"conversation": conversation}
 
     def _single_eval_postprocess(self, instance):
         try:

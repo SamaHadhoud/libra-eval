@@ -17,8 +17,12 @@ class Local_Client(OpenAI_Client):
         super().__init__(model=model, api_config=api_config, max_requests_per_minute=max_requests_per_minute, request_window=request_window, client_name=client_name)
         self.client_name = client_name
 
+        # 从配置文件读取本地模型的 base_url 和 api_key
+        assert "LOCAL_BASE_URL" in api_config and api_config["LOCAL_BASE_URL"] != "", "LOCAL_BASE_URL must be set in api_config.json"
+        assert "LOCAL_API_KEY" in api_config and api_config["LOCAL_API_KEY"] != "", "LOCAL_API_KEY must be set in api_config.json"
+        
         self.client = openai.OpenAI(
-            base_url="http://0.0.0.0:8000/v1",
-            api_key="token-abc123",
+            base_url=api_config["LOCAL_BASE_URL"],
+            api_key=api_config["LOCAL_API_KEY"],
         )
         self.name_mapping = name_mapping

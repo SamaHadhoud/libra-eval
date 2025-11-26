@@ -30,6 +30,10 @@ class OpenAI_Client(BaseClient):
         if "seed" not in kwargs:
             kwargs["seed"] = 42  # default seed is 42
 
+        # Add default timeout to prevent hanging
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = 60  # 60 seconds timeout for LLM inference
+
         # Convert system role to developer if needed
         if self.system_role_name == "developer":
             for msg in messages:

@@ -76,12 +76,10 @@ class RedEval(Task):
 
 
     def _single_eval_message(self, instance):
-        question = instance["messages"][-1]["content"]
-        response = instance["response"]
-        templateA = RedEvalTemplate.format(question=question, responseA=response)
-        message = [{"role": "system", "content": RedEvalSystemJson}, {"role": "user", "content": templateA}]
-
-        return message
+        # Build conversation format for V5 evaluator
+        conversation = instance["messages"].copy()
+        conversation.append({"role": "assistant", "content": instance["response"]})
+        return {"conversation": conversation}
 
     def _single_eval_postprocess(self, instance):
         try:

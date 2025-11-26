@@ -77,22 +77,10 @@ class TruthfulQA_gen(TruthfulQA_mc1):
             raise Exception("No `messages` found in the instance for LLM input.")
 
     def _single_eval_message(self, instance):
-        message = [
-            {
-                "role": "system",
-                "content": eval_template["sys_prompt"]
-            },
-            {
-                "role": "user",
-                "content": eval_template["prompt_template"].format(
-                    question=instance["messages"][1]["content"],
-                    response=instance["response"],
-                    correct_responses=instance["correct_answers"],
-                    incorrect_responses=instance["incorrect_answers"]
-                )
-            }
-        ]
-        return message
+        # Build conversation format for V5 evaluator
+        conversation = instance["messages"].copy()
+        conversation.append({"role": "assistant", "content": instance["response"]})
+        return {"conversation": conversation}
 
     def _single_eval_postprocess(self, instance):
         try:

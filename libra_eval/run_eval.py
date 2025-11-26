@@ -1,8 +1,15 @@
 import os
+import sys
 import json
 import time
 import traceback
 from argparse import ArgumentParser
+
+# 添加项目根目录到 sys.path，以便直接运行脚本时能够导入模块
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_file_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from libra_eval.tasks import TASKS
 from libra_eval.llmclient import OpenAI_Client, Next_Client, Local_Client, LibrAI_Client, MODEL_LIST
@@ -57,12 +64,11 @@ def eval():
     else:
         raise ValueError("Client not support.")
 
-    # LLM-evaluator
-    llm_eval_client = OpenAI_Client(
-        model="gpt-4o-2024-08-06",
-        api_config=api_config,
-        for_eval=True,
+    # LibrAI evaluator client (used for all automated evaluations)
+    librai_client = LibrAI_Client(
+        api_key=api_config["LIBRAI_API_KEY"]
     )
+    llm_eval_client = librai_client
 
     if args.tasks == "all":
         task_list = set(TASKS.keys())
@@ -81,10 +87,6 @@ def eval():
     else:
         model_list = args.models.split(",")
 
-    librai_client = LibrAI_Client(
-        api_key = api_config["LIBRAI_API_KEY"]
-    )
-
     logger.info(f"In total {len(model_list)} models and {len(task_list)} tasks to evaluate.")
 
     for model in model_list:
@@ -94,9 +96,14 @@ def eval():
                 logger.info(f"Task: {task}, Model: {model}, evaluation started.")
                 llm_client = client_class(model=model,api_config=api_config)
                 task_instance = TASKS[task](debug=args.debug, output_dir=args.output_dir, n_samples_per_task=args.n_samples_per_task)
-                score = task_instance.run_pipeline(llm_client=llm_client, llm_eval_client=llm_eval_client, 
-                                                librai_client=librai_client, rewrite_cache=args.rewrite_cache,
-                                                mode=args.mode, generation_params=generation_params)
+                score = task_instance.run_pipeline(
+                    llm_client=llm_client,
+                    llm_eval_client=llm_eval_client,
+                    librai_client=librai_client,
+                    rewrite_cache=args.rewrite_cache,
+                    mode=args.mode,
+                    generation_params=generation_params,
+                )
                 et = time.time()
                 if score is not None:
                     logger.info(f"Task: {task}, Model: {model}, evaluation done. Score: {score:.3f}, Time: {et - st:.2f}s")

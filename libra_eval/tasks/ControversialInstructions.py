@@ -18,7 +18,15 @@ class ControversialInstructions(Task):
         super().__init__(*args, **kwargs)
         with importlib.resources.open_text('libra_eval.config', 'api_config.json') as f:
             api_config = json.load(f)
-        self.moderate_evaluator = OpenAI(api_key=api_config["OPENAI_API_KEY"])
+
+        # Validate API key and support environment variable fallback
+        api_key = api_config.get("OPENAI_API_KEY", "") or os.environ.get("OPENAI_API_KEY", "")
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required for controversial_instructions task. "
+                "Set it in api_config.json or as an environment variable."
+            )
+        self.moderate_evaluator = OpenAI(api_key=api_key)
 
     def _get_hate(self, response):
         """

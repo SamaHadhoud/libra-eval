@@ -154,6 +154,7 @@ MODEL_LIST = [
     "inceptionai/jais-adapted-7b-chat",
     "inceptionai/jais-30b-chat-v3",
     "LLM360/K2-Chat",
+    "MBZUAI-IFM/K2-Plus-Instruct",
     # Xverse
     "xverse/XVERSE-65B-Chat",
     # IBM
@@ -242,31 +243,149 @@ class BaseClient:
     def set_model(self, model: str):
         self.model = model
 
-    async def _async_call(self, messages: list, **kwargs):
-        """Calls ChatGPT asynchronously, tracks traffic, and enforces rate limits."""
-        while len(self.traffic_queue) >= self.max_requests_per_minute:
-            await asyncio.sleep(1)
-            self._expire_old_traffic()
+    async def _async_call(self, messages: list, max_retries=3, **kwargs):
+        """
+        Calls LLM asynchronously with validation, retry logic, and rate limiting.
 
-        loop = asyncio.get_running_loop()
-        response = await loop.run_in_executor(None, partial(self._call, messages, **kwargs))
+        Args:
+            messages: Messages to send to the LLM
+            max_retries: Maximum number of retry attempts (default: 3)
+            **kwargs: Additional arguments including optional post_check_function
 
-        self.total_traffic += self.get_request_length(messages)
-        self.traffic_queue.append((time.time(), self.get_request_length(messages)))
+        Returns:
+            Response from the LLM (validated if post_check_function provided)
+        """
+        post_check_function = kwargs.get("post_check_function", None)
 
-        return response
+        for attempt in range(max_retries):
+            try:
+                # Rate limiting: wait if we've hit the max requests per minute
+                while len(self.traffic_queue) >= self.max_requests_per_minute:
+                    await asyncio.sleep(1)
+                    self._expire_old_traffic()
 
-    def multi_call(self, messages_list, **kwargs):
-        tasks = [self._async_call(messages=messages, **kwargs) for messages in messages_list]
-        asyncio.set_event_loop(asyncio.SelectorEventLoop())
-        loop = asyncio.get_event_loop()
+                # Call the LLM
+                loop = asyncio.get_running_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    partial(self._call, messages, **kwargs)
+                )
 
-        async def run_tasks():
-            responses = await asyncio.gather(*tasks)
-            return responses
+                # Track traffic
+                self.total_traffic += self.get_request_length(messages)
+                self.traffic_queue.append((time.time(), self.get_request_length(messages)))
 
-        responses = loop.run_until_complete(run_tasks())
-        return responses
+                # Validate response is not empty
+                if response == "":
+                    logger.warning(
+                        f"Attempt {attempt + 1}/{max_retries}: Received empty response"
+                    )
+                    if attempt < max_retries - 1:
+                        # Exponential backoff
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    else:
+                        logger.error("All retry attempts failed: empty response")
+                        return ""
+
+                # If post_check_function is provided, validate the response
+                if post_check_function:
+                    try:
+                        check_result = post_check_function(response)
+                        if not check_result:
+                            logger.warning(
+                                f"Attempt {attempt + 1}/{max_retries}: "
+                                f"post_check_function validation failed"
+                            )
+                            if attempt < max_retries - 1:
+                                await asyncio.sleep(2 ** attempt)
+                                continue
+                            else:
+                                # Return original response on final attempt
+                                logger.warning(
+                                    "Validation failed on final attempt, returning raw response"
+                                )
+                                return response
+                        # Return the validated result
+                        return check_result
+                    except Exception as e:
+                        logger.error(f"Error in post_check_function: {e}")
+                        # If validation function fails, return raw response
+                        return response
+
+                return response
+
+            except Exception as e:
+                logger.error(f"Attempt {attempt + 1}/{max_retries} failed: {e}")
+                logger.debug(traceback.format_exc())
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(2 ** attempt)
+                else:
+                    logger.error("All retry attempts exhausted")
+                    return ""
+
+        return ""
+
+    def multi_call(self, messages_list, batch_size=100, **kwargs):
+        """
+        Call LLM asynchronously with batch processing support.
+
+        Args:
+            messages_list: List of messages to process
+            batch_size: Number of messages to process in each batch (default: 100)
+            **kwargs: Additional arguments passed to _async_call
+
+        Returns:
+            List of responses corresponding to input messages
+        """
+        all_responses = []
+        total_batches = (len(messages_list) - 1) // batch_size + 1
+
+        # Process in batches to avoid overwhelming system resources
+        for i in range(0, len(messages_list), batch_size):
+            batch = messages_list[i:i+batch_size]
+            batch_num = i // batch_size + 1
+
+            if total_batches > 1:
+                logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} messages)...")
+
+            tasks = [self._async_call(messages=msg, **kwargs) for msg in batch]
+
+            async def run_batch():
+                # Use return_exceptions=True to handle exceptions gracefully
+                responses = await asyncio.gather(*tasks, return_exceptions=True)
+                return responses
+
+            # Use asyncio.run() with fallback to existing event loop
+            try:
+                batch_responses = asyncio.run(run_batch())
+            except RuntimeError:
+                # If there's already an event loop running, use it
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # Create a new event loop if current one is running
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    batch_responses = loop.run_until_complete(run_batch())
+                except Exception as e:
+                    logger.error(f"Error running batch {batch_num}: {e}")
+                    # Return empty responses for this batch
+                    batch_responses = [""] * len(batch)
+
+            # Convert exceptions to empty strings
+            batch_responses = [
+                resp if not isinstance(resp, Exception) else ""
+                for resp in batch_responses
+            ]
+
+            all_responses.extend(batch_responses)
+
+            # Add delay between batches to avoid rate limiting
+            if i + batch_size < len(messages_list):
+                time.sleep(1.5)  # 增加到1.5秒，避免rate limit
+
+        return all_responses
 
     def _expire_old_traffic(self):
         """Expires traffic older than the request window."""

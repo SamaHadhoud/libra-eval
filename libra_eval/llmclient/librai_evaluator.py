@@ -21,25 +21,33 @@ class LibrAI_Client(BaseClient):
             base_url="https://prompter.librai.tech/api/llm/v1"
         )
 
-    def call_librai_evaluator(self, evaluator_name: str, mapped_data: dict):
-        """使用 OpenAI 兼容格式调用 LibrAI 评估器"""
+    def call_librai_evaluator(self, mapped_data: dict, evaluator_name: str = "Junjie Gao/Harmful_judge/V6", timeout: int = 60):
+        """
+        使用 OpenAI 兼容格式调用 LibrAI 评估器
+
+        Args:
+            mapped_data: 评估器输入数据
+            evaluator_name: 评估器名称
+            timeout: API 超时时间（秒），默认 60 秒
+        """
         try:
             # 将 mapped_data 转换为 JSON 字符串，作为 user message 的 content
             prompter_data = json.dumps(mapped_data)
-            
+
             messages = [
                 {
                     "role": "user",
                     "content": prompter_data
                 }
             ]
-            
-            # 调用 OpenAI 兼容的 API
+
+            # 调用 OpenAI 兼容的 API，添加超时控制
             response = self.client.chat.completions.create(
                 model=evaluator_name,  # 使用评估器名称作为 model
                 messages=messages,
                 temperature=0.7,
-                max_completion_tokens=1000
+                max_completion_tokens=1000,
+                timeout=timeout  # 添加超时控制
             )
             
             # 提取响应内容
@@ -86,15 +94,21 @@ class LibrAI_Client(BaseClient):
             # 如果是列表
             if isinstance(messages[0], dict):
                 if "role" in messages[0]:
-                    # 标准 messages 格式，提取 content
-                    if "content" in messages[0]:
-                        content = messages[0]["content"]
-                        # 尝试解析为 JSON（可能是 mapped_data 的 JSON 字符串）
-                        try:
-                            mapped_data = json.loads(content)
-                        except (json.JSONDecodeError, TypeError):
-                            # 如果不是 JSON，可能是直接的字符串，需要包装
-                            mapped_data = {"content": content}
+                    # 标准 messages 格式
+                    # 检查评估器是否期望 conversation 格式（如 Harmful_judge）
+                    if evaluator_name and ("Harmful_judge" in evaluator_name or "Harmful_Judger" in evaluator_name):
+                        # 转换为 conversation 格式
+                        mapped_data = {"conversation": messages}
+                    else:
+                        # 对于其他评估器，尝试提取 content
+                        if "content" in messages[0]:
+                            content = messages[0]["content"]
+                            # 尝试解析为 JSON（可能是 mapped_data 的 JSON 字符串）
+                            try:
+                                mapped_data = json.loads(content)
+                            except (json.JSONDecodeError, TypeError):
+                                # 如果不是 JSON，可能是直接的字符串，需要包装
+                                mapped_data = {"content": content}
                 else:
                     # 列表中的字典没有 role，可能是直接的 mapped_data
                     mapped_data = messages[0]
@@ -103,26 +117,42 @@ class LibrAI_Client(BaseClient):
         else:
             mapped_data = {}
 
+        # 获取超时参数，默认 60 秒
+        timeout = kwargs.get("timeout", 60)
+
         r = ""
         for i in range(num_retries):
             try:
-                r = self.call_librai_evaluator(evaluator_name, mapped_data)
+                r = self.call_librai_evaluator(mapped_data, evaluator_name, timeout=timeout)
 
                 if post_check_function is None:
+                    time.sleep(0.3)  # 每次成功调用后延迟0.3秒，避免rate limit
                     break
                 else:
                     post_r = post_check_function(r)
                     if post_r:
+                        time.sleep(0.3)  # 每次成功调用后延迟0.3秒，避免rate limit
                         return post_r
                     else:
                         logger.warning(f"Warning: Post check function failed. Response is {r} Retrying {i} ...")
             except Exception as e:
-                logger.error(f"Error in LibrAI Evaluator: {e}")
-                logger.debug(traceback.format_exc())
-                if i < num_retries - 1:
-                    time.sleep(1)
+                error_msg = str(e).lower()
+                # 特殊处理超时错误
+                if "timeout" in error_msg or "timed out" in error_msg:
+                    logger.error(f"API timeout on attempt {i+1}/{num_retries}: {evaluator_name}")
+                    if i < num_retries - 1:
+                        logger.info(f"Retrying after timeout...")
+                        time.sleep(2)
+                    else:
+                        logger.error("All retries failed due to timeout")
+                        return ""  # 返回空字符串而不是抛出异常
                 else:
-                    raise
+                    logger.error(f"Error in LibrAI Evaluator: {e}")
+                    logger.debug(traceback.format_exc())
+                    if i < num_retries - 1:
+                        time.sleep(1)
+                    else:
+                        raise
                     
         if r == "":
             raise ValueError("LibrAI Evaluator Error, output is empty.")
@@ -141,3 +171,8 @@ class LibrAI_Client(BaseClient):
                 messages.append({"role": "system", "content": sys_input})
             messages.append({"role": "user", "content": user_input})
         return messages
+
+
+class LibrAIEvaluator(LibrAI_Client):
+    """向后兼容旧命名，避免外部 import 失败。"""
+    pass
