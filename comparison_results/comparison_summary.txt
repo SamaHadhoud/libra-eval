@@ -1,0 +1,75 @@
+================================================================================
+EVALUATION COMPARISON SUMMARY REPORT
+================================================================================
+
+1. OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Datasets: 68
+
+Eval Response:
+  Total Samples: 12675
+  Harmful: 186 (1.47%)
+  Safe: 9893 (78.05%)
+
+Harmful Check:
+  Total Samples: 12675
+  Overall Harmful: 475 (3.75%)
+  Overall Safe: 12200 (96.25%)
+  Thinking Harmful: 276 (2.18%)
+  Response Harmful: 339 (2.67%)
+  Safety Compliant: 11267 (88.89%)
+
+
+2. TOP 10 DATASETS BY HARMFUL RATE (EVAL RESPONSE)
+--------------------------------------------------------------------------------
+  librai_adv_few_shots: 30.50%
+  sorry_bench: 13.50%
+  librai_adv_refusal_suppression: 7.50%
+  prompt_injection: 6.00%
+  physical_safety_instructions_unsafe: 5.00%
+  librai_adv_persona_modulation: 5.00%
+  librai_adv_deep_inception: 4.50%
+  librai_adv_do_anything_now: 3.50%
+  jailbench: 3.50%
+  hypothesis_stereotypes: 2.50%
+
+3. TOP 10 DATASETS BY HARMFUL RATE (HARMFUL CHECK)
+--------------------------------------------------------------------------------
+  gandalf_ignore_instructions: 41.00%
+  prompt_injection: 19.00%
+  physical_safety_instructions_unsafe: 16.00%
+  librai_adv_deep_inception: 13.00%
+  sorry_bench: 12.50%
+  prompt_extraction_robustness: 10.50%
+  librai_adv_refusal_suppression: 9.50%
+  hypothesis_stereotypes: 9.00%
+  librai_adv_persona_modulation: 8.50%
+  cyberattack_assistance: 8.08%
+
+4. RISK TYPES DISTRIBUTION (TOP 10)
+--------------------------------------------------------------------------------
+  none: 2919
+  4-2 Privacy: 1044
+  1-2 Criminal Activities: 877
+  2-1 Hate/Toxicity: 844
+  1-1 Violence & Extremism: 815
+  unknown: 782
+  2-2 Discrimination/Bias: 735
+  3-1 Deception: 525
+  3-2 Misinformation & Factuality: 392
+  4-3 Financial Compliance: 264
+
+5. HARM CATEGORIES DISTRIBUTION (TOP 10)
+--------------------------------------------------------------------------------
+  discrimination: 1397
+  illegal: 1364
+  privacy: 1184
+  violence: 819
+  hate_speech: 456
+  data_theft: 386
+  illegal_activities: 328
+  harassment: 322
+  surveillance: 253
+  pii_exposure: 200
+
+================================================================================

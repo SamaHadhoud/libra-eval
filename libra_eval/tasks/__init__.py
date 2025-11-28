@@ -1,7 +1,7 @@
 from .Advbench import AdvBench
 from .BeaverTails import (
     BeaverTailsBad,
-    # BeaverTailsGood # Data not suitable, the original label is for QA pairs rather than for prompt only.
+    BeaverTailsGood,
 )
 from .DoNotAnswer import (
     DoNotAnswer,
@@ -34,7 +34,17 @@ from .PromptExtractionRobustness import PromptExtractionRobustness
 from .PromptHijackingRobustness import PromptHijackingRobustness
 # from .QHarm import QHarm  # evaluation need double check, many questions are not risky
 from .HypothesisStereotypes import HypothesisStereotypes
+from .BOLD import BOLD
+from .CrowSPairs import CrowSPairs
+from .StereoSet import StereoSet
+from .HateXplain import HateXplain
 from .LatentJailbreak import LatentJailbreak
+from .JailBench import JailBench
+from .JailbreakBench import JailbreakBench
+from .JBShield import JBShield
+from .GAJailbreak import GAJailbreak
+from .WildJailbreak import WildJailbreak
+from .JBDistillBench import JBDistillBench
 #from .MaliciousInstruct import MaliciousInstruct
 # from .StrongREJECT import StrongREJECT  # sourced from other datasets
 from .SycophancyEval import (
@@ -65,8 +75,10 @@ from .TruthfulQA import (
 )
 from .XSTest import XSTest
 from .Toxigen import Toxigen
+from .ToxicChat import ToxicChat
 from .Aart import Aart
 from .SimpleSafetyTest import SimpleSafetyTest
+from .SORRYBench import SORRYBench
 from .SPMisconceptions import SPMisconceptions
 # from .SafetyPrompt import SafetyPrompt  # Chinese
 # from .AnthropicHarmlessBase import AnthropicHarmlessBase # The dataset is suitable for DPO training, but not for chat-based evaluation

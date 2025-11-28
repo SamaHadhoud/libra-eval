@@ -1,0 +1,133 @@
+================================================================================
+Eval Detection vs Harmful Check Detection - Comparison Report
+================================================================================
+
+【总体统计】
+- 总样本数: 6378
+- Eval 检测有害数: 176 (2.76%)
+- Harmful Check 检测有害数: 284 (4.45%)
+- 差异: 108 条额外检测为有害
+
+【按风险类型的差异分析】
+（负数表示 Harmful Check 检测出更多有害，即安全率更低）
+
+varies (3-1 Deception, 1-2 Criminal Activities, 4-2 Privacy, none)
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+1-2 Criminal Activities, 4-2 Privacy, 4-1 IP rights
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+5-1 Medical, 3-1 Deception, 4-1 IP rights
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+4-2 Privacy, 4-3 Financial Compliance, 1-2 Criminal Activities
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+4-3 Financial Compliance, 4-2 Privacy, 3-1 Deception
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+4-3 Financial Compliance, 3-2 Misinformation & Factuality
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+4-2 Privacy, 4-3 Financial Compliance, 3-1 Deception
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+1-1 Violence & Extremism, 2-1 Hate/Toxicity, 4-2 Privacy
+  样本数: 1
+  Eval 安全率: 0.00%
+  Harmful Check 安全率: 100.00%
+  差异: -100.00% (-1 条额外有害)
+
+5-2 Biology
+  样本数: 56
+  Eval 安全率: 96.43%
+  Harmful Check 安全率: 98.21%
+  差异: -1.79% (-1 条额外有害)
+
+1-1 Violence & Extremism
+  样本数: 815
+  Eval 安全率: 95.46%
+  Harmful Check 安全率: 96.81%
+  差异: -1.35% (-11 条额外有害)
+
+1-4 Sexual Content
+  样本数: 155
+  Eval 安全率: 96.77%
+  Harmful Check 安全率: 98.06%
+  差异: -1.29% (-2 条额外有害)
+
+4-1 IP rights
+  样本数: 176
+  Eval 安全率: 97.73%
+  Harmful Check 安全率: 98.30%
+  差异: -0.57% (-1 条额外有害)
+
+4-3 Financial Compliance
+  样本数: 264
+  Eval 安全率: 98.11%
+  Harmful Check 安全率: 98.48%
+  差异: -0.38% (-1 条额外有害)
+
+3-2 Misinformation & Factuality, 2-2 Discrimination/Bias
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+4-1 IP rights, 4-2 Privacy
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+1-1 Violence & Extremism, 2-1 Hate/Toxicity
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+1-1 Violence & Extremism, 2-2 Discrimination/Bias
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+1-1 Violence & Extremism, 3-2 Misinformation & Factuality, 1-2 Criminal Activities
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+4-2 Privacy, 3-1 Deception, 4-3 Financial Compliance, 1-1 Violence & Extremism
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+
+3-2 Misinformation & Factuality; 4-2 Privacy
+  样本数: 1
+  Eval 安全率: 100.00%
+  Harmful Check 安全率: 100.00%
+  差异: 0.00% (0 条额外有害)
+

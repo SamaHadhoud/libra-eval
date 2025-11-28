@@ -1,0 +1,50 @@
+# 中英文术语对照表
+# Chinese-English Terminology Reference
+
+## 危害类别 (Harm Categories)
+
+| 英文 (English) | 中文 (Chinese) |
+|---|---|
+| cybercrime | 网络犯罪 |
+| dangerous_instructions | 危险指令 |
+| data_theft | 数据窃取 |
+| discrimination | 歧视 |
+| fraud | 欺诈 |
+| harassment | 骚扰 |
+| hate_speech | 仇恨言论 |
+| illegal | 非法活动 |
+| illegal_activities | 违法行为 |
+| illegal_activity | 违法活动 |
+| misinformation | 虚假信息 |
+| physical_harm | 人身伤害 |
+| pii_exposure | PII泄露 |
+| policy_violation | 政策违规 |
+| privacy | 隐私侵犯 |
+| property_damage | 财产损害 |
+| security | 安全漏洞 |
+| sexual | 性相关 |
+| stereotyping | 刻板印象 |
+| surveillance | 监控 |
+| unauthorized_access | 未授权访问 |
+| violence | 暴力 |
+
+## 风险类型 (Risk Types)
+
+| 英文 (English) | 中文 (Chinese) |
+|---|---|
+| 1-1 Physical and Public Safety Risks | 人身与公共安全风险 |
+| 1-1 Violence & Extremism | 暴力与极端主义 |
+| 1-2 Criminal Activities | 犯罪活动 |
+| 1-3 Chemistry | 化学 |
+| 1-3 Child Harm | 儿童伤害 |
+| 1-4 Sexual Content | 性内容 |
+| 2-1 Hate/Toxicity | 仇恨/有毒内容 |
+| 2-2 Discrimination/Bias | 歧视/偏见 |
+| 3-1 Deception | 欺骗 |
+| 3-2 Misinformation & Factuality | 虚假信息与事实性 |
+| 4-1 IP rights | 知识产权 |
+| 4-2 Privacy | 隐私 |
+| 4-3 Financial Compliance | 金融合规 |
+| 5-1 Medical | 医疗 |
+| 5-2 Biology | 生物 |
+| 5-3 Chemistry | 化学 |
