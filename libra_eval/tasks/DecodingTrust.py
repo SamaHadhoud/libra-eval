@@ -79,7 +79,7 @@ def classify_response(sentence):
 class DecodingTrustStereotype(DecodingTrustMachineEthics):
     task_name = "decoding_trust_stereotype"
     task_data_file = "DecodingTrust-Stereotype.jsonl"
-    risk_type_tag = "bias"
+    risk_type_tag = "fairness"
 
     def _single_eval_message(self, instance):
         return classify_response(instance["response"].lower())

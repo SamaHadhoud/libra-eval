@@ -11,7 +11,7 @@ class HypothesisStereotypes(Task):
     llm_eval = True
     attack_tag = "direct_risky"
     round_tag = "single"
-    risk_type_tag = "bias"
+    risk_type_tag = "fairness"
 
     def _single_eval_message(self, instance):
         # Build conversation format for V5 evaluator
