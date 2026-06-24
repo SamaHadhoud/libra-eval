@@ -1,0 +1,95 @@
+Dataset,Category,Task Format,Turn,Language,Scale,Source
+CDial-Bias,Discrimination/Bias; Hate/Toxicity,Dialogue,Multi,Chinese,"28,343",CDial-Bias
+HolisticBias,Discrimination/Bias; Hate/Toxicity,Generation (templates),Single,English,"459,758",HolisticBias
+MIC (Moral Integrity Corpus),Values/Ethics meta-safety,Dialogue/Rules,Multi,English,"38,000",MIC 2022
+RedditBias,Discrimination/Bias; Hate/Toxicity,Dialogue/Perplexity,Multi,English,"11,873",RedditBias 2021
+RuLES (Simple Rules),Trust/Info (rule circumvention),Generation,Single,English,862,RuLES 2023
+GuardSet-X,Trust/Info (over-refusal); Legal; Code,Generation/Discrimination,Single/Multi,English,8 domains,GuardSet-X 2025
+GuidedBench / GuidedEval,Trust/Info (guideline eval); Physical Safety,Generation + scoring,Single,English,~20K cases,GuidedBench 2025
+JailbreakDB,Trust/Info (Jailbreak); Discrimination; Physical Safety,Generation,Single,English,6.6M jailbreak + 5.7M benign,JailbreakDB 2025
+MTJ-Bench,Trust/Info (Multi-turn Jailbreak),Dialogue/Generation,Multi,English,—,MTJ-Bench 2025
+PINT v2,Trust/Info (Prompt Injection),Detection,Single,Multilingual,"4,314",PINT v2 2024/25
+HarmEval,Physical/Public Safety – Criminal,—,—,English,550,github.com/NeuralSentinel/SafeInfer
+ImplicitBias,Bias,—,—,English,"33,600",github.com/baixuechunzi/llm-implicit-bias
+DifferenceAwareness,Bias,—,—,English,"16,000",github.com/Angelina-Wang/difference_awareness
+MedSafetyBench,Narrow safety,—,—,English,"1,800",github.com/AI4LIFE-GROUP/med-safety-bench
+PRISM,Value alignment,—,—,English,"8,011",github.com/HannahKirk/prism-alignment
+WildGuardMix,Physical/Public Safety – Criminal,—,—,English,"86,759",hf/allenai/wildguardmix
+SGBench,Physical/Public Safety – Criminal,—,—,English,"1,442",github.com/MurrayTom/SG-Bench
+CoCoNot,Narrow safety,—,—,English,"12,478",github.com/allenai/noncompliance
+MultiTP,Value alignment,—,—,Multilingual (106+),"107,000",github.com/causalNLP/moralmachine
+ForbiddenQuestions,Physical Safety – Criminal/Violence/Sexual/Child,—,—,English,390,github.com/verazuo/jailbreak_llms
+CoSafe,Discrimination/Hate & Toxicity,—,—,English,"1,400",github.com/ErxinYu/CoSafe-Dataset
+SoFa,Discrimination/Bias,—,—,English,"1,490,120",hf/copenlu/sofa
+ArabicAdvBench,Broad safety,—,—,Arabic,520,github.com/SecureDL/arabic_jailbreak
+AyaRedTeaming,Physical Safety – Criminal,—,—,"Arabic, English, +6","7,419",hf/CohereForAI/aya_redteaming
+UltraSafety,Physical Safety – Criminal,—,—,English,"3,000",hf/openbmb/UltraSafety
+DeMET,Bias,—,—,English,29 scenarios,github.com/sharonlevy/GenderBiasScenarios
+GEST,Discrimination/Bias,—,—,Slavic langs + English,"3,565",github.com/kinit-sk/gest
+GenMO,Bias,—,—,English,908 scenarios,github.com/divij30bajaj/GenMO
+CIVICS,Value alignment,—,—,"DE, IT, FR, EN",699,hf/CIVICS-dataset/CIVICS
+GlobalOpinionQA,Value alignment,—,—,English,"2,556",hf/Anthropic/llm_global_opinions
+PolygloToxicityPrompts,Discrimination/Hate & Toxicity,—,—,17 languages,"425,000",hf/ToxicityPrompts/PolygloToxicityPrompts
+CALM,Bias,—,—,English,"78,400",github.com/vipulgupta1011/CALM
+CHiSafetyBench,Physical & Public Safety,—,—,Chinese,"1,861",github.com/UnicomAI/UnicomBenchmark
+PHTest,Trust/Info – Deception,—,—,English,"3,260",github.com/umd-huang-lab/FalseRefusal
+SafetyBench,Physical Safety – Illegal Activities,—,—,"English, Chinese","11,435",github.com/thu-coai/SafetyBench
+CatQA,Broad safety,—,—,"EN, ZH, VI",550,github.com/declare-lab/resta
+KorNAT,Value alignment,—,—,"English, Korean","10,000",hf/datumo/KorNAT
+CMoralEval,Value alignment,—,—,Chinese,"30,388",github.com/tjunlp-lab/CMoralEval
+XSafety,Physical & Public Safety,—,—,10 languages,"28,000",github.com/Jarviswang94/Multilingual_safety_benchmark
+SaladBench,Physical Safety – Criminal,—,—,English,"21,000",github.com/OpenSafetyLab/SALAD-BENCH
+MMHB,Bias,—,—,8 languages,"5,754,444",github.com/facebookresearch/ResponsibleNLP (mmhb)
+GPTFuzzer,Physical & Public Safety / Trust & Info,—,—,English,100,github.com/sherdencooper/GPTFuzz
+ALERT,Physical Safety – Criminal,—,—,English,"44,800",github.com/Babelscape/ALERT
+ORBench,Trust/Info – Deception/Over-refusal,—,—,English,"80,000",github.com/justincui03/or-bench
+Flames,Physical & Public Safety,—,—,Chinese,"2,251",github.com/AIFlames/Flames
+SEval,Physical Safety / Discrimination / Trust & Info,—,—,"English, Chinese","20,000",github.com/IS2Lab/S-Eval
+WorldValuesBench,Value alignment,—,—,English,"21,492,393",github.com/Demon702/WorldValuesBench
+SAFE,Physical & Public Safety,—,—,English,"52,430",github.com/xiaoqiao/EvalSafetyLLM
+AegisAIContentSafety,Physical Safety – Criminal,—,—,English,"11,997",hf/nvidia/Aegis-AI-Content-Safety-Dataset-1.0
+SafetyInstructions,Physical & Public Safety,—,—,English,"2,000",github.com/vinid/safety-tuned-llamas
+OKTest,Physical & Public Safety,—,—,English,350,github.com/InvokerStark/OverKill
+Mosscap,Trust/Info – Deception,—,—,English,"278,945",hf/Lakera/mosscap_prompt_injection
+JADE,Physical Safety / Discrimination / Legal,—,—,"Chinese, English","2,130",github.com/whitzard-ai/jade-db
+CPAD,Physical & Public Safety / Trust & Info,—,—,Chinese,"10,050",github.com/liuchengyuan123/CPAD
+AdvPromptSet,Physical & Public Safety / Trust & Info,—,—,English,"197,628",github.com/facebookresearch/ResponsibleNLP (AdvPromptSet)
+HolisticBiasR,Bias,—,—,English,"214,460",github.com/facebookresearch/ResponsibleNLP (robbie)
+DELPHI,Broad safety,—,—,English,"29,201",github.com/apple/ml-delphi
+AttaQ,Physical Safety – Criminal + Trust/Info,—,—,English,"1,402",hf/ibm/AttaQ
+DiscrimEval,Discrimination/Bias,—,—,English,"9,450",hf/Anthropic/discrim-eval
+FFT,Broad safety,—,—,English,"2,116",github.com/cuishiyao96/FFT
+OpinionQA,Value alignment,—,—,English,"1,498",github.com/tatsu-lab/opinions_qa
+CValuesResponsibility,Value alignment,—,—,Chinese,"1,712",github.com/X-PLUG/CValues
+CHBias,Bias,—,—,Chinese,"4,800",github.com/hyintell/CHBias
+FairPrism,Other,—,—,English,"5,000",github.com/microsoft/fairprism
+SeeGULL,Bias,—,—,English,"7,750",github.com/google-research-datasets/seegull
+WinoQueer,Bias,—,—,English,"45,540",github.com/katyfelkner/winoqueer
+ModelWrittenSycophancy,Trust/Info – Deception,—,—,English,"30,051",github.com/anthropics/evals (sycophancy)
+ModelWrittenAdvRisk,Physical Safety – Criminal,—,—,English,"24,516",github.com/anthropics/evals (advanced-ai-risk)
+ModelWrittenPersona,Value alignment,—,—,English,"133,204",github.com/anthropics/evals (persona)
+WinoGenerated,Bias,—,—,English,"3,000",github.com/anthropics/evals
+Machiavelli,Trust/Info – Deception,—,—,English,"572,322",github.com/aypan17/machiavelli
+OIGModeration,Physical Safety / Discrimination / Legal,—,—,English,"200,811",github.com/LAION-AI/Open-Instruction-Generalist
+IndianStereotypes,Bias,—,—,English,"3,852",github.com/google-research-datasets/nlp-fairness-for-india
+MoralExceptQA,Value alignment,—,—,English,148,github.com/feradauto/MoralCoT
+FrenchCrowSPairs,Bias,—,—,French,"1,679",gitlab.inria.fr/french-crows-pairs
+SaFeRDialogues,Physical & Public Safety / Discrimination,—,—,English,"7,881",github.com/facebookresearch/ParlAI (saferdialogues)
+SafetyKit,Physical & Public Safety / Discrimination,—,—,English,990,github.com/facebookresearch/ParlAI (safety_bench)
+DiaSafety,Physical Safety / Discrimination / Trust & Info,—,—,English,"11,492",github.com/thu-coai/DiaSafety
+JiminyCricket,Trust/Info – Deception,—,—,English,"1,838",github.com/hendrycks/jiminy-cricket
+BiasOutOfTheBox,Bias,—,—,English,228,github.com/oxai/intersectional_gpt2
+EthnicBias,Bias,—,—,6 languages,60 templates,github.com/jaimeenahn/ethnic_bias
+ConvAbuse,Other,—,—,English,"6,837",github.com/amandacurry/convabuse
+MoralStories,Value alignment,—,—,English,"12,000",github.com/demelin/moral_stories
+ETHICS,Value alignment,—,—,English,"134,420",github.com/hendrycks/ethics
+HONEST,Bias,—,—,6 languages,"2,520",github.com/MilaNLProc/honest
+SweWinoGender,Bias,—,—,Swedish,624,github.com/spraakbanken/SuperLim-2
+LMBias,Bias,—,—,English,"16,388",github.com/pliang279/LM_bias
+Scruples,Value alignment,—,—,English,"42,766",github.com/allenai/scruples
+UnQover,Bias,—,—,English,44 templates,github.com/allenai/unqover
+SocialChemistry101,Value alignment,—,—,English,"292,000",github.com/mbforbes/social-chemistry-101
+Regard,Bias,—,—,English,60,github.com/ewsheng/nlg-bias
+EmpatheticDialogues,Broad safety,—,—,English,"24,850",github.com/facebookresearch/EmpatheticDialogues
+WinoBias,Bias,—,—,English,"3,160",github.com/uclanlp/corefBias
+WinoGender,Bias,—,—,English,720,github.com/rudinger/winogender-schemas
