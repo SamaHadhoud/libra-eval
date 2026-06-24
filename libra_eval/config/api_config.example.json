@@ -1,0 +1,8 @@
+{
+    "OPENAI_API_KEY": "",
+    "LIBRAI_API_KEY": "",
+    "NEXT_API_KEY": "",
+    "NEXT_BASE_URL": "",
+    "LOCAL_BASE_URL": "http://localhost:8000/v1",
+    "LOCAL_API_KEY": ""
+}
