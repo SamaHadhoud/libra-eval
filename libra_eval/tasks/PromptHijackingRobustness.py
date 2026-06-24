@@ -1,5 +1,8 @@
 from .base import Task
 
+# paper: https://arxiv.org/abs/2311.01011
+# github: https://github.com/HumanCompatibleAI/tensor-trust-data
+
 class PromptHijackingRobustness(Task):
     task_name = "prompthijackingrobustness"
     task_data_file = "PromptHijackingRobustness.jsonl"
