@@ -155,6 +155,7 @@ MODEL_LIST = [
     "inceptionai/jais-30b-chat-v3",
     "LLM360/K2-Chat",
     "MBZUAI-IFM/K2-Plus-Instruct",
+    "k2moe375B-mid3_v3-checkpoint_0003500",
     # Xverse
     "xverse/XVERSE-65B-Chat",
     # IBM
