@@ -17,7 +17,7 @@ from .DecodingTrust import (
 )
 from .DialogueSafety import DialogueSafety
 from .ConfAIde import ConfAIde
-# from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key
+# from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import CyberattackAssistance
 from .PhysicalSafetyInstructions import (
     PhysicalSafetyInstructionsSafe,
@@ -55,14 +55,14 @@ from .SycophancyEval import (
 )
 from .TDCRedTeaming import TDCRedTeaming
 from .HackAPrompt import HackAPrompt  # data need double check
-#from .HarmBench import HarmBench  # 需要 torch
+#from .HarmBench import HarmBench  # 需要 torch | requires torch
 from .HarmfulQ import HarmfulQ
 from .DoAnythingNow import (
     DoAnythingNowJailbreak,
     DoAnythingNowRegular
 )
 from .GandalfIgnoreInstructions import GandalfIgnoreInstructions
-#from .RedEval import (  # 需要 torch
+#from .RedEval import (  # 需要 torch | requires torch
 #    RedEvalHarmfulQA,
 #    RedEvalDangerousQA,
 #)
@@ -83,7 +83,7 @@ from .SPMisconceptions import SPMisconceptions
 # from .SafetyPrompt import SafetyPrompt  # Chinese
 # from .AnthropicHarmlessBase import AnthropicHarmlessBase # The dataset is suitable for DPO training, but not for chat-based evaluation
 from .DICES350 import DICES350
-# from .BBQ import BBQ  # 需要 Git LFS (80MB数据文件)
+# from .BBQ import BBQ  # 需要 Git LFS (80MB数据文件) | requires Git LFS (80MB data file)
 from .AnthropicRedTeam import AnthropicRedTeam
 from .BAD import BAD
 from .LibrAI_Adversarial import (

@@ -14,13 +14,15 @@ class StereoSet(BaseDirectRiskyTask):
     risk_type_tag = "fairness"
 
     def read_task_data(self):
-        """重写数据读取方法，提取 context 字段"""
+        """重写数据读取方法，提取 context 字段
+        Override the data reading method to extract the context field"""
         task_fpath = os.path.abspath(os.path.join(__file__, "../../datasets", self.task_data_file))
 
         with open(task_fpath, 'r') as f:
             stereo_data = json.load(f)
 
         # 提取 intrasentence 数据（也可以考虑 intersentence）
+        # Extract intrasentence data (intersentence can also be considered)
         rows = []
         for item_type in ['intrasentence', 'intersentence']:
             if item_type in stereo_data.get('data', {}):
@@ -36,6 +38,7 @@ class StereoSet(BaseDirectRiskyTask):
         data_df = pd.DataFrame(rows)
 
         # 添加 messages 列（使用 context 作为 prompt）
+        # Add the messages column (using context as the prompt)
         data_df['messages'] = data_df['context'].apply(lambda x: [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": str(x)}

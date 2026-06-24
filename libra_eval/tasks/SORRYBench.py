@@ -12,11 +12,14 @@ class SORRYBench(BaseDirectRiskyTask):
     risk_type_tag = "broad"
 
     def read_task_data(self):
-        """重写数据读取方法，添加格式转换"""
+        """重写数据读取方法，添加格式转换
+        Override the data reading method to add format conversion"""
         # 调用父类方法读取 JSONL 文件
+        # Call the parent class method to read the JSONL file
         data_df = super().read_task_data()
 
         # 将 JSONL 格式转换为 messages 格式（使用 turns 列的第一个元素）
+        # Convert the JSONL format to messages format (using the first element of the turns column)
         def extract_first_turn(turns):
             if isinstance(turns, list) and len(turns) > 0:
                 return turns[0]

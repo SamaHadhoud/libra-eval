@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 比较和分析两个版本的evaluation结果
+Compare and analyze the evaluation results of two versions
 """
 
 import json
@@ -13,6 +14,7 @@ import seaborn as sns
 from typing import Dict, List, Tuple
 
 # 设置中文字体和样式
+# Set the Chinese font and style
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style("whitegrid")
@@ -27,7 +29,8 @@ class EvaluationComparator:
         self.harmful_check_data = {}
 
     def load_jsonl(self, file_path: Path) -> List[Dict]:
-        """加载JSONL文件"""
+        """加载JSONL文件
+        Load a JSONL file"""
         data = []
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
@@ -38,7 +41,8 @@ class EvaluationComparator:
         return data
 
     def load_all_data(self):
-        """加载所有数据"""
+        """加载所有数据
+        Load all data"""
         print("Loading evaluation data...")
         for file in self.eval_dir.glob("*.jsonl"):
             dataset_name = file.stem.replace("_200_K2-Plus-Instruct", "")
@@ -53,7 +57,8 @@ class EvaluationComparator:
         print(f"Loaded {len(self.harmful_check_data)} harmful check datasets")
 
     def analyze_eval_response(self, dataset_name: str) -> Dict:
-        """分析eval_response数据"""
+        """分析eval_response数据
+        Analyze eval_response data"""
         data = self.eval_data.get(dataset_name, [])
         if not data:
             return {}
@@ -69,6 +74,7 @@ class EvaluationComparator:
         for item in data:
             eval_resp = item.get('eval_response', {})
             # 确保eval_resp是字典类型
+            # Make sure eval_resp is a dict
             if not isinstance(eval_resp, dict):
                 continue
 
@@ -77,6 +83,7 @@ class EvaluationComparator:
                 is_harmful = eval_resp.get('is_harmful')
 
                 # 处理字符串和布尔值
+                # Handle string and boolean values
                 if isinstance(is_harmful, str):
                     is_harmful = is_harmful.lower() == 'true'
 
@@ -91,7 +98,8 @@ class EvaluationComparator:
         return stats
 
     def analyze_harmful_check(self, dataset_name: str) -> Dict:
-        """分析harmful_check数据"""
+        """分析harmful_check数据
+        Analyze harmful_check data"""
         data = self.harmful_check_data.get(dataset_name, [])
         if not data:
             return {}
@@ -146,7 +154,8 @@ class EvaluationComparator:
         return stats
 
     def generate_dataset_comparison(self, dataset_name: str) -> pd.DataFrame:
-        """生成单个数据集的对比"""
+        """生成单个数据集的对比
+        Generate a comparison for a single dataset"""
         eval_stats = self.analyze_eval_response(dataset_name)
         harmful_stats = self.analyze_harmful_check(dataset_name)
 
@@ -164,6 +173,7 @@ class EvaluationComparator:
         }
 
         # 计算百分比
+        # Compute percentages
         if eval_stats.get('total', 0) > 0:
             comparison['Eval_Harmful_Rate'] = f"{eval_stats['harmful_count'] / eval_stats['total'] * 100:.2f}%"
         else:
@@ -177,7 +187,8 @@ class EvaluationComparator:
         return comparison
 
     def generate_full_comparison(self) -> pd.DataFrame:
-        """生成所有数据集的对比表"""
+        """生成所有数据集的对比表
+        Generate a comparison table for all datasets"""
         all_datasets = set(self.eval_data.keys()) | set(self.harmful_check_data.keys())
         comparisons = []
 
@@ -188,10 +199,12 @@ class EvaluationComparator:
         return pd.DataFrame(comparisons)
 
     def plot_harmful_rate_comparison(self, df: pd.DataFrame, output_dir: Path):
-        """绘制harmful rate对比图"""
+        """绘制harmful rate对比图
+        Plot the harmful rate comparison chart"""
         fig, ax = plt.subplots(figsize=(14, 8))
 
         # 准备数据
+        # Prepare the data
         datasets = df['Dataset'].tolist()
         eval_rates = []
         hc_rates = []
@@ -230,7 +243,8 @@ class EvaluationComparator:
         print(f"Saved: {output_dir / 'harmful_rate_comparison.png'}")
 
     def plot_risk_type_distribution(self, output_dir: Path):
-        """绘制风险类型分布"""
+        """绘制风险类型分布
+        Plot the risk type distribution"""
         all_risk_types = Counter()
 
         for dataset_name in self.eval_data.keys():
@@ -241,12 +255,14 @@ class EvaluationComparator:
             return
 
         # 排序
+        # Sort
         risk_types = dict(all_risk_types.most_common(15))
 
         fig, ax = plt.subplots(figsize=(12, 6))
         bars = ax.barh(list(risk_types.keys()), list(risk_types.values()), alpha=0.8)
 
         # 添加数值标签
+        # Add value labels
         for bar in bars:
             width = bar.get_width()
             ax.text(width, bar.get_y() + bar.get_height()/2,
@@ -263,7 +279,8 @@ class EvaluationComparator:
         print(f"Saved: {output_dir / 'risk_type_distribution.png'}")
 
     def plot_harm_categories(self, output_dir: Path):
-        """绘制harm categories分布"""
+        """绘制harm categories分布
+        Plot the harm categories distribution"""
         all_categories = Counter()
 
         for dataset_name in self.harmful_check_data.keys():
@@ -294,7 +311,8 @@ class EvaluationComparator:
         print(f"Saved: {output_dir / 'harm_categories_distribution.png'}")
 
     def plot_severity_distribution(self, output_dir: Path):
-        """绘制severity分布"""
+        """绘制severity分布
+        Plot the severity distribution"""
         all_severity = Counter()
 
         for dataset_name in self.harmful_check_data.keys():
@@ -330,7 +348,8 @@ class EvaluationComparator:
         print(f"Saved: {output_dir / 'severity_distribution.png'}")
 
     def plot_thinking_vs_response_harmful(self, output_dir: Path):
-        """绘制thinking process vs final response harmful对比"""
+        """绘制thinking process vs final response harmful对比
+        Plot the thinking process vs final response harmful comparison"""
         datasets = []
         thinking_harmful = []
         response_harmful = []
@@ -370,7 +389,8 @@ class EvaluationComparator:
         print(f"Saved: {output_dir / 'thinking_vs_response_harmful.png'}")
 
     def generate_summary_report(self, df: pd.DataFrame, output_dir: Path):
-        """生成汇总报告"""
+        """生成汇总报告
+        Generate the summary report"""
         report_path = output_dir / 'comparison_summary.txt'
 
         with open(report_path, 'w', encoding='utf-8') as f:
@@ -451,7 +471,8 @@ class EvaluationComparator:
         print(f"Saved: {report_path}")
 
     def run_full_analysis(self, output_dir: str = './comparison_results'):
-        """运行完整分析"""
+        """运行完整分析
+        Run the full analysis"""
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
 

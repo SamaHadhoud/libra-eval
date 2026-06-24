@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
 全面测试所有libra-eval任务的脚本
+A script to comprehensively test all libra-eval tasks
 
 使用实际LLM和评估器API测试所有注册的任务，验证它们能否正常运行。
+Use the actual LLM and evaluator APIs to test all registered tasks and verify they can run correctly.
 """
 
 import sys
@@ -16,6 +18,7 @@ from threading import Lock
 import time
 import signal
 # 添加libra_eval到路径
+# Add libra_eval to the path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from libra_eval.tasks import TASKS
@@ -24,7 +27,8 @@ from libra_eval.llmclient.librai_evaluator import LibrAIEvaluator
 
 
 def parse_args():
-    """解析命令行参数"""
+    """解析命令行参数
+    Parse command-line arguments"""
     parser = argparse.ArgumentParser(description="测试所有libra-eval任务")
     parser.add_argument("--n_samples", type=int, default=1,
                        help="每个任务测试的样本数（默认1）")
@@ -52,8 +56,10 @@ def parse_args():
 def ensure_output_directories(output_dir):
     """
     确保输出目录及其所有必要的子目录存在
+    Ensure the output directory and all its necessary subdirectories exist
 
     创建以下目录（如果不存在）：
+    Create the following directories (if they do not exist):
     - output_dir/
     - output_dir/responses/
     - output_dir/evaluations/
@@ -84,8 +90,10 @@ def ensure_output_directories(output_dir):
 def categorize_error(error: Exception) -> str:
     """
     将错误分类为可操作的类型
+    Categorize the error into an actionable type
 
     返回:
+    Returns:
         error_type: import_error, missing_file, invalid_tag, format_error,
                    method_error, api_error, unknown
     """
@@ -93,26 +101,32 @@ def categorize_error(error: Exception) -> str:
     error_type_name = type(error).__name__
 
     # 导入错误
+    # Import error
     if "ModuleNotFoundError" in error_type_name or "ImportError" in error_type_name:
         return "import_error"
 
     # 文件缺失
+    # Missing file
     if "does not exist" in error_str or "no such file" in error_str:
         return "missing_file"
 
     # 标签错误
+    # Tag error
     if "invalid" in error_str and ("tag" in error_str or "attack" in error_str or "round" in error_str):
         return "invalid_tag"
 
     # 格式错误
+    # Format error
     if "no `messages` found" in error_str or "keyerror" in error_str:
         return "format_error"
 
     # 方法错误
+    # Method error
     if "not implemented" in error_str or "abstractmethod" in error_str:
         return "method_error"
 
     # API错误
+    # API error
     if "api" in error_str or "connection" in error_str or "timeout" in error_str:
         return "api_error"
 
@@ -123,13 +137,20 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
                        n_samples, output_dir, idx=None, total=None, print_lock=None):
     """
     使用实际API测试单个任务的完整流程
+    Test the complete pipeline of a single task using the actual API
 
     流程：
+    Pipeline:
     1. 初始化任务
+    1. Initialize the task
     2. 运行推理（实际LLM API调用）
+    2. Run inference (actual LLM API call)
     3. 运行评估（实际评估器API调用）
+    3. Run evaluation (actual evaluator API call)
     4. 计算分数
+    4. Compute the score
     5. 返回结果
+    5. Return the result
     """
     start_time = time.time()
 
@@ -145,6 +166,7 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
     }
 
     # 线程安全的打印函数
+    # Thread-safe print function
     def safe_print(msg):
         if print_lock:
             with print_lock:
@@ -154,10 +176,12 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
 
     try:
         # 显示开始信息
+        # Display the start message
         if idx is not None and total is not None:
             safe_print(f"[{idx+1}/{total}] 正在测试：{task_name}...")
 
         # 初始化任务
+        # Initialize the task
         task = task_class(
             debug=False,
             output_dir=output_dir,
@@ -165,6 +189,7 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
         )
 
         # 运行完整pipeline（推理+评估）
+        # Run the full pipeline (inference + evaluation)
         score = task.run_pipeline(
             llm_client=llm_client,
             llm_eval_client=None,
@@ -178,6 +203,7 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
         result["duration"] = time.time() - start_time
 
         # 显示成功信息
+        # Display the success message
         score_str = f"{result['score']:.3f}" if result['score'] is not None else "N/A"
         duration_str = f"{result['duration']:.1f}s"
         safe_print(f"  ✓ {task_name} - 得分：{score_str} - 耗时：{duration_str}")
@@ -190,6 +216,7 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
         result["duration"] = time.time() - start_time
 
         # 显示失败信息
+        # Display the failure message
         error_msg = result['error'][:80] + "..." if len(result['error']) > 80 else result['error']
         safe_print(f"  ✗ {task_name} ({result['error_type']})：{error_msg}")
 
@@ -197,11 +224,13 @@ def test_task_with_api(task_name, task_class, llm_client, librai_client,
 
 
 def generate_json_report(all_results, args):
-    """生成JSON格式的测试报告"""
+    """生成JSON格式的测试报告
+    Generate a test report in JSON format"""
     passed = [r for r in all_results if r["status"] == "passed"]
     failed = [r for r in all_results if r["status"] == "failed"]
 
     # 按错误类型分组
+    # Group by error type
     error_categories = {}
     for r in failed:
         error_type = r.get("error_type", "unknown")
@@ -213,6 +242,7 @@ def generate_json_report(all_results, args):
         })
 
     # 生成建议
+    # Generate recommendations
     recommendations = []
     if "missing_file" in error_categories:
         count = len(error_categories["missing_file"])
@@ -245,7 +275,8 @@ def generate_json_report(all_results, args):
 
 
 def print_summary(report):
-    """打印测试摘要"""
+    """打印测试摘要
+    Print the test summary"""
     print("=" * 70)
     print("测试摘要")
     print("=" * 70)
@@ -260,7 +291,7 @@ def print_summary(report):
         print("\n错误类别：")
         for error_type, tasks in report["error_categories"].items():
             print(f"  - {error_type}：{len(tasks)}个任务")
-            for task_info in tasks[:3]:  # 只显示前3个
+            for task_info in tasks[:3]:  # 只显示前3个 | Only show the first 3
                 print(f"      · {task_info['task_name']}")
             if len(tasks) > 3:
                 print(f"      ... 还有 {len(tasks) - 3} 个任务")
@@ -271,6 +302,7 @@ def print_summary(report):
             print(f"  {idx}. {rec}")
 
     # 显示通过任务的平均分数
+    # Show the average score of passed tasks
     passed_tasks = [t for t in report["tasks"] if t["status"] == "passed" and t["score"] is not None]
     if passed_tasks:
         avg_score = sum(t["score"] for t in passed_tasks) / len(passed_tasks)
@@ -280,8 +312,10 @@ def print_summary(report):
 def generate_risk_type_summary(all_results, args):
     """
     从所有任务的评估结果中提取risk_type_index统计
+    Extract risk_type_index statistics from the evaluation results of all tasks
 
     返回格式:
+    Return format:
     {
       "test_run": {...metadata...},
       "datasets": [
@@ -308,6 +342,7 @@ def generate_risk_type_summary(all_results, args):
     }
 
     # 遍历每个任务
+    # Iterate over each task
     for result in all_results:
         if result["status"] != "passed":
             continue
@@ -321,6 +356,7 @@ def generate_risk_type_summary(all_results, args):
         model_name = args.model.split("/")[-1]
 
         # 读取该任务的评估结果文件
+        # Read the evaluation result file for this task
         eval_file = os.path.join(
             args.output_dir,
             "evaluations",
@@ -331,6 +367,7 @@ def generate_risk_type_summary(all_results, args):
             continue
 
         # 统计该任务的risk_type分布
+        # Count the risk_type distribution for this task
         risk_counts = defaultdict(lambda: {"total": 0, "harmful": 0, "harmless": 0})
         total_samples = 0
 
@@ -350,10 +387,12 @@ def generate_risk_type_summary(all_results, args):
                     eval_response = {}
 
                 # 提取 risk_type 和 is_harmful
+                # Extract risk_type and is_harmful
                 risk_type = eval_response.get("risk_type_index", "none")
                 is_harmful = eval_response.get("is_harmful")
 
                 # 解析 is_harmful（可能是字符串、布尔值或整数）
+                # Parse is_harmful (may be a string, boolean, or integer)
                 harmful_bool = None
                 if isinstance(is_harmful, str):
                     harmful_bool = is_harmful.lower() in ["true", "1", "yes"]
@@ -363,6 +402,7 @@ def generate_risk_type_summary(all_results, args):
                     harmful_bool = is_harmful == 1
 
                 # 更新统计
+                # Update statistics
                 risk_counts[risk_type]["total"] += 1
                 if harmful_bool is True:
                     risk_counts[risk_type]["harmful"] += 1
@@ -370,6 +410,7 @@ def generate_risk_type_summary(all_results, args):
                     risk_counts[risk_type]["harmless"] += 1
 
                 # 更新总体统计（需要先初始化）
+                # Update overall statistics (must be initialized first)
                 if risk_type not in summary["overall_totals"]:
                     summary["overall_totals"][risk_type] = {"total": 0, "harmful": 0, "harmless": 0}
                 summary["overall_totals"][risk_type]["total"] += 1
@@ -381,6 +422,7 @@ def generate_risk_type_summary(all_results, args):
                 total_samples += 1
 
         # 添加到数据集列表
+        # Add to the dataset list
         summary["datasets"].append({
             "task_name": task_name,
             "risk_type_counts": dict(risk_counts),
@@ -388,6 +430,7 @@ def generate_risk_type_summary(all_results, args):
         })
 
     # overall_totals 已经是普通 dict，不需要转换
+    # overall_totals is already a plain dict, no conversion needed
 
     return summary
 
@@ -395,8 +438,10 @@ def generate_risk_type_summary(all_results, args):
 def generate_risk_type_summary_from_all_evaluations(output_dir):
     """
     扫描 evaluations 目录下的所有评估文件，生成全量 risk_type 统计汇总
+    Scan all evaluation files under the evaluations directory and generate a full risk_type statistics summary
 
     不依赖当前运行批次，独立扫描所有已存在的评估文件
+    Does not depend on the current run batch; independently scans all existing evaluation files
 
     Args:
         output_dir: 输出目录路径
@@ -414,6 +459,7 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
     eval_dir = os.path.join(output_dir, "evaluations")
 
     # 检查目录是否存在
+    # Check whether the directory exists
     if not os.path.exists(eval_dir):
         print(f"错误：evaluations 目录不存在：{eval_dir}")
         return {
@@ -429,6 +475,7 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
         }
 
     # 扫描所有 .jsonl 评估文件
+    # Scan all .jsonl evaluation files
     eval_pattern = os.path.join(eval_dir, "*.jsonl")
     eval_files = glob(eval_pattern)
 
@@ -446,22 +493,28 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
     }
 
     # 初始化总体统计
+    # Initialize overall statistics
     overall_totals = defaultdict(lambda: {"total": 0, "harmful": 0, "harmless": 0})
     total_samples_all = 0
     processed_files = 0
     skipped_files = 0
 
     # 处理每个评估文件
+    # Process each evaluation file
     for eval_file in sorted(eval_files):
         try:
             filename = os.path.basename(eval_file)
 
             # 解析文件名：{task_name}_{n_samples}_{model_name}.jsonl
+            # Parse the filename: {task_name}_{n_samples}_{model_name}.jsonl
             # 移除 .jsonl 后缀
+            # Remove the .jsonl suffix
             name_without_ext = filename.replace(".jsonl", "")
 
             # 简单提取任务名（取文件名去掉扩展名）
+            # Simply extract the task name (take the filename without the extension)
             # 更健壮的方式：从右向左找最后两个下划线
+            # A more robust approach: find the last two underscores from right to left
             parts = name_without_ext.rsplit("_", 2)
             if len(parts) >= 1:
                 task_name = parts[0] if len(parts) == 3 else name_without_ext
@@ -471,6 +524,7 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
             print(f"处理文件：{filename} (任务: {task_name})")
 
             # 统计该文件的 risk_type 分布
+            # Count the risk_type distribution for this file
             risk_counts = defaultdict(lambda: {"total": 0, "harmful": 0, "harmless": 0})
             file_samples = 0
 
@@ -491,10 +545,12 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
                             eval_response = {}
 
                         # 提取 risk_type 和 is_harmful
+                        # Extract risk_type and is_harmful
                         risk_type = eval_response.get("risk_type_index", "none")
                         is_harmful = eval_response.get("is_harmful")
 
                         # 解析 is_harmful（可能是字符串、布尔值或整数）
+                        # Parse is_harmful (may be a string, boolean, or integer)
                         harmful_bool = None
                         if isinstance(is_harmful, str):
                             harmful_bool = is_harmful.lower() in ["true", "1", "yes"]
@@ -504,6 +560,7 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
                             harmful_bool = is_harmful == 1
 
                         # 更新文件统计
+                        # Update file statistics
                         risk_counts[risk_type]["total"] += 1
                         if harmful_bool is True:
                             risk_counts[risk_type]["harmful"] += 1
@@ -511,6 +568,7 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
                             risk_counts[risk_type]["harmless"] += 1
 
                         # 更新总体统计
+                        # Update overall statistics
                         overall_totals[risk_type]["total"] += 1
                         if harmful_bool is True:
                             overall_totals[risk_type]["harmful"] += 1
@@ -521,12 +579,15 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
 
                     except json.JSONDecodeError:
                         # 跳过无效的 JSON 行
+                        # Skip invalid JSON lines
                         continue
                     except Exception as e:
                         # 跳过其他错误
+                        # Skip other errors
                         continue
 
             # 添加到数据集列表
+            # Add to the dataset list
             summary["datasets"].append({
                 "file_name": filename,
                 "task_name": task_name,
@@ -545,11 +606,13 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
             continue
 
     # 更新汇总信息
+    # Update summary information
     summary["summary"]["total_files_processed"] = processed_files
     summary["summary"]["total_samples"] = total_samples_all
     summary["summary"]["skipped_files"] = skipped_files
 
     # 转换 overall_totals 为普通 dict
+    # Convert overall_totals to a plain dict
     summary["overall_totals"] = dict(overall_totals)
 
     return summary
@@ -558,9 +621,11 @@ def generate_risk_type_summary_from_all_evaluations(output_dir):
 def print_risk_summary_statistics(risk_summary):
     """
     打印 risk_type 汇总的统计信息
+    Print the statistics of the risk_type summary
 
     Args:
         risk_summary: generate_risk_type_summary_from_all_evaluations() 返回的结果
+        risk_summary: the result returned by generate_risk_type_summary_from_all_evaluations()
     """
     print("\n" + "=" * 70)
     print("Risk Type 汇总统计")
@@ -580,6 +645,7 @@ def print_risk_summary_statistics(risk_summary):
         return
 
     # 计算总体统计
+    # Compute overall statistics
     total_harmful = sum(stats.get("harmful", 0) for stats in overall_totals.values())
     total_harmless = sum(stats.get("harmless", 0) for stats in overall_totals.values())
     total_samples = summary_info['total_samples']
@@ -589,6 +655,7 @@ def print_risk_summary_statistics(risk_summary):
     print(f"  Harmless: {total_harmless} ({total_harmless/total_samples*100:.2f}%)")
 
     # 按总数排序并显示前 10 个 risk_type
+    # Sort by total count and show the top 10 risk_types
     sorted_types = sorted(
         overall_totals.items(),
         key=lambda x: x[1]["total"],
@@ -601,6 +668,7 @@ def print_risk_summary_statistics(risk_summary):
 
     for risk_type, stats in sorted_types[:10]:
         # 截断过长的 risk_type 名称
+        # Truncate risk_type names that are too long
         risk_type_display = risk_type if len(risk_type) <= 47 else risk_type[:44] + "..."
         print(f"{risk_type_display:<50} {stats['total']:>8} {stats['harmful']:>8} {stats['harmless']:>8}")
 
@@ -1106,15 +1174,18 @@ def main():
         print()
 
         # 确保输出目录存在
+        # Ensure the output directory exists
         print("检查输出目录...")
         ensure_output_directories(args.output_dir)
         print()
 
         # 生成全量汇总
+        # Generate the full summary
         print("开始扫描并汇总评估文件...")
         risk_summary = generate_risk_type_summary_from_all_evaluations(args.output_dir)
 
         # 保存结果
+        # Save the result
         summary_path = os.path.join(args.output_dir, "risk_type_summary_all.json")
         with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(risk_summary, f, indent=2, ensure_ascii=False)
@@ -1122,6 +1193,7 @@ def main():
         print(f"\n汇总已保存到：{summary_path}")
 
         # 显示简要统计
+        # Display brief statistics
         print_risk_summary_statistics(risk_summary)
 
         return 0
@@ -1163,10 +1235,12 @@ def main():
         return 0
 
     # 全局标志用于Ctrl+C处理
+    # Global flag for handling Ctrl+C
     shutdown_requested = False
 
     def signal_handler(signum, frame):
-        """优雅处理Ctrl+C"""
+        """优雅处理Ctrl+C
+        Gracefully handle Ctrl+C"""
         nonlocal shutdown_requested
         if not shutdown_requested:
             shutdown_requested = True
@@ -1180,9 +1254,11 @@ def main():
             sys.exit(1)
 
     # 注册信号处理
+    # Register signal handling
     signal.signal(signal.SIGINT, signal_handler)
 
     # 确定并发数量
+    # Determine the concurrency level
     if args.no_parallel:
         max_workers = 1
     else:
@@ -1202,16 +1278,19 @@ def main():
     print()
 
     # 检查并创建输出目录
+    # Check and create the output directory
     print("检查输出目录...")
     ensure_output_directories(args.output_dir)
     print()
 
     # 加载API配置
+    # Load the API configuration
     config_path = os.path.join(os.path.dirname(__file__), "libra_eval", "config", "api_config.json")
     with open(config_path, "r") as f:
         api_config = json.load(f)
 
     # 初始化客户端
+    # Initialize the clients
     print("初始化LLM和评估器客户端...")
     try:
         llm_client = get_client(client_type=args.client, model=args.model, api_config=api_config)
@@ -1228,6 +1307,7 @@ def main():
     task_list = list(TASKS.items())
 
     # 过滤需要测试的任务
+    # Filter the tasks to be tested
     tasks_to_test = [(idx, task_name, task_class)
                      for idx, (task_name, task_class) in enumerate(task_list)
                      if idx >= args.start_from]
@@ -1235,18 +1315,22 @@ def main():
     total_tasks = len(task_list)
 
     # 创建线程锁用于同步输出
+    # Create thread locks to synchronize output
     print_lock = Lock()
     results_lock = Lock()
 
     # 统计信息
+    # Statistics
     completed_count = 0
     start_time = time.time()
 
     if max_workers == 1:
         # 串行模式
+        # Serial mode
         print("使用串行模式执行...\n")
         for idx, task_name, task_class in tasks_to_test:
             # 检查是否收到关闭信号
+            # Check whether a shutdown signal was received
             if shutdown_requested:
                 print(f"\n已停止测试。正在保存已完成的{completed_count}个结果...\n")
                 break
@@ -1259,6 +1343,7 @@ def main():
             completed_count += 1
 
             # 每10个任务保存一次中间结果
+            # Save interim results every 10 tasks
             if completed_count % 10 == 0:
                 interim_report = generate_json_report(all_results, args)
                 interim_path = os.path.join(args.output_dir, f"test_results_interim_{completed_count}.json")
@@ -1268,10 +1353,12 @@ def main():
                     print(f"\n💾 中间结果已保存到：{interim_path}\n")
     else:
         # 并发模式
+        # Concurrent mode
         print(f"使用并发模式执行（{max_workers} workers）...\n")
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # 提交所有任务
+            # Submit all tasks
             future_to_task = {
                 executor.submit(
                     test_task_with_api,
@@ -1282,10 +1369,13 @@ def main():
             }
 
             # 处理完成的任务
+            # Process completed tasks
             for future in as_completed(future_to_task):
                 # 检查是否收到关闭信号
+                # Check whether a shutdown signal was received
                 if shutdown_requested:
                     # 取消所有未完成的future
+                    # Cancel all unfinished futures
                     for f in future_to_task:
                         if not f.done():
                             f.cancel()
@@ -1301,6 +1391,7 @@ def main():
                         completed_count += 1
 
                         # 显示进度
+                        # Display progress
                         elapsed = time.time() - start_time
                         avg_time = elapsed / completed_count
                         remaining = len(tasks_to_test) - completed_count
@@ -1311,6 +1402,7 @@ def main():
                                   f"耗时：{elapsed:.1f}s | ETA：{eta:.1f}s\n")
 
                         # 每10个任务保存一次中间结果
+                        # Save interim results every 10 tasks
                         if completed_count % 10 == 0:
                             interim_report = generate_json_report(all_results, args)
                             interim_path = os.path.join(args.output_dir, f"test_results_interim_{completed_count}.json")
@@ -1325,24 +1417,29 @@ def main():
                         traceback.print_exc()
 
     # 生成最终报告
+    # Generate the final report
     print("\n生成最终报告...")
     json_report = generate_json_report(all_results, args)
 
     # 保存报告
+    # Save the report
     report_path = os.path.join(args.output_dir, "test_results.json")
     with open(report_path, "w") as f:
         json.dump(json_report, f, indent=2, ensure_ascii=False)
 
     # 打印摘要
+    # Print the summary
     print_summary(json_report)
 
     print(f"\n报告已保存到：{report_path}")
 
     # 生成risk_type统计摘要
+    # Generate the risk_type statistics summary
     print("\n生成risk_type统计摘要...")
     risk_summary = generate_risk_type_summary(all_results, args)
 
     # 保存risk_type摘要
+    # Save the risk_type summary
     risk_summary_path = os.path.join(args.output_dir, "risk_type_summary.json")
     with open(risk_summary_path, "w", encoding="utf-8") as f:
         json.dump(risk_summary, f, indent=2, ensure_ascii=False)
@@ -1350,6 +1447,7 @@ def main():
     print(f"Risk type摘要已保存到：{risk_summary_path}")
 
     # 显示简单统计
+    # Display simple statistics
     if risk_summary["overall_totals"]:
         print("\nRisk Type总体分布：")
         sorted_types = sorted(
@@ -1357,7 +1455,7 @@ def main():
             key=lambda x: x[1]["total"],
             reverse=True
         )
-        for risk_type, stats in sorted_types[:5]:  # 显示前5个
+        for risk_type, stats in sorted_types[:5]:  # 显示前5个 | Show the first 5
             print(f"  {risk_type}: total={stats['total']}, harmful={stats['harmful']}, harmless={stats['harmless']}")
         if len(sorted_types) > 5:
             print(f"  ... 还有 {len(sorted_types) - 5} 个类别")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 从 test_results.json 提取任务分数并生成可视化
+Extract task scores from test_results.json and generate visualizations
 """
 
 import json
@@ -11,7 +12,8 @@ import matplotlib.pyplot as plt
 
 
 def load_results(json_path):
-    """加载 JSON 文件，提取任务和分数"""
+    """加载 JSON 文件，提取任务和分数
+    Load the JSON file and extract tasks and scores"""
     with open(json_path, 'r') as f:
         data = json.load(f)
 
@@ -26,26 +28,32 @@ def load_results(json_path):
     df = pd.DataFrame(tasks)
 
     # 按分数排序
+    # Sort by score
     df_sorted = df.sort_values('Score', ascending=True)
 
     # 提取元数据
+    # Extract metadata
     summary = data.get('summary', {})
 
     return df_sorted, summary
 
 
 def create_table(df, output_dir):
-    """生成 Tab 分隔的表格和 Markdown 表格"""
+    """生成 Tab 分隔的表格和 Markdown 表格
+    Generate a tab-separated table and a Markdown table"""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 保存 TSV（Tab 分隔，便于复制到飞书）
+    # Save TSV (tab-separated, convenient for copying into Feishu)
     tsv_path = output_dir / 'results_table.tsv'
     df.to_csv(tsv_path, sep='\t', index=False)
     print(f"✓ TSV 表格已保存到: {tsv_path} (可直接复制到飞书)")
 
     # 同时生成横向版本（转置）
+    # Also generate a horizontal version (transposed)
     # 创建转置DataFrame：第一行是任务名，第二行是分数，第三行是状态
+    # Create a transposed DataFrame: first row is task name, second row is score, third row is status
     df_transposed = pd.DataFrame({
         task['Task Name']: [task['Score'], task['Status']]
         for _, task in df.iterrows()
@@ -56,6 +64,7 @@ def create_table(df, output_dir):
     print(f"✓ 横向 TSV 表格已保存到: {tsv_transposed_path}")
 
     # 保存 Markdown（手动生成，不依赖 tabulate）
+    # Save Markdown (generated manually, without relying on tabulate)
     md_path = output_dir / 'results_table.md'
     with open(md_path, 'w') as f:
         f.write("# Task Scores\n\n")
@@ -70,11 +79,13 @@ def create_table(df, output_dir):
 
 
 def create_chart(df, summary, output_dir):
-    """生成条形图（过滤掉 NaN 值）"""
+    """生成条形图（过滤掉 NaN 值）
+    Generate a bar chart (filtering out NaN values)"""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 过滤掉 score 为 NaN 的任务
+    # Filter out tasks whose score is NaN
     df_valid = df[df['Score'].notna()].copy()
 
     if len(df_valid) == 0:
@@ -84,29 +95,35 @@ def create_chart(df, summary, output_dir):
     print(f"ℹ️  过滤后有 {len(df_valid)} 个任务有有效分数（跳过了 {len(df) - len(df_valid)} 个 NaN 值）")
 
     # 设置图表大小（根据任务数量动态调整）
+    # Set the chart size (dynamically adjusted based on the number of tasks)
     n_tasks = len(df_valid)
-    fig_height = max(12, n_tasks * 0.3)  # 至少12英寸，每个任务0.3英寸
+    fig_height = max(12, n_tasks * 0.3)  # 至少12英寸，每个任务0.3英寸 | At least 12 inches, 0.3 inch per task
 
     fig, ax = plt.subplots(figsize=(14, fig_height))
 
     # 颜色：失败=红色，通过=蓝色
+    # Colors: failed = red, passed = blue
     colors = ['red' if status == 'failed' else 'steelblue'
               for status in df_valid['Status']]
 
     # 绘制水平条形图
+    # Draw a horizontal bar chart
     bars = ax.barh(df_valid['Task Name'], df_valid['Score'], color=colors, alpha=0.7)
 
     # 添加分数标签
+    # Add score labels
     for i, (task, score) in enumerate(zip(df_valid['Task Name'], df_valid['Score'])):
         label = f'{score:.3f}'
         ax.text(score + 0.01, i, label, va='center', fontsize=8)
 
     # 添加参考线
+    # Add reference lines
     ax.axvline(x=0.5, color='gray', linestyle='--', alpha=0.5, linewidth=1, label='0.5 threshold')
     ax.axvline(x=0.7, color='orange', linestyle='--', alpha=0.5, linewidth=1, label='0.7 threshold')
     ax.axvline(x=0.9, color='green', linestyle='--', alpha=0.5, linewidth=1, label='0.9 threshold')
 
     # 设置标题和标签
+    # Set the title and labels
     model_name = summary.get('model', 'Unknown')
     n_samples = summary.get('n_samples_per_task', 'N/A')
     total_tasks = summary.get('total_tasks', len(df))
@@ -121,12 +138,14 @@ def create_chart(df, summary, output_dir):
     ax.grid(axis='x', alpha=0.3, linestyle=':')
 
     # 设置 y 轴字体大小
+    # Set the y-axis font size
     ax.tick_params(axis='y', labelsize=9)
     ax.tick_params(axis='x', labelsize=11)
 
     plt.tight_layout()
 
     # 保存图表
+    # Save the chart
     chart_path = output_dir / 'results_chart.png'
     plt.savefig(chart_path, dpi=300, bbox_inches='tight')
     print(f"✓ 图表已保存到: {chart_path}")
@@ -135,7 +154,8 @@ def create_chart(df, summary, output_dir):
 
 
 def print_summary(df, summary):
-    """打印摘要统计"""
+    """打印摘要统计
+    Print summary statistics"""
     print("\n" + "="*70)
     print("任务分数摘要")
     print("="*70)
@@ -149,6 +169,7 @@ def print_summary(df, summary):
     print(f"失败: {failed} ({failed/total*100:.1f}%)")
 
     # 分数统计（只统计有效分数）
+    # Score statistics (only counting valid scores)
     scores = df['Score'].dropna()
     valid_count = len(scores)
     nan_count = total - valid_count
@@ -164,6 +185,7 @@ def print_summary(df, summary):
         print(f"  最低分: {scores.min():.4f}")
 
     # 显示失败的任务
+    # Show the failed tasks
     failed_tasks = df[df['Status'] == 'failed']
     if len(failed_tasks) > 0:
         print(f"\n失败的任务:")
@@ -172,6 +194,7 @@ def print_summary(df, summary):
             print(f"  - {task['Task Name']}: {score_str}")
 
     # 显示低分任务 (< 0.7)
+    # Show low-score tasks (< 0.7)
     low_score_tasks = df[df['Score'] < 0.7]
     if len(low_score_tasks) > 0:
         print(f"\n低分任务 (< 0.7):")
@@ -198,13 +221,16 @@ def main():
     print(f"\n加载了 {len(df)} 个任务的结果")
 
     # 打印摘要
+    # Print the summary
     print_summary(df, summary)
 
     # 生成表格
+    # Generate the table
     print("生成表格...")
     create_table(df, args.output)
 
     # 生成图表
+    # Generate the chart
     if not args.no_chart:
         print("生成图表...")
         create_chart(df, summary, args.output)

@@ -12,11 +12,14 @@ class JBDistillBench(BaseDirectRiskyTask):
     risk_type_tag = "broad"
 
     def read_task_data(self):
-        """重写数据读取方法，添加格式转换"""
+        """重写数据读取方法，添加格式转换
+        Override the data reading method, adding format conversion"""
         # 调用父类方法读取 Parquet 文件
+        # Call the parent class method to read the Parquet file
         data_df = super().read_task_data()
 
         # 将 Parquet 格式转换为 messages 格式（使用 prompt 列）
+        # Convert the Parquet format into the messages format (using the prompt column)
         data_df['messages'] = data_df['prompt'].apply(lambda x: [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": str(x)}

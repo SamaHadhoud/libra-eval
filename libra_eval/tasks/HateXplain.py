@@ -14,19 +14,22 @@ class HateXplain(BaseDirectRiskyTask):
     risk_type_tag = "toxicity"
 
     def read_task_data(self):
-        """重写数据读取方法，连接 post_tokens 成文本"""
+        """重写数据读取方法，连接 post_tokens 成文本
+        Override the data reading method, joining post_tokens into text"""
         task_fpath = os.path.abspath(os.path.join(__file__, "../../datasets", self.task_data_file))
 
         with open(task_fpath, 'r') as f:
             hate_data = json.load(f)
 
         # 展开字典结构，连接 tokens
+        # Expand the dictionary structure, joining tokens
         rows = []
         for post_id, post_info in hate_data.items():
             post_tokens = post_info.get('post_tokens', [])
             post_text = ' '.join(post_tokens)
 
             # 获取标签（多个标注者可能有不同标签，这里取多数）
+            # Get the labels (multiple annotators may have different labels; here take the majority)
             labels = [ann.get('label') for ann in post_info.get('annotators', [])]
 
             rows.append({
@@ -38,6 +41,7 @@ class HateXplain(BaseDirectRiskyTask):
         data_df = pd.DataFrame(rows)
 
         # 添加 messages 列
+        # Add the messages column
         data_df['messages'] = data_df['post_text'].apply(lambda x: [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": str(x)}

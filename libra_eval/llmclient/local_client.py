@@ -18,6 +18,7 @@ class Local_Client(OpenAI_Client):
         self.client_name = client_name
 
         # 从配置文件读取本地模型的 base_url 和 api_key
+        # Read the local model's base_url and api_key from the config file
         assert "LOCAL_BASE_URL" in api_config and api_config["LOCAL_BASE_URL"] != "", "LOCAL_BASE_URL must be set in api_config.json"
         assert "LOCAL_API_KEY" in api_config and api_config["LOCAL_API_KEY"] != "", "LOCAL_API_KEY must be set in api_config.json"
         

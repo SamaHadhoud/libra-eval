@@ -6,6 +6,7 @@ import traceback
 from argparse import ArgumentParser
 
 # 添加项目根目录到 sys.path，以便直接运行脚本时能够导入模块
+# Add the project root directory to sys.path so modules can be imported when running the script directly
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_file_dir)
 if project_root not in sys.path:

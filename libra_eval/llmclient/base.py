@@ -383,7 +383,7 @@ class BaseClient:
 
             # Add delay between batches to avoid rate limiting
             if i + batch_size < len(messages_list):
-                time.sleep(1.5)  # 增加到1.5秒，避免rate limit
+                time.sleep(1.5)  # 增加到1.5秒，避免rate limit | Increase to 1.5 seconds to avoid rate limit
 
         return all_responses
 

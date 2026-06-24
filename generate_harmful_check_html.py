@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 生成Harmful Check分析的交互式HTML报告
+Generate an interactive HTML report for the Harmful Check analysis
 """
 
 import pandas as pd
@@ -12,10 +13,12 @@ def generate_html_report(results_dir='./harmful_check_analysis'):
     results_path = Path(results_dir)
 
     # 读取数据
+    # Read the data
     df_analysis = pd.read_csv(results_path / 'harmful_check_analysis.csv')
     df_tvr = pd.read_csv(results_path / 'thinking_vs_response.csv')
 
     # 读取安全率数据
+    # Read the safety rate data
     df_risk_type = None
     df_harm_category = None
     if (results_path / 'safety_rate_by_risk_type.csv').exists():
@@ -24,6 +27,7 @@ def generate_html_report(results_dir='./harmful_check_analysis'):
         df_harm_category = pd.read_csv(results_path / 'safety_rate_by_harm_category.csv')
 
     # 读取inconsistencies
+    # Read inconsistencies
     inconsistencies = []
     inc_file = results_path / 'inconsistent_records.csv'
     if inc_file.exists():
@@ -31,6 +35,7 @@ def generate_html_report(results_dir='./harmful_check_analysis'):
         inconsistencies = df_inc.to_dict('records')
 
     # 读取summary
+    # Read the summary
     summary_text = ""
     summary_file = results_path / 'summary_report.txt'
     if summary_file.exists():
@@ -38,6 +43,7 @@ def generate_html_report(results_dir='./harmful_check_analysis'):
             summary_text = f.read()
 
     # 计算统计数据
+    # Compute statistics
     total_datasets = len(df_analysis)
     total_samples = df_analysis['total'].sum()
     total_harmful = df_analysis['overall_harmful'].sum()

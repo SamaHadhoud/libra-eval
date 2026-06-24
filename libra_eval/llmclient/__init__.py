@@ -9,7 +9,9 @@ from .librai_evaluator import LibrAI_Client
 
 
 def _load_api_config(api_config_path: str | None = None) -> dict:
-    """Load API配置，允许外部覆盖默认路径。"""
+    """Load API配置，允许外部覆盖默认路径。
+    Load the API config, allowing an external override of the default path.
+    """
     if api_config_path is None:
         api_config_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -29,6 +31,7 @@ def get_client(
 ):
     """
     根据类型创建指定LLM客户端，默认读取config/api_config.json。
+    Create the specified LLM client based on the type; reads config/api_config.json by default.
     """
     if api_config is None:
         api_config = _load_api_config(kwargs.pop("api_config_path", None))
