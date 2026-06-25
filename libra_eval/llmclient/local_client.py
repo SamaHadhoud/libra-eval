@@ -27,3 +27,22 @@ class Local_Client(OpenAI_Client):
             api_key=api_config["LOCAL_API_KEY"],
         )
         self.name_mapping = name_mapping
+
+    # Fields a reasoning-model server may require on prior assistant turns.
+    _REASONING_FIELDS = ("think", "reasoning", "reasoning_content", "think_fast", "think_faster")
+
+    def _call(self, messages, **kwargs):
+        """Shim for reasoning-model servers (e.g. k2moe): a multi-turn input whose
+        assistant turns lack a thinking/reasoning field is rejected with a 400.
+        Inject an empty `reasoning_content` into such turns. No-op for single-turn
+        inputs and harmless for non-reasoning local servers.
+        """
+        if isinstance(messages, list):
+            patched = []
+            for m in messages:
+                if (isinstance(m, dict) and m.get("role") == "assistant"
+                        and not any(k in m for k in self._REASONING_FIELDS)):
+                    m = {**m, "reasoning_content": ""}
+                patched.append(m)
+            messages = patched
+        return super()._call(messages, **kwargs)
