@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from datetime import datetime
 from abc import ABC, abstractmethod
 from openai import OpenAI
 from .utils import clean_invalid_chars, is_valid_json
@@ -229,9 +230,69 @@ class Task(ABC):
                 self.data_df = clean_invalid_chars(self.data_df)
                 self.data_df.to_json(eval_fpath, orient="records", lines=True, force_ascii=False)
 
-            final_score = self.data_df.apply(self._single_eval_postprocess, axis=1).mean()
+            per_item_scores = self.data_df.apply(self._single_eval_postprocess, axis=1).astype(float)
+            final_score = per_item_scores.mean()
+
+            # Describe HOW this task was judged, unambiguously:
+            #   evaluator_backend: who ran the judgement
+            #     - "programmatic": local rule/string match (no LLM judge)
+            #     - "local_llm":    judge prompt run on judge_model (e.g. via OpenRouter)
+            #     - "librai_prompter": the hosted prompter.librai.tech evaluator
+            #   evaluator_prompt: the judge prompt/template name (routing key)
+            #   judge_model: the model that executed the judge prompt (local_llm only)
+            if not self.llm_eval:
+                evaluator_backend, judge_model = "programmatic", None
+            else:
+                eval_client = librai_client if self.librai_evaluator_name else llm_eval_client
+                backend_map = {"LibrAI_Client": "librai_prompter", "LLMJudge_Client": "local_llm"}
+                evaluator_backend = backend_map.get(type(eval_client).__name__, type(eval_client).__name__)
+                # the hosted prompter runs its own server-side model -> opaque
+                judge_model = None if evaluator_backend == "librai_prompter" else getattr(eval_client, "model", None)
+
+            result = {
+                "task": self.task_name,
+                "model": model_name,
+                "score": final_score,
+                # --- run metadata (reproducibility / cross-task analysis) ---
+                "n_samples": int(len(per_item_scores)),
+                "score_std": float(per_item_scores.std()) if len(per_item_scores) > 1 else 0.0,
+                # items scored 0.5 = refusal / no clear answer / parse error
+                "ambiguous_or_error_count": int((per_item_scores == 0.5).sum()),
+                "attack_tag": self.attack_tag,
+                "round_tag": self.round_tag,
+                "risk_type_tag": self.risk_type_tag,
+                "llm_eval": self.llm_eval,
+                "evaluator_backend": evaluator_backend,
+                # the judge prompt/template name; null for programmatic tasks,
+                # which ignore the inherited default evaluator name.
+                "evaluator_prompt": (self.librai_evaluator_name or None) if self.llm_eval else None,
+                "judge_model": judge_model,
+                "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+            }
+
+            # --- per-subgroup breakdown: mean score by any known grouping column
+            # present in the data (e.g. category, bias_type, group). Tells you
+            # WHICH harm categories the model fails, not just the average. ---
+            GROUP_COLS = ["category", "bias_type", "group", "prompt_style",
+                          "risk_category", "injection_type", "subject", "domain", "type"]
+            subgroup = {}
+            for col in GROUP_COLS:
+                if col in self.data_df.columns:
+                    try:
+                        tmp = self.data_df[[col]].copy()
+                        tmp["_score"] = per_item_scores.values
+                        agg = tmp.groupby(col)["_score"].agg(["mean", "count"])
+                        subgroup[col] = {
+                            str(k): {"score": round(float(row["mean"]), 4), "n": int(row["count"])}
+                            for k, row in agg.iterrows()
+                        }
+                    except Exception as e:
+                        logger.debug(f"subgroup breakdown failed for column '{col}': {e}")
+            if subgroup:
+                result["subgroup_breakdown"] = subgroup
+
             with open(result_fpath, "w") as f:
-                json.dump({"task": self.task_name, "model": model_name, "score": final_score}, f, indent=2)
+                json.dump(result, f, indent=2)
 
             # 添加详细统计信息（如果评估文件存在）
             # Add detailed statistics (if the evaluation file exists)

@@ -30,9 +30,13 @@ class OpenAI_Client(BaseClient):
         if "seed" not in kwargs:
             kwargs["seed"] = 42  # default seed is 42
 
-        # Add default timeout to prevent hanging
+        # Per-request timeout and retry count, configurable via api_config
+        # (REQUEST_TIMEOUT / REQUEST_NUM_RETRIES). Defaults are generous so slow
+        # backends (e.g. a local model server on long prompts) don't get cut off
+        # at 60s and fail the task.
+        cfg = self.api_config or {}
         if "timeout" not in kwargs:
-            kwargs["timeout"] = 60  # 60 seconds timeout for LLM inference
+            kwargs["timeout"] = cfg.get("REQUEST_TIMEOUT", 120)
 
         # Convert system role to developer if needed
         if self.system_role_name == "developer":
@@ -40,7 +44,9 @@ class OpenAI_Client(BaseClient):
                 if msg["role"] == "system":
                     msg["role"] = "developer"
 
-        num_retries = kwargs.pop("num_retries", 1)
+        num_retries = kwargs.pop("num_retries", None)
+        if num_retries is None:
+            num_retries = cfg.get("REQUEST_NUM_RETRIES", 3)
         post_check_function = kwargs.pop("post_check_function", None)
 
         r = ""
@@ -75,9 +81,10 @@ class OpenAI_Client(BaseClient):
                     else:
                         logger.warning(f"Warning: Post check function failed. Response is {r}. Retrying {i} ...")
             except Exception as e:
-                logger.error("Error in LLM Client: ")
-                logger.error(traceback.format_exc())  # This will print the full stack trace
-                time.sleep(1)
+                logger.error(f"Error in LLM Client (attempt {i+1}/{num_retries}): {e}")
+                logger.debug(traceback.format_exc())  # full stack trace at debug level
+                if i < num_retries - 1:
+                    time.sleep(min(2 ** i, 10))  # exponential backoff, capped at 10s
 
         if r == "":
             logger.warning(f"{self.client_name} Client Warning: Empty response from LLM Client call.")

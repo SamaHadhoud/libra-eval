@@ -97,7 +97,7 @@ class LLMJudge_Client(BaseClient):
     def _call(self, messages, **kwargs):
         evaluator_name = kwargs.get("evaluator_name")
         assert evaluator_name is not None, "evaluator_name must be provided"
-        timeout = kwargs.get("timeout", 60)
+        timeout = kwargs.get("timeout") or self.api_config.get("REQUEST_TIMEOUT", 120)
 
         data = self._map_input(messages)
         system_prompt, user_prompt = build_prompt(evaluator_name, data)
