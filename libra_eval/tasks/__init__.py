@@ -17,6 +17,11 @@ from .DecodingTrust import (
 )
 from .DialogueSafety import DialogueSafety
 from .ConfAIde import ConfAIde
+from .ClearHarm import ClearHarm
+from .WMDP import WMDP
+from .ORBench import ORBenchHard1K, ORBenchToxic
+from .FalseReject import FalseReject
+from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import (
     CyberattackAssistance,
