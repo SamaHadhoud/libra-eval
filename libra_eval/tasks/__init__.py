@@ -22,6 +22,8 @@ from .WMDP import WMDP
 from .ORBench import ORBenchHard1K, ORBenchToxic
 from .FalseReject import FalseReject
 from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
+from .CoSafe import CoSafe
+from .DiaSafety import DiaSafety
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import (
     CyberattackAssistance,
