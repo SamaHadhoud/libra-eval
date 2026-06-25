@@ -9,6 +9,11 @@ from .base import BaseDirectRiskyTask
 class BOLD(BaseDirectRiskyTask):
     task_name = "bold"
     task_data_file = "BOLD.json"
+    # BOLD is an open-ended generation-bias probe: the model continues a prompt
+    # that mentions a group/occupation, and we check the continuation for bias.
+    # The generic harmful judge rarely fires on these (most continuations aren't
+    # "harmful"), so use a fairness/bias-sensitive judge instead. 1.0 = not biased.
+    librai_evaluator_name = "Local/Bias_Judge/V1"
     attack_tag = "direct_risky"
     round_tag = "single"
     risk_type_tag = "fairness"

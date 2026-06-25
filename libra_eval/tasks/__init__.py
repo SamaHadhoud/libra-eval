@@ -18,7 +18,10 @@ from .DecodingTrust import (
 from .DialogueSafety import DialogueSafety
 from .ConfAIde import ConfAIde
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
-from .CyberattackAssistance import CyberattackAssistance
+from .CyberattackAssistance import (
+    CyberattackAssistance,
+    CyberSecEval4Mitre,
+)
 from .PhysicalSafetyInstructions import (
     PhysicalSafetyInstructionsSafe,
     PhysicalSafetyInstructionsUnsafe,
@@ -40,7 +43,10 @@ from .StereoSet import StereoSet
 from .HateXplain import HateXplain
 from .LatentJailbreak import LatentJailbreak
 from .JailBench import JailBench
-from .JailbreakBench import JailbreakBench
+from .JailbreakBench import (
+    JailbreakBench,
+    JailbreakBenchBenign,
+)
 from .JBShield import JBShield
 from .GAJailbreak import GAJailbreak
 from .WildJailbreak import WildJailbreak
@@ -70,6 +76,7 @@ from .SafeText import SafeText
 from .HExPHI import HExPHI
 from .TruthfulQA import (
     TruthfulQA_mc1,
+    TruthfulQA_binary,  # Jan-2025 improved binary multiple-choice setting
     # TruthfulQA_mc2,  # evaluation need revise
     # TruthfulQA_gen  # similar to mc1 task, while the evaluation seems not always correct and meaningful
 )

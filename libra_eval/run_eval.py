@@ -13,7 +13,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from libra_eval.tasks import TASKS
-from libra_eval.llmclient import OpenAI_Client, Next_Client, Local_Client, LibrAI_Client, MODEL_LIST
+from libra_eval.llmclient import OpenAI_Client, Next_Client, Local_Client, LibrAI_Client, LLMJudge_Client, MODEL_LIST
 from libra_eval.utils.logger import logger
 
 
@@ -29,6 +29,10 @@ def eval():
     parser.add_argument("--rewrite_cache", action="store_true")
     parser.add_argument("--mode", type=str, default="full", choices=["inference", "evaluation", "full"],
                        help="Pipeline mode: 'inference' for model responses only, 'evaluation' for evaluation only, 'full' for complete pipeline")
+    parser.add_argument("--evaluator", type=str, default="llm", choices=["llm", "librai"],
+                       help="Judge backend: 'llm' runs the judges locally on an OpenAI-compatible model "
+                            "(EVAL_*/NEXT_* in api_config); 'librai' uses the hosted LibrAI Prompter endpoint "
+                            "(requires LIBRAI_API_KEY and an active prompter.librai.tech).")
     parser.add_argument("--generation_params", type=str, default=None,
                        help="JSON string of generation parameters (e.g., '{\"temperature\": 0.7, \"max_tokens\": 100}')")
     args = parser.parse_args()
@@ -65,10 +69,13 @@ def eval():
     else:
         raise ValueError("Client not support.")
 
-    # LibrAI evaluator client (used for all automated evaluations)
-    librai_client = LibrAI_Client(
-        api_key=api_config["LIBRAI_API_KEY"]
-    )
+    # Judge client used for all automated (LLM-as-judge) evaluations.
+    # 'llm' (default) runs the judges locally on an OpenAI-compatible model;
+    # 'librai' uses the legacy hosted Prompter endpoint.
+    if args.evaluator == "librai":
+        librai_client = LibrAI_Client(api_key=api_config["LIBRAI_API_KEY"])
+    else:
+        librai_client = LLMJudge_Client(api_config=api_config)
     llm_eval_client = librai_client
 
     if args.tasks == "all":

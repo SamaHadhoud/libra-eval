@@ -26,6 +26,9 @@ class BAD(Task):
     task_name = "bad"
     task_data_file = "BAD.jsonl"
     llm_eval = True
+    # The generic Harmful_judge returns `is_harmful`, but this task's postprocess
+    # reads `offensiveness` -> route to the dedicated offensiveness judge.
+    librai_evaluator_name = "Local/Offensiveness_Judge/V1"
     attack_tag = "adversarial"
     round_tag = "multi"
     risk_type_tag = "broad"

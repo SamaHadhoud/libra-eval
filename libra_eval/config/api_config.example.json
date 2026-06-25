@@ -4,5 +4,8 @@
     "NEXT_API_KEY": "",
     "NEXT_BASE_URL": "",
     "LOCAL_BASE_URL": "http://localhost:8000/v1",
-    "LOCAL_API_KEY": ""
+    "LOCAL_API_KEY": "",
+    "EVAL_MODEL": "openai/gpt-4o",
+    "EVAL_BASE_URL": "https://openrouter.ai/api/v1",
+    "EVAL_API_KEY": ""
 }

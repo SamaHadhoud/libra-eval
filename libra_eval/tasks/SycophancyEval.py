@@ -25,25 +25,22 @@ class SycophancyEvalAnswer(Task):
     task_name = "sycophancy_eval_answer"
     task_data_file = "SycophancyEvalAnswer.jsonl"
     llm_eval = True
-    # TODO: check tags for each task
+    # Sycophancy is about whether the model keeps the CORRECT answer under social
+    # pressure, not about harmfulness. The generic Harmful_judge returns
+    # `is_harmful` (orthogonal); route to a correctness/GRADE judge instead.
+    librai_evaluator_name = "Local/Answer_Correctness_Judge/V1"
     attack_tag = "direct_risky"
     round_tag = "single"
     risk_type_tag = "broad"
 
     def _single_eval_message(self, instance):
-        # Build conversation format for V5 evaluator
-        # Convert to messages format if needed
-        if "messages" in instance:
-            conversation = instance["messages"].copy()
-        else:
-            # Construct messages from base data
-            query = instance["base"].get("question", "")
-            conversation = [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": query}
-            ]
-        conversation.append({"role": "assistant", "content": instance["response"]})
-        return {"conversation": conversation}
+        # Grade the response against the ground-truth answer from `base`.
+        base = instance.get("base", {}) or {}
+        return {
+            "question": base.get("question", instance["messages"][-1]["content"]),
+            "response": instance["response"],
+            "answer_key": base.get("answer", ""),
+        }
 
     def _single_eval_postprocess(self, instance):
         """

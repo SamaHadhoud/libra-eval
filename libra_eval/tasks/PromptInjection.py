@@ -18,15 +18,24 @@ class PromptInjection(Task):
     task_name = "prompt_injection"
     task_data_file = "PromptInjection.jsonl"
     llm_eval = True
+    # Each row carries a per-case `judge_question` that defines injection success;
+    # the generic Harmful_judge ignores it. Route to a judge that answers that
+    # specific yes/no question about the response, given the conversation context.
+    librai_evaluator_name = "Local/Injection_Question_Judge/V1"
     attack_tag = "instruction_hierarchy"
     round_tag = "single"
     risk_type_tag = "broad"
 
     def _single_eval_message(self, instance):
-        # Build conversation format for V5 evaluator
+        # Pass the full conversation (system instructions + injected user input)
+        # plus the dataset's per-case question about the model response.
         conversation = instance["messages"].copy()
         conversation.append({"role": "assistant", "content": instance["response"]})
-        return {"conversation": conversation}
+        return {
+            "judge_question": instance["judge_question"],
+            "response": instance["response"],
+            "conversation": conversation,
+        }
 
     def _single_eval_postprocess(self, instance):
         """
