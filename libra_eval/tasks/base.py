@@ -11,6 +11,53 @@ ATTACK_TAGS = {"direct_risky", "instruction_hierarchy", "adversarial", "over_sen
 ROUND_TAGS = {"single", "multi"}
 RISK_TYPE_TAGS = {"broad", "fairness", "toxicity", "value", "privacy", "cybersecurity", "misinformation", "ethics", "general"}
 
+# What each task's score actually measures (its axis). Written into every result
+# as `score_meaning` so downstream aggregation only averages comparable tasks.
+# All scores are oriented so higher = more desirable (higher_is_better = True);
+# but a high "safety_refusal_rate" and a high "quality" are NOT the same axis,
+# and "safety_refusal_rate" vs "compliance_rate" are in tension (a refuse-all
+# model maxes the former and tanks the latter). Tasks not listed fall back to
+# their base class: BaseOverRefusalTask -> compliance_rate, BaseGeneralTask ->
+# quality, everything else -> safety_refusal_rate.
+#   safety_refusal_rate  : refused / did not produce harmful content
+#   leak_resistance      : did not leak a secret / PII
+#   compliance_rate      : answered a benign prompt (no over-refusal)
+#   behaviour_match      : answered-if-safe AND refused-if-unsafe (XSTest)
+#   accuracy             : produced the correct answer
+#   stereotype_avoidance : did not endorse a stereotype / biased continuation
+#   value_alignment      : chose the moral / ethical option
+#   sycophancy_resistance: kept the correct answer under social pressure
+#   quality              : higher answer quality (capability, NOT safety)
+SCORE_MEANING = {
+    "gandalf_ignore_instructions": "leak_resistance",
+    "prompt_extraction_robustness": "leak_resistance",
+    "prompthijackingrobustness": "leak_resistance",
+    "prompt_injection": "leak_resistance",
+    "personal_info_leak": "leak_resistance",
+    "personalinfoleak_few_shot": "leak_resistance",
+    "personalinfoleak_context": "leak_resistance",
+    "personalinfoleak_zero_shot": "leak_resistance",
+    "decoding_trust_privacy": "leak_resistance",
+    "confaide": "leak_resistance",
+    "truthful_qa_mc1": "accuracy",
+    "truthful_qa_mc2": "accuracy",
+    "truthful_qa_binary": "accuracy",
+    "dialogue_safety": "accuracy",
+    "safe_text": "accuracy",
+    "crows_pairs": "stereotype_avoidance",
+    "stereoset": "stereotype_avoidance",
+    "decoding_trust_stereotype": "stereotype_avoidance",
+    "hypothesis_stereotypes": "stereotype_avoidance",
+    "bold": "stereotype_avoidance",
+    "moral_choice": "value_alignment",
+    "decoding_trust_machine_ethics": "value_alignment",
+    "sycophancy_eval_answer": "sycophancy_resistance",
+    "sycophancy_eval_are_you_sure": "sycophancy_resistance",
+    "sycophancy_eval_feedback": "sycophancy_resistance",
+    "sycophancy_eval_mimicry": "sycophancy_resistance",
+    "xstest": "behaviour_match",
+}
+
 
 class Task(ABC):
     task_name = None
@@ -240,6 +287,18 @@ class Task(ABC):
             #     - "librai_prompter": the hosted prompter.librai.tech evaluator
             #   evaluator_prompt: the judge prompt/template name (routing key)
             #   judge_model: the model that executed the judge prompt (local_llm only)
+            # What this task's score measures (axis), so downstream code only
+            # averages comparable tasks. Falls back to base-class default.
+            base_name = type(self).task_name
+            if base_name in SCORE_MEANING:
+                score_meaning = SCORE_MEANING[base_name]
+            elif isinstance(self, BaseOverRefusalTask):
+                score_meaning = "compliance_rate"
+            elif isinstance(self, BaseGeneralTask):
+                score_meaning = "quality"
+            else:
+                score_meaning = "safety_refusal_rate"
+
             if not self.llm_eval:
                 evaluator_backend, judge_model = "programmatic", None
             else:
@@ -253,6 +312,9 @@ class Task(ABC):
                 "task": self.task_name,
                 "model": model_name,
                 "score": final_score,
+                # what the score measures + its direction (see SCORE_MEANING)
+                "score_meaning": score_meaning,
+                "higher_is_better": True,
                 # --- run metadata (reproducibility / cross-task analysis) ---
                 "n_samples": int(len(per_item_scores)),
                 "score_std": float(per_item_scores.std()) if len(per_item_scores) > 1 else 0.0,
