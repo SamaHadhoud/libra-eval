@@ -24,6 +24,12 @@ from .FalseReject import FalseReject
 from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
 from .CoSafe import CoSafe
 from .DiaSafety import DiaSafety
+from .RedBenchSubsets import (
+    CatQA,
+    ForbiddenQuestions,
+    GPTFuzzer,
+    MedSafetyBench,
+)
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import (
     CyberattackAssistance,
