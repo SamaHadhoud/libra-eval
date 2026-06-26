@@ -10,7 +10,7 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 
 ---
 
-## Coverage scorecard (52 active datasets today)
+## Coverage scorecard (65 active datasets — 13 **(new)** this round)
 
 | Risk area | Status | Priority action |
 |---|---|---|
@@ -21,13 +21,13 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 | Social bias / fairness | 🟨 Good, EN-only (CrowS-Pairs, StereoSet, BOLD, DICES350) | add BBQ, DiscrimEval |
 | Privacy / PII | 🟨 OK (ConfAIde, PersonalInfoLeak, DecodingTrust-Privacy) | maintain |
 | Misinfo / sycophancy | 🟨 OK (TruthfulQA-mc1, SP-Misconceptions, Sycophancy ×3) | maintain |
-| **CBRN / dangerous knowledge** | 🟥 **none active** (ClearHarm, WMDP present, not enabled) | **P0** |
-| **Over-refusal / oversensitivity** | 🟥 **weak** (XSTest only) | **P0** |
+| **CBRN / dangerous knowledge** | ✅ **(new)** active (WMDP, ClearHarm enabled) | maintain |
+| **Over-refusal / oversensitivity** | ✅ **(new)** Good (XSTest, OR-Bench, FalseReject, CoCoNot-contrast) | maintain |
 | **Multilingual safety** | 🟥 **weak** (Chinese only: RuozhiBench, JailBench) | **P0** |
 | **Value alignment / ethics** | 🟥 **narrow** (MoralChoice, DecodingTrust-ME) | **P1** |
 | Comprehensive / taxonomic | 🟨 scattered | **P1** |
-| Multi-turn dialogue safety | 🟨 partial (AnthropicRedTeam, BAD, DialogueSafety) | **P1** |
-| Domain-specific (medical) | 🟥 none | **P2** |
+| Multi-turn dialogue safety | ✅ **(new)** Good (AnthropicRedTeam, BAD, DialogueSafety, CoSafe, DiaSafety) | maintain |
+| Domain-specific (medical) | ✅ **(new)** active (MedSafetyBench) | maintain |
 
 ---
 
@@ -37,7 +37,7 @@ Slot the strong ones into the gaps below.
 - **IndicSafe** 🔴 ⭐ — *arXiv 2026* — first safety benchmark for **12 Indic languages**, 6,000 culturally-grounded prompts (caste/religion/gender/health/politics); 12.8% cross-language agreement. → multilingual gap. `arXiv:2603.17915`
 - **RedBench** 🔴 ⭐ — *arXiv 2026* — "universal" comprehensive red-teaming dataset. → taxonomic breadth. `arXiv:2601.03699`
 - **TeleAI-Safety** 🔴 ⭐ — *arXiv 2025/12* — comprehensive jailbreaking benchmark (attacks + defenses). `arXiv:2512.05485`
-- **FalseReject** 🔴 ⭐⭐ — *COLM 2025* — large graph-generated over-refusal set w/ structured reasoning; strong for reasoning models. `arXiv:2505.08054`
+- **FalseReject** ✅ **(new)** — *COLM 2025* — large graph-generated over-refusal set w/ structured reasoning; strong for reasoning models. Task `false_reject`. `arXiv:2505.08054`
 - **CASE-Bench** 🔴 ⭐⭐ — *ICML 2025* — context-aware safety: same request, refusal should differ by context. `arXiv:2501.14940`
 - **SEA-SafeguardBench** 🔴 ⭐ — *arXiv 2025* — culturally-grounded SE-Asian safety. `arXiv:2512.05501`
 - **Taiwan Safety Benchmark** 🔴 ⭐ — *arXiv 2026* — Taiwanese-Mandarin safety. `arXiv:2603.07286`
@@ -47,14 +47,14 @@ Slot the strong ones into the gaps below.
 
 ## P0 — Critical gaps (top-venue / recent picks first)
 
-### CBRN / dangerous knowledge — zero active coverage, data already in repo
-- [ ] **WMDP** 🟢 ⭐⭐⭐ — *ICML 2024* — hazardous bio/chem/cyber MCQ (3,668). Frontier-policy standard. Add `from .WMDP import WMDP`.
-- [ ] **ClearHarm** 🟢 ⭐ — *arXiv 2024 (FAR AI)* — CBRN/bio-chem harmful instructions (179). Add `from .ClearHarm import ClearHarm`.
+### CBRN / dangerous knowledge — ✅ **(new)** now active
+- [x] **WMDP** ✅ **(new)** 🟢 ⭐⭐⭐ — *ICML 2024* — hazardous bio/chem/cyber MCQ (3,668). Frontier-policy standard. Task `wmdp` (programmatic MCQ, scored 1−accuracy → `hazardous_knowledge_avoidance`).
+- [x] **ClearHarm** ✅ **(new)** 🟢 ⭐ — *arXiv 2024 (FAR AI)* — CBRN/bio-chem harmful instructions (179). Task `clearharm`.
 
-### Over-refusal — only XSTest today
-- [ ] **OR-Bench** 🔴 ⭐⭐⭐ — *ICML 2025* — 80K over-refusal prompts + ~1K hard subset. Standard large over-refusal benchmark. `github.com/justincui03/or-bench`
-- [ ] **FalseReject** 🔴 ⭐⭐ — *COLM 2025* — recent, reasoning-aware over-refusal (see Newest). `arXiv:2505.08054`
-- [ ] **CoCoNot** 🔴 ⭐⭐ — *COLM 2024 (AI2)* — 12,478 (non)compliance cases. `github.com/allenai/noncompliance`
+### Over-refusal — ✅ **(new)** expanded beyond XSTest
+- [x] **OR-Bench** ✅ **(new)** 🔴 ⭐⭐⭐ — *ICML 2025* — over-refusal benchmark. Tasks `or_bench_hard_1k` (hard-1k, over-refusal) + `or_bench_toxic` (toxic control, should-refuse). `github.com/justincui03/or-bench`
+- [x] **FalseReject** ✅ **(new)** 🔴 ⭐⭐ — *COLM 2025* — reasoning-aware over-refusal. Task `false_reject` (test split, 1,187). `arXiv:2505.08054`
+- [x] **CoCoNot** ✅ **(new)** 🔴 ⭐⭐ — *COLM 2024 (AI2)* — (non)compliance cases. Tasks `coconot_original` (should-refuse, custom category-aware judge → `appropriate_noncompliance`) + `coconot_contrast` (should-comply). `github.com/allenai/noncompliance`
 
 ### Multilingual safety — currently English + a little Chinese
 - [ ] **PolygloToxicityPrompts** 🔴 ⭐⭐ — *COLM 2024* — 425K toxic prompts, 17 languages. `hf/ToxicityPrompts/PolygloToxicityPrompts`
@@ -67,10 +67,10 @@ Slot the strong ones into the gaps below.
 ## P1 — Important breadth & depth
 
 ### Comprehensive / taxonomic harmful (adds category labels for per-risk analysis)
-- [ ] **WildGuardMix** 🔴 ⭐⭐⭐ — *NeurIPS 2024 D&B* — 86,759 prompt+response (harmful/benign/refusal); de-facto moderation benchmark. `hf/allenai/wildguardmix`
+- [ ] **WildGuardMix** ⛔ *blocked: gated HF dataset, needs `HF_TOKEN` + access request* — 🔴 ⭐⭐⭐ — *NeurIPS 2024 D&B* — 86,759 prompt+response (harmful/benign/refusal); de-facto moderation benchmark. `hf/allenai/wildguardmix`
 - [ ] **SALAD-Bench** 🔴 ⭐⭐⭐ — *ACL 2024 Findings* — 21K harmful prompts, hierarchical taxonomy. `github.com/OpenSafetyLab/SALAD-BENCH`
 - [ ] **ALERT** 🔴 ⭐⭐ — *2024* — 44,800 red-team prompts, fine-grained taxonomy. `github.com/Babelscape/ALERT`
-- [ ] **RedBench** 🔴 ⭐ — *arXiv 2026* — universal red-teaming dataset (newest). `arXiv:2601.03699`
+- [~] **RedBench** ⚠️ *not added wholesale — it re-bundles ~37 benchmarks, most already in repo (would double-count). Cherry-picked the non-overlapping subsets instead: `catqa`, `forbidden_questions`, `gptfuzzer`, `med_safety_bench` ✅ **(new)**. SGXSTest skipped (RedBench strips its safe/unsafe labels; labeled source gated).* 🔴 ⭐ — *arXiv 2026* — `arXiv:2601.03699`
 
 ### Value alignment / ethics (currently narrow)
 - [ ] **ETHICS** 🔴 ⭐⭐⭐ — *ICLR 2021* — 134K moral-judgment items; classic, highly cited. `github.com/hendrycks/ethics`
@@ -83,16 +83,18 @@ Slot the strong ones into the gaps below.
 - [ ] **RealToxicityPrompts** 🟡 ⭐⭐⭐ — *EMNLP Findings 2020* — 99,441 toxicity prompts. In repo; add `messages` override + import.
 
 ### Multi-turn dialogue safety
-- [ ] **DiaSafety** 🔴 ⭐⭐ — *ACL Findings 2022* — 11,492 context-sensitive dialogue-safety items. `github.com/thu-coai/DiaSafety`
-- [ ] **CoSafe** 🔴 ⭐⭐ — *EMNLP 2024* — 1,400 multi-turn dialogue-safety items. `github.com/ErxinYu/CoSafe-Dataset`
+- [x] **DiaSafety** ✅ **(new)** 🔴 ⭐⭐ — *ACL Findings 2022* — context-sensitive dialogue safety. Task `diasafety` (1,095 test, generative + harmful judge; distinct from ParlAI `dialogue_safety`). `github.com/thu-coai/DiaSafety`
+- [x] **CoSafe** ✅ **(new)** 🔴 ⭐⭐ — *EMNLP 2024* — 1,400 multi-turn dialogue-safety items. Task `cosafe` (5-turn, coreference attack, adversarial). `github.com/ErxinYu/CoSafe-Dataset`
 
 ---
 
 ## P2 — Specialized & remaining recent
 
-- [ ] **MedSafetyBench** 🔴 ⭐⭐ — *NeurIPS 2024 D&B* — 1,800 medical-safety prompts (only domain-specific option). `github.com/AI4LIFE-GROUP/med-safety-bench`
+- [x] **MedSafetyBench** ✅ **(new)** 🔴 ⭐⭐ — *NeurIPS 2024 D&B* — medical-safety prompts (only domain-specific option). Task `med_safety_bench` (900, via RedBench compilation). `github.com/AI4LIFE-GROUP/med-safety-bench`
 - [ ] **CASE-Bench** 🔴 ⭐⭐ — *ICML 2025* — context-aware safety (see Newest). `arXiv:2501.14940`
-- [ ] **CatQA** 🔴 ⭐⭐ — *ACL 2024* — 550 categorical harmful, EN/ZH/VI. `github.com/declare-lab/resta`
+- [x] **CatQA** ✅ **(new)** 🔴 ⭐⭐ — *ACL 2024* — 550 categorical harmful. Task `catqa` (via RedBench compilation, EN). `github.com/declare-lab/resta`
+- [x] **ForbiddenQuestions** ✅ **(new)** 🔴 ⭐⭐ — *CCS 2024 ('Do Anything Now')* — 390 disallowed-scenario prompts. Task `forbidden_questions` (via RedBench). `arXiv:2308.03825`
+- [x] **GPTFuzzer** ✅ **(new)** 🔴 ⭐⭐ — *2023* — 100 auto-generated jailbreak prompts. Task `gptfuzzer` (adversarial, via RedBench). `arXiv:2309.10253`
 - [ ] **AttaQ** 🔴 ⭐ — *EMNLP-BlackboxNLP 2023* — 1,402 adversarial harmful questions. `hf/ibm/AttaQ`
 - [ ] **S-Eval** 🔴 ⭐ — *arXiv 2024* — ~20K EN+ZH comprehensive taxonomy + attacks. `github.com/IS2Lab/S-Eval`
 - [ ] **SEA-SafeguardBench / Taiwan Safety Benchmark / StealthGraph / TeleAI-Safety** 🔴 ⭐ — *2025–2026* — newest regional/specialized sets (see Newest).

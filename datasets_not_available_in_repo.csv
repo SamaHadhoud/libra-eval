@@ -12,14 +12,10 @@ PINT v2,Trust/Info (Prompt Injection),Detection,Single,Multilingual,"4,314",PINT
 HarmEval,Physical/Public Safety – Criminal,—,—,English,550,github.com/NeuralSentinel/SafeInfer
 ImplicitBias,Bias,—,—,English,"33,600",github.com/baixuechunzi/llm-implicit-bias
 DifferenceAwareness,Bias,—,—,English,"16,000",github.com/Angelina-Wang/difference_awareness
-MedSafetyBench,Narrow safety,—,—,English,"1,800",github.com/AI4LIFE-GROUP/med-safety-bench
 PRISM,Value alignment,—,—,English,"8,011",github.com/HannahKirk/prism-alignment
 WildGuardMix,Physical/Public Safety – Criminal,—,—,English,"86,759",hf/allenai/wildguardmix
 SGBench,Physical/Public Safety – Criminal,—,—,English,"1,442",github.com/MurrayTom/SG-Bench
-CoCoNot,Narrow safety,—,—,English,"12,478",github.com/allenai/noncompliance
 MultiTP,Value alignment,—,—,Multilingual (106+),"107,000",github.com/causalNLP/moralmachine
-ForbiddenQuestions,Physical Safety – Criminal/Violence/Sexual/Child,—,—,English,390,github.com/verazuo/jailbreak_llms
-CoSafe,Discrimination/Hate & Toxicity,—,—,English,"1,400",github.com/ErxinYu/CoSafe-Dataset
 SoFa,Discrimination/Bias,—,—,English,"1,490,120",hf/copenlu/sofa
 ArabicAdvBench,Broad safety,—,—,Arabic,520,github.com/SecureDL/arabic_jailbreak
 AyaRedTeaming,Physical Safety – Criminal,—,—,"Arabic, English, +6","7,419",hf/CohereForAI/aya_redteaming
@@ -34,15 +30,12 @@ CALM,Bias,—,—,English,"78,400",github.com/vipulgupta1011/CALM
 CHiSafetyBench,Physical & Public Safety,—,—,Chinese,"1,861",github.com/UnicomAI/UnicomBenchmark
 PHTest,Trust/Info – Deception,—,—,English,"3,260",github.com/umd-huang-lab/FalseRefusal
 SafetyBench,Physical Safety – Illegal Activities,—,—,"English, Chinese","11,435",github.com/thu-coai/SafetyBench
-CatQA,Broad safety,—,—,"EN, ZH, VI",550,github.com/declare-lab/resta
 KorNAT,Value alignment,—,—,"English, Korean","10,000",hf/datumo/KorNAT
 CMoralEval,Value alignment,—,—,Chinese,"30,388",github.com/tjunlp-lab/CMoralEval
 XSafety,Physical & Public Safety,—,—,10 languages,"28,000",github.com/Jarviswang94/Multilingual_safety_benchmark
 SaladBench,Physical Safety – Criminal,—,—,English,"21,000",github.com/OpenSafetyLab/SALAD-BENCH
 MMHB,Bias,—,—,8 languages,"5,754,444",github.com/facebookresearch/ResponsibleNLP (mmhb)
-GPTFuzzer,Physical & Public Safety / Trust & Info,—,—,English,100,github.com/sherdencooper/GPTFuzz
 ALERT,Physical Safety – Criminal,—,—,English,"44,800",github.com/Babelscape/ALERT
-ORBench,Trust/Info – Deception/Over-refusal,—,—,English,"80,000",github.com/justincui03/or-bench
 Flames,Physical & Public Safety,—,—,Chinese,"2,251",github.com/AIFlames/Flames
 SEval,Physical Safety / Discrimination / Trust & Info,—,—,"English, Chinese","20,000",github.com/IS2Lab/S-Eval
 WorldValuesBench,Value alignment,—,—,English,"21,492,393",github.com/Demon702/WorldValuesBench
@@ -76,7 +69,6 @@ MoralExceptQA,Value alignment,—,—,English,148,github.com/feradauto/MoralCoT
 FrenchCrowSPairs,Bias,—,—,French,"1,679",gitlab.inria.fr/french-crows-pairs
 SaFeRDialogues,Physical & Public Safety / Discrimination,—,—,English,"7,881",github.com/facebookresearch/ParlAI (saferdialogues)
 SafetyKit,Physical & Public Safety / Discrimination,—,—,English,990,github.com/facebookresearch/ParlAI (safety_bench)
-DiaSafety,Physical Safety / Discrimination / Trust & Info,—,—,English,"11,492",github.com/thu-coai/DiaSafety
 JiminyCricket,Trust/Info – Deception,—,—,English,"1,838",github.com/hendrycks/jiminy-cricket
 BiasOutOfTheBox,Bias,—,—,English,228,github.com/oxai/intersectional_gpt2
 EthnicBias,Bias,—,—,6 languages,60 templates,github.com/jaimeenahn/ethnic_bias
