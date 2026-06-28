@@ -10,22 +10,22 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 
 ---
 
-## Coverage scorecard (67 active datasets — 15 **(new)** added recently)
+## Coverage scorecard (~70 active datasets — 20 **(new)** added recently; WMDP & Chinese-only sets since excluded)
 
 | Risk area | Status | Priority action |
 |---|---|---|
 | Direct harmful / illicit | ✅ Strong (AdvBench, HarmBench, BeaverTails, SORRY-Bench, DoNotAnswer…) | maintain |
 | Jailbreak / adversarial | ✅ Strong (DAN, JailbreakBench, JailBench, WildJailbreak, librai_adv…) | maintain |
 | Prompt injection / extraction | ✅ Strong (PromptInjection, Tensor-Trust, Gandalf, HackAPrompt) | maintain |
-| Toxicity / hate | 🟨 Good (ToxiGen, ToxicChat, HateXplain) | add RealToxicityPrompts |
-| Social bias / fairness | 🟨 Good, EN-only (CrowS-Pairs, StereoSet, BOLD, DICES350) | add BBQ, DiscrimEval |
+| Toxicity / hate | ✅ **(new)** Strong (ToxiGen, ToxicChat, HateXplain, RealToxicityPrompts) | maintain |
+| Social bias / fairness | ✅ **(new)** Strong (CrowS-Pairs, StereoSet, BOLD, DICES350, BBQ) | optional: DiscrimEval |
 | Privacy / PII | 🟨 OK (ConfAIde, PersonalInfoLeak, DecodingTrust-Privacy) | maintain |
 | Misinfo / sycophancy | 🟨 OK (TruthfulQA-mc1, SP-Misconceptions, Sycophancy ×3) | maintain |
-| **CBRN / dangerous knowledge** | ✅ **(new)** active (WMDP, ClearHarm enabled) | maintain |
+| **CBRN / dangerous knowledge** | ✅ active (ClearHarm; WMDP excluded as a knowledge-probe, not a refusal test) | maintain |
 | **Over-refusal / oversensitivity** | ✅ **(new)** Good (XSTest, OR-Bench, FalseReject, CoCoNot-contrast) | maintain |
-| **Multilingual safety** | 🟥 **weak** (Chinese only: RuozhiBench, JailBench) | **P0** |
-| **Value alignment / ethics** | 🟥 **narrow** (MoralChoice, DecodingTrust-ME) | **P1** |
-| Comprehensive / taxonomic | 🟨 scattered | **P1** |
+| **Multilingual safety** | ✅ **(new)** Good (AyaRedTeaming 8-lang, XSafety 10-lang) | maintain |
+| **Value alignment / ethics** | 🟥 **narrow** (MoralChoice, DecodingTrust-ME) | **P1** (ETHICS, GlobalOpinionQA) |
+| Comprehensive / taxonomic | ✅ **(new)** Good (SALAD-Bench 3-level taxonomy, CatQA, ForbiddenQuestions) | maintain |
 | Multi-turn dialogue safety | ✅ **(new)** Good (AnthropicRedTeam, BAD, DialogueSafety, CoSafe, DiaSafety) | maintain |
 | Domain-specific (medical/finance/law/edu) | ✅ **(new)** active (MedSafetyBench, StealthGraph) | maintain |
 
@@ -58,8 +58,8 @@ Slot the strong ones into the gaps below.
 
 ### Multilingual safety — currently English + a little Chinese
 - [ ] **PolygloToxicityPrompts** 🔴 ⭐⭐ — *COLM 2024* — 425K toxic prompts, 17 languages. `hf/ToxicityPrompts/PolygloToxicityPrompts`
-- [ ] **XSafety** 🔴 ⭐⭐ — *ACL 2024* — 28K, 10 languages, 14 categories. `github.com/Jarviswang94/Multilingual_safety_benchmark`
-- [ ] **AyaRedTeaming** 🔴 ⭐⭐ — *Cohere, 2024* — 7,419 human-written red-team prompts, 8 languages incl. Arabic. `hf/CohereForAI/aya_redteaming`
+- [x] **XSafety** ✅ **(new)** 🔴 ⭐⭐ — *ACL 2024* — 25,599 prompts, 10 languages, ~14 categories. Task `xsafety` (language + category subgroups). `github.com/Jarviswang94/Multilingual_safety_benchmark`
+- [x] **AyaRedTeaming** ✅ **(new)** 🔴 ⭐⭐ — *Cohere, 2024* — 7,419 human-written red-team prompts, 8 languages incl. Arabic. Task `aya_redteaming`. `hf/CohereForAI/aya_redteaming`
 - [ ] **IndicSafe** 🔴 ⭐ — *arXiv 2026* — 12 Indic languages, culturally grounded (newest). `arXiv:2603.17915`
 
 ---
@@ -68,7 +68,7 @@ Slot the strong ones into the gaps below.
 
 ### Comprehensive / taxonomic harmful (adds category labels for per-risk analysis)
 - [ ] **WildGuardMix** ⛔ *blocked: gated HF dataset, needs `HF_TOKEN` + access request* — 🔴 ⭐⭐⭐ — *NeurIPS 2024 D&B* — 86,759 prompt+response (harmful/benign/refusal); de-facto moderation benchmark. `hf/allenai/wildguardmix`
-- [ ] **SALAD-Bench** 🔴 ⭐⭐⭐ — *ACL 2024 Findings* — 21K harmful prompts, hierarchical taxonomy. `github.com/OpenSafetyLab/SALAD-BENCH`
+- [x] **SALAD-Bench** ✅ **(new)** 🔴 ⭐⭐⭐ — *ACL 2024 Findings* — 21,318 harmful prompts, 3-level taxonomy. Task `salad_bench`. `hf/OpenSafetyLab/Salad-Data`
 - [ ] **ALERT** 🔴 ⭐⭐ — *2024* — 44,800 red-team prompts, fine-grained taxonomy. `github.com/Babelscape/ALERT`
 - [~] **RedBench** ⚠️ *not added wholesale — it re-bundles ~37 benchmarks, most already in repo (would double-count). Cherry-picked the non-overlapping subsets instead: `catqa`, `forbidden_questions`, `gptfuzzer`, `med_safety_bench` ✅ **(new)**. SGXSTest skipped (RedBench strips its safe/unsafe labels; labeled source gated).* 🔴 ⭐ — *arXiv 2026* — `arXiv:2601.03699`
 
@@ -77,10 +77,10 @@ Slot the strong ones into the gaps below.
 - [ ] **GlobalOpinionQA** 🔴 ⭐⭐⭐ — *ICML 2023 (Anthropic)* — 2,556 cross-national opinion items. `hf/Anthropic/llm_global_opinions`
 
 ### Bias depth & MCQ safety
-- [ ] **BBQ** 🟢 ⭐⭐⭐ — *ACL Findings 2022* — social-bias QA (58,492). In repo; uncomment import.
+- [x] **BBQ** ✅ **(new)** 🟢 ⭐⭐⭐ — *ACL Findings 2022* — social-bias QA (58,492). Task `bbq` (enabled; stereotype_avoidance). 
 - [ ] **SafetyBench** 🔴 ⭐⭐⭐ — *ACL 2024* — 11,435 MCQ safety items (EN+ZH). `github.com/thu-coai/SafetyBench`
 - [ ] **DiscrimEval** 🔴 ⭐⭐ — *Anthropic 2023* — 9,450 discrimination decision scenarios. `hf/Anthropic/discrim-eval`
-- [ ] **RealToxicityPrompts** 🟡 ⭐⭐⭐ — *EMNLP Findings 2020* — 99,441 toxicity prompts. In repo; add `messages` override + import.
+- [x] **RealToxicityPrompts** ✅ **(new)** 🟡 ⭐⭐⭐ — *EMNLP Findings 2020* — 99,441 toxicity prompts. Task `realtoxicityprompts` (messages override; continuation framing). 
 
 ### Multi-turn dialogue safety
 - [x] **DiaSafety** ✅ **(new)** 🔴 ⭐⭐ — *ACL Findings 2022* — context-sensitive dialogue safety. Task `diasafety` (1,095 test, generative + harmful judge; distinct from ParlAI `dialogue_safety`). `github.com/thu-coai/DiaSafety`
