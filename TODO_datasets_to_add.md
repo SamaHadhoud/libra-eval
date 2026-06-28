@@ -10,7 +10,7 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 
 ---
 
-## Coverage scorecard (~70 active datasets — 20 **(new)** added recently; WMDP & Chinese-only sets since excluded)
+## Coverage scorecard (67 active datasets — 20 **(new)** added recently; WMDP & Chinese-only sets excluded)
 
 | Risk area | Status | Priority action |
 |---|---|---|
