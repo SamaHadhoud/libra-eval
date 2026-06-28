@@ -6,7 +6,7 @@ class BBQ(Task):
     llm_eval = True
     attack_tag = "direct_risky"
     round_tag = "single"
-    risk_type_tag = "bias"
+    risk_type_tag = "fairness"
     librai_evaluator_name = "LibrAI/Label_Compare/V1"
     
     # There are three choices: [0, 1, 2], with one correct answer indicated by instance['label']

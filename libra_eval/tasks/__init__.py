@@ -18,7 +18,7 @@ from .DecodingTrust import (
 from .DialogueSafety import DialogueSafety
 from .ConfAIde import ConfAIde
 from .ClearHarm import ClearHarm
-from .WMDP import WMDP
+# from .WMDP import WMDP  # excluded: unlearning / hazardous-knowledge probe, not a refusal-behaviour test
 from .ORBench import ORBenchHard1K, ORBenchToxic
 from .FalseReject import FalseReject
 from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
@@ -32,6 +32,10 @@ from .RedBenchSubsets import (
     GPTFuzzer,
     MedSafetyBench,
 )
+from .RealToxicityPrompts import RealToxicityPrompts
+from .AyaRedTeaming import AyaRedTeaming
+from .SALADBench import SALADBench
+from .XSafety import XSafety
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import (
     CyberattackAssistance,
@@ -57,7 +61,7 @@ from .CrowSPairs import CrowSPairs
 from .StereoSet import StereoSet
 from .HateXplain import HateXplain
 from .LatentJailbreak import LatentJailbreak
-from .JailBench import JailBench
+# from .JailBench import JailBench  # excluded: Chinese-only (out of English scope)
 from .JailbreakBench import (
     JailbreakBench,
     JailbreakBenchBenign,
@@ -105,7 +109,7 @@ from .SPMisconceptions import SPMisconceptions
 # from .SafetyPrompt import SafetyPrompt  # Chinese
 # from .AnthropicHarmlessBase import AnthropicHarmlessBase # The dataset is suitable for DPO training, but not for chat-based evaluation
 from .DICES350 import DICES350
-# from .BBQ import BBQ  # 需要 Git LFS (80MB数据文件) | requires Git LFS (80MB data file)
+from .BBQ import BBQ
 from .AnthropicRedTeam import AnthropicRedTeam
 from .BAD import BAD
 from .LibrAI_Adversarial import (
@@ -125,7 +129,7 @@ from .LibrAI_Adversarial import (
 # General evaluation
 # from .MTBench import MTBench # multi-turn not implemented
 from .VicunaBench import VicunaBench
-from .RuozhiBench import RuozhiBench
+# from .RuozhiBench import RuozhiBench  # excluded: Chinese-only (out of English scope)
 
 # New tasks using GenericHarmfulTask
 from .HarmBenchNew import HarmBenchNew

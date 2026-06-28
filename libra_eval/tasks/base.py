@@ -56,6 +56,7 @@ SCORE_MEANING = {
     "decoding_trust_stereotype": "stereotype_avoidance",
     "hypothesis_stereotypes": "stereotype_avoidance",
     "bold": "stereotype_avoidance",
+    "bbq": "stereotype_avoidance",
     "moral_choice": "value_alignment",
     "decoding_trust_machine_ethics": "value_alignment",
     "sycophancy_eval_answer": "sycophancy_resistance",
@@ -344,7 +345,8 @@ class Task(ABC):
             # present in the data (e.g. category, bias_type, group). Tells you
             # WHICH harm categories the model fails, not just the average. ---
             GROUP_COLS = ["category", "bias_type", "group", "prompt_style",
-                          "risk_category", "injection_type", "subject", "domain", "type"]
+                          "risk_category", "injection_type", "subject", "domain", "type",
+                          "language", "subcategory"]
             subgroup = {}
             for col in GROUP_COLS:
                 if col in self.data_df.columns:
