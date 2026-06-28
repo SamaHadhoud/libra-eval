@@ -10,7 +10,7 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 
 ---
 
-## Coverage scorecard (65 active datasets — 13 **(new)** this round)
+## Coverage scorecard (67 active datasets — 15 **(new)** added recently)
 
 | Risk area | Status | Priority action |
 |---|---|---|
@@ -27,7 +27,7 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 | **Value alignment / ethics** | 🟥 **narrow** (MoralChoice, DecodingTrust-ME) | **P1** |
 | Comprehensive / taxonomic | 🟨 scattered | **P1** |
 | Multi-turn dialogue safety | ✅ **(new)** Good (AnthropicRedTeam, BAD, DialogueSafety, CoSafe, DiaSafety) | maintain |
-| Domain-specific (medical) | ✅ **(new)** active (MedSafetyBench) | maintain |
+| Domain-specific (medical/finance/law/edu) | ✅ **(new)** active (MedSafetyBench, StealthGraph) | maintain |
 
 ---
 
@@ -36,12 +36,12 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 Slot the strong ones into the gaps below.
 - **IndicSafe** 🔴 ⭐ — *arXiv 2026* — first safety benchmark for **12 Indic languages**, 6,000 culturally-grounded prompts (caste/religion/gender/health/politics); 12.8% cross-language agreement. → multilingual gap. `arXiv:2603.17915`
 - **RedBench** 🔴 ⭐ — *arXiv 2026* — "universal" comprehensive red-teaming dataset. → taxonomic breadth. `arXiv:2601.03699`
-- **TeleAI-Safety** 🔴 ⭐ — *arXiv 2025/12* — comprehensive jailbreaking benchmark (attacks + defenses). `arXiv:2512.05485`
+- **TeleAI-Safety** ⏭️ *deferred: mostly a framework (19 attacks/29 defenses/19 evals), only 342 prompts; overlaps existing jailbreak coverage* — 🔴 ⭐ — *arXiv 2025/12* — `arXiv:2512.05485`
 - **FalseReject** ✅ **(new)** — *COLM 2025* — large graph-generated over-refusal set w/ structured reasoning; strong for reasoning models. Task `false_reject`. `arXiv:2505.08054`
-- **CASE-Bench** 🔴 ⭐⭐ — *ICML 2025* — context-aware safety: same request, refusal should differ by context. `arXiv:2501.14940`
+- **CASE-Bench** ✅ **(new)** — *ICML 2025* — context-aware safety: same request, refusal should differ by context. Task `case_bench` (900, behaviour_match). `arXiv:2501.14940`
 - **SEA-SafeguardBench** 🔴 ⭐ — *arXiv 2025* — culturally-grounded SE-Asian safety. `arXiv:2512.05501`
 - **Taiwan Safety Benchmark** 🔴 ⭐ — *arXiv 2026* — Taiwanese-Mandarin safety. `arXiv:2603.07286`
-- **StealthGraph** 🔴 ⭐ — *arXiv 2026* — KG-guided domain-specific harmful prompts. `arXiv:2601.04740`
+- **StealthGraph** ✅ **(new)** — *arXiv 2026* — KG-guided implicit domain-specific harmful prompts. Task `stealth_graph` (3,163; med/finance/law/education). `github.com/ZJUIDG-AIVA/StealthGraph`, `arXiv:2601.04740`
 
 ---
 
@@ -91,13 +91,15 @@ Slot the strong ones into the gaps below.
 ## P2 — Specialized & remaining recent
 
 - [x] **MedSafetyBench** ✅ **(new)** 🔴 ⭐⭐ — *NeurIPS 2024 D&B* — medical-safety prompts (only domain-specific option). Task `med_safety_bench` (900, via RedBench compilation). `github.com/AI4LIFE-GROUP/med-safety-bench`
-- [ ] **CASE-Bench** 🔴 ⭐⭐ — *ICML 2025* — context-aware safety (see Newest). `arXiv:2501.14940`
+- [x] **CASE-Bench** ✅ **(new)** 🔴 ⭐⭐ — *ICML 2025* — context-aware safety. Task `case_bench` (900, behaviour_match; context as verified grounding, refuse-if-unsafe-context / answer-if-safe-context). `github.com/BriansIDP/CASEBench`, `arXiv:2501.14940`
 - [x] **CatQA** ✅ **(new)** 🔴 ⭐⭐ — *ACL 2024* — 550 categorical harmful. Task `catqa` (via RedBench compilation, EN). `github.com/declare-lab/resta`
 - [x] **ForbiddenQuestions** ✅ **(new)** 🔴 ⭐⭐ — *CCS 2024 ('Do Anything Now')* — 390 disallowed-scenario prompts. Task `forbidden_questions` (via RedBench). `arXiv:2308.03825`
 - [x] **GPTFuzzer** ✅ **(new)** 🔴 ⭐⭐ — *2023* — 100 auto-generated jailbreak prompts. Task `gptfuzzer` (adversarial, via RedBench). `arXiv:2309.10253`
 - [ ] **AttaQ** 🔴 ⭐ — *EMNLP-BlackboxNLP 2023* — 1,402 adversarial harmful questions. `hf/ibm/AttaQ`
 - [ ] **S-Eval** 🔴 ⭐ — *arXiv 2024* — ~20K EN+ZH comprehensive taxonomy + attacks. `github.com/IS2Lab/S-Eval`
-- [ ] **SEA-SafeguardBench / Taiwan Safety Benchmark / StealthGraph / TeleAI-Safety** 🔴 ⭐ — *2025–2026* — newest regional/specialized sets (see Newest).
+- [x] **StealthGraph** ✅ **(new)** 🔴 — *arXiv 2026* — implicit domain-harm (med/finance/law/education). Task `stealth_graph` (3,163, adversarial; uses the obfuscated stealth-prompt variant). `github.com/ZJUIDG-AIVA/StealthGraph`
+- [ ] **SEA-SafeguardBench / Taiwan Safety Benchmark** 🔴 ⭐ — *2025–2026* — newest regional sets (see Newest).
+- ⏭️ **TeleAI-Safety** — evaluated, deferred (framework + only 342 prompts; overlaps existing jailbreak coverage; see Newest).
 
 ---
 
