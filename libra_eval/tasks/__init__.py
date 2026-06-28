@@ -25,6 +25,7 @@ from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
 from .CoSafe import CoSafe
 from .DiaSafety import DiaSafety
 from .CASEBench import CASEBench
+from .StealthGraph import StealthGraph
 from .RedBenchSubsets import (
     CatQA,
     ForbiddenQuestions,
