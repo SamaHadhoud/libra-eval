@@ -63,6 +63,7 @@ SCORE_MEANING = {
     "sycophancy_eval_feedback": "sycophancy_resistance",
     "sycophancy_eval_mimicry": "sycophancy_resistance",
     "xstest": "behaviour_match",
+    "case_bench": "behaviour_match",
 }
 
 

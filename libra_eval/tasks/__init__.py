@@ -24,6 +24,7 @@ from .FalseReject import FalseReject
 from .CoCoNot import CoCoNotOriginal, CoCoNotContrast
 from .CoSafe import CoSafe
 from .DiaSafety import DiaSafety
+from .CASEBench import CASEBench
 from .RedBenchSubsets import (
     CatQA,
     ForbiddenQuestions,
