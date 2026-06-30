@@ -71,7 +71,18 @@ class OpenAI_Client(BaseClient):
                         if chunk.choices[0].delta.content is not None:
                             r += chunk.choices[0].delta.content
                 else:
-                    r = response.choices[0].message.content
+                    msg = response.choices[0].message
+                    r = msg.content or ""
+                    # Reasoning-model capture: some servers (e.g. k2moe) return the
+                    # chain-of-thought in a separate `reasoning_content`/`reasoning`
+                    # field that is otherwise discarded. When enabled, prepend it
+                    # wrapped in <think_fast> tags so downstream thinking-vs-answer
+                    # tooling (batch_harmful_check.py) can separate them. Off by
+                    # default, so non-reasoning clients are unaffected.
+                    if getattr(self, "capture_reasoning", False):
+                        reasoning = getattr(msg, "reasoning_content", None) or getattr(msg, "reasoning", None)
+                        if reasoning:
+                            r = f"<think_fast>{reasoning}</think_fast>\n{r}"
                 if post_check_function is None:
                     break
                 else:

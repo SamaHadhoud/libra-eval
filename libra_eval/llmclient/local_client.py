@@ -1,3 +1,4 @@
+import os
 import openai
 from .base import MODEL_LIST
 from .openai_client import OpenAI_Client
@@ -10,7 +11,7 @@ class Local_Client(OpenAI_Client):
         self,
         model: str = "",
         api_config: dict = None,
-        max_requests_per_minute=20,
+        max_requests_per_minute=60,
         request_window=10,
         client_name="Local",
     ):
@@ -27,6 +28,14 @@ class Local_Client(OpenAI_Client):
             api_key=api_config["LOCAL_API_KEY"],
         )
         self.name_mapping = name_mapping
+
+        # Local servers may be reasoning models (e.g. k2moe) that return the
+        # chain-of-thought in a `reasoning_content`/`reasoning` field. Capture it
+        # so it is persisted (wrapped in <think_fast>) rather than discarded.
+        # Capture the reasoning trace by default (for thinking-vs-answer work).
+        # Set LOCAL_CAPTURE_REASONING=0 to store the final answer only — used for
+        # runs that must match the original final-answer-only outputs_full_200.
+        self.capture_reasoning = os.environ.get("LOCAL_CAPTURE_REASONING", "1") != "0"
 
     # Fields a reasoning-model server may require on prior assistant turns.
     _REASONING_FIELDS = ("think", "reasoning", "reasoning_content", "think_fast", "think_faster")
