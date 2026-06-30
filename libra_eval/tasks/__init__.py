@@ -36,6 +36,12 @@ from .RealToxicityPrompts import RealToxicityPrompts
 from .AyaRedTeaming import AyaRedTeaming
 from .SALADBench import SALADBench
 from .XSafety import XSafety
+from .UAE import (
+    UAESafety,
+    UAETruthfulnessWiki,
+    UAETruthfulnessDhow,
+    UAEControversial,
+)
 # from .ControversialInstructions import ControversialInstructions  # 需要 OpenAI API key | requires an OpenAI API key
 from .CyberattackAssistance import (
     CyberattackAssistance,
