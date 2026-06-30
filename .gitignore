@@ -176,3 +176,15 @@ libra_eval/tasks/InternalIQTest.py
 make_mbzuai_internal_patch.sh
 mbzuai_internal.patch
 docs/MBZUAI_README.md
+
+# Large evaluation outputs — shipped to the handover recipient as a separate zip,
+# not committed (model responses, evaluations, judge results). See V2_HANDOVER.md.
+outputs_full_200/
+outputs_v2_200/
+outputs_uae_compare/
+outputs_thinking_full/
+outputs_thinking_full_32k/
+libra_eval/outputs_thinking_test/
+
+# Red-teaming bundle (large PDFs + raw UAE data) — handover zip only.
+uae_red_teaming/
