@@ -13,7 +13,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from libra_eval.tasks import TASKS
-from libra_eval.llmclient import OpenAI_Client, Next_Client, Local_Client, LibrAI_Client, LLMJudge_Client, MODEL_LIST
+from libra_eval.llmclient import OpenAI_Client, Next_Client, Local_Client, K2Think_Client, LibrAI_Client, LLMJudge_Client, MODEL_LIST
 from libra_eval.utils.logger import logger
 
 
@@ -66,6 +66,8 @@ def eval():
         client_class = Local_Client
     elif args.client == "next":
         client_class = Next_Client
+    elif args.client == "k2think":
+        client_class = K2Think_Client
     else:
         raise ValueError("Client not support.")
 
