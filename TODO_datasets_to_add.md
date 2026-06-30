@@ -28,6 +28,12 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 | Comprehensive / taxonomic | ✅ **(new)** Good (SALAD-Bench 3-level taxonomy, CatQA, ForbiddenQuestions) | maintain |
 | Multi-turn dialogue safety | ✅ **(new)** Good (AnthropicRedTeam, BAD, DialogueSafety, CoSafe, DiaSafety) | maintain |
 | Domain-specific (medical/finance/law/edu) | ✅ **(new)** active (MedSafetyBench, StealthGraph) | maintain |
+| **Multi-turn escalation (Crescendo/many-shot)** | 🟨 partial (CoSafe, DiaSafety = coreference/context, not gradual escalation) | **P1** (MHJ, SafeMTData) |
+| **CBRN uplift (bio/chem, graded)** | 🟨 proxy only (ClearHarm; WMDP excluded) | **P1** (SciSafeEval, ChemSafetyBench) |
+| **Deception / honesty / eval-awareness** | 🟥 **missing** (only Sycophancy ×3 nearby) | **P1** (MASK, SAD) |
+| **Mental-health / crisis response** | 🟥 **missing** (self-harm only as a harm tag) | **P2** (custom rubric; CLPsych/C-SSRS proxies) |
+| **Insecure code generation** | 🟥 **missing** (`cyberseceval4_mitre` = offensive only) | **P2** (CyberSecEval insecure-code, SecurityEval) |
+| **Persuasion / influence ops** | 🟨 partial (one_sided_statement, CASE) | **P3** (Anthropic Persuasion) |
 
 ---
 
@@ -42,6 +48,47 @@ Slot the strong ones into the gaps below.
 - **SEA-SafeguardBench** 🔴 ⭐ — *arXiv 2025* — culturally-grounded SE-Asian safety. `arXiv:2512.05501`
 - **Taiwan Safety Benchmark** 🔴 ⭐ — *arXiv 2026* — Taiwanese-Mandarin safety. `arXiv:2603.07286`
 - **StealthGraph** ✅ **(new)** — *arXiv 2026* — KG-guided implicit domain-specific harmful prompts. Task `stealth_graph` (3,163; med/finance/law/education). `github.com/ZJUIDG-AIVA/StealthGraph`, `arXiv:2601.04740`
+
+---
+
+## 🧭 Frontier-surface gaps (text-chat) — recommended next
+
+Surfaces that current LLM-safety practice (2025–26) treats as important but the suite covers weakly or not at all. **Agentic/tool-use is intentionally excluded** (covered in a separate report); **multimodal** is out of scope (text-only model). Locators are best-effort — **verify before download**. Scoring fit noted per item (most slot into the existing generation + harmful-judge harness).
+
+### Multi-turn escalation & many-shot jailbreaks — 🟨 partial
+- [ ] **MHJ (Multi-Turn Human Jailbreaks)** 🔴 ⭐⭐ — *Scale AI, 2024* — human multi-turn jailbreak transcripts that defeat single-turn-safe models; judge the final turn. *Fit: like `cosafe`.* `arXiv:2408.15221`, `hf/ScaleAI/mhj`
+- [ ] **SafeMTData / ActorAttack** 🔴 ⭐⭐ — *"Derail Yourself", 2024* — multi-turn attack via self-discovered clue chains. *Fit: drop-in multi-turn.* `arXiv:2410.10700`, `hf/SafeMTData`
+- [ ] **Crescendo** 🔴 ⭐⭐ — *Microsoft, 2024* — gradual benign→harmful escalation (a method + seed set; you run the escalation, judge final turn). `arXiv:2404.01833`
+- [ ] **RedQueen** 🔴 ⭐ — *2024* — concealed multi-turn jailbreaking at scale. `arXiv:2409.17458`
+
+### CBRN proxies (bio/chem refusal) — 🟨 proxy only
+- [ ] **SciSafeEval** 🔴 ⭐⭐ — *2024* — safety/refusal across chemistry, biology, medicine, physics. *Fit: generation + harmful-judge — best direct fit.* `arXiv:2410.03769`
+- [ ] **ChemSafetyBench** 🔴 ⭐ — *2024* — chemistry-specific harmful-request refusal. *Fit: refusal-judge.* `arXiv:2411.16736`
+- [ ] **LAB-Bench** (dual-use subset) 🔴 ⭐⭐ — *FutureHouse, 2024* — biology protocol/reasoning; use the dual-use slice as a gated uplift proxy (capability, not refusal). `arXiv:2407.10362`
+- [ ] **ChemBench** 🔴 ⭐⭐ — *2024* — chemistry knowledge incl. safety items; knowledge-style complement. `arXiv:2404.01475`
+> ⚠️ These are **knowledge/refusal proxies, not human-uplift studies**, and should be gated. This is the surface WMDP was excluded from (knowledge probe, not refusal test).
+
+### Deception / honesty / eval-awareness — 🟥 missing
+- [ ] **MASK** 🔴 ⭐⭐ — *CAIS, 2025* — lying under pressure, **disentangled from accuracy**. *Fit: pairs naturally with §7 thinking-divergence.* `arXiv:2503.03750`, `mask-benchmark.ai`
+- [ ] **SAD (Situational Awareness Dataset)** 🔴 ⭐⭐ — *2024* — does the model know it's an AI / being tested. `arXiv:2407.04694`
+- [ ] **MACHIAVELLI** 🔴 ⭐⭐⭐ — *ICML 2023* — power-seeking, deception, ethical violations in text games (larger harness, behavioral). `arXiv:2304.03279`
+- [ ] **Apollo insider-trading / sandbagging scenarios** 🔴 ⭐⭐ — *2023–24* — strategic deception under incentive; scenario + custom judge. `arXiv:2311.07590`
+
+### Mental-health / crisis response — 🟥 missing
+- [ ] **Custom curated set + rubric** 🔴 — the behavior that matters (de-escalate + resource, *not* flat refusal) has no good off-the-shelf benchmark; build a small curated set with a support-quality rubric.
+- [ ] **CLPsych shared-task data** 🔴 ⭐⭐ — suicide-risk severity (access-controlled; detection proxy).
+- [ ] **Reddit C-SSRS** (Gaur et al.) 🔴 ⭐ — suicide-severity labels; detection proxy.
+- [ ] **IMHI / MentaLLaMA** 🔴 ⭐⭐ — *WWW 2024* — mental-health reasoning/explanation (classification, not response-safety). `arXiv:2309.13567`
+
+### Insecure code generation — 🟥 missing
+- [ ] **CyberSecEval — insecure-code track** 🔴 ⭐⭐⭐ — *Meta Purple Llama* — whether normal coding answers introduce CWEs (complements offensive `cyberseceval4_mitre`). `arXiv:2312.04724` / v2 `2404.13161` / v3 `2408.01605`
+- [ ] **SecurityEval** 🔴 ⭐⭐ — *MSR4P&S 2022* — CWE-tagged insecure generations; static-analysis scored. `github.com/s2e-lab/SecurityEval`
+- [ ] **SALLM** 🔴 ⭐ — *2023* — security of LLM-generated code. `arXiv:2311.00889`
+- [ ] **CWEval** 🔴 ⭐ — *2025* — security + functionality jointly. (verify locator)
+
+### Persuasion / influence ops — 🟨 partial
+- [ ] **Anthropic Persuasion** 🔴 ⭐⭐ — *Anthropic, 2024* — persuasiveness of generated arguments (capability-as-risk). `hf/Anthropic/persuasion`
+- [ ] Targeted-disinfo prompts — construct from existing `case_bench` / propaganda subsets (reuse harness; no new download).
 
 ---
 
