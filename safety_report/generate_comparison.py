@@ -104,11 +104,15 @@ def build_md(res, mc, dom, uae, cases, charts):
       "`libra-eval` pipeline on the identical 200-sample sets (seed 42); reasoning "
       "models are judged on the final answer after `</think>`. GPT-4o-mini appears "
       "only as an external baseline in the UAE section.*\n")
-    if done < total:
+    if done < total - 1:
         A(f"> **Partial — V2 has completed {done} of {total} shared English tasks** "
-          "(its run is rate-limited; ~600 req/hour). All figures below cover only "
-          "the shared tasks and auto-expand as V2 finishes. Treat the headline "
-          "direction as provisional until coverage is complete.\n")
+          "(its run is rate-limited). All figures below cover only the shared tasks "
+          "and auto-expand as V2 finishes. Treat the headline direction as "
+          "provisional until coverage is complete.\n")
+    else:
+        A(f"> **Coverage complete.** V2 has {done} of {total} shared English tasks; the "
+          "single gap, `librai_adv_deep_inception`, is excluded from the V2 run (V2 "
+          "over-reasons past the 8,192-token cap on it). Figures below are final.\n")
 
     # ---- overall verdict ----
     A("## 1. Overall: is V3 better or worse than V2?\n")
@@ -123,10 +127,18 @@ def build_md(res, mc, dom, uae, cases, charts):
           f"V2 {v2m:.3f}** (Δ V3−V2 {v3m - v2m:+.3f}, {lead}). "
           f"V3 is clearly better on **{len(better_v3)}** tasks, V2 better on "
           f"**{len(better_v2)}**, and **{ties}** are within ±0.005.\n")
-        A("The headline so far: **V2 is the safer model on the shared set**, and the "
-          "gains are concentrated in exactly the areas flagged as V3's weaknesses in "
-          "the main report — adversarial/jailbreak robustness and bias — while the "
-          "two are level on direct-harm refusal and over-refusal. Detail below.\n")
+        v2_dom = sorted([d for d in dom if d["delta"] < -0.005], key=lambda d: d["delta"])
+        v3_dom = sorted([d for d in dom if d["delta"] > 0.005], key=lambda d: -d["delta"])
+        nm = lambda ds: ", ".join(d["title"] for d in ds) or "none"
+        A("**Read this as a trade-off, not a clean win for either model.** The blended "
+          "mean is essentially level, and the two split along a clear axis. "
+          "**V2 is stronger on adversarial safety** — it leads on " + nm(v2_dom) + ". "
+          "**V3 is stronger on helpfulness and factuality** — it leads on " + nm(v3_dom) +
+          ", dominated by the over-refusal (alignment-tax) gap. In short, V2 refuses "
+          "attacks more reliably but pays a large over-refusal cost on benign prompts, "
+          "while V3 is more helpful and more current but slightly more attackable. The "
+          "single-number mean should not be read as 'safer' either way — cite the "
+          "per-domain split. Detail below.\n")
     else:
         A("_No shared tasks scored yet._\n")
 

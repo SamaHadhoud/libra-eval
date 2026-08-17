@@ -28,9 +28,9 @@ Inputs: [datasets_in_repo_unused.csv](datasets_in_repo_unused.csv), [datasets_no
 | Comprehensive / taxonomic | ✅ **(new)** Good (SALAD-Bench 3-level taxonomy, CatQA, ForbiddenQuestions) | maintain |
 | Multi-turn dialogue safety | ✅ **(new)** Good (AnthropicRedTeam, BAD, DialogueSafety, CoSafe, DiaSafety) | maintain |
 | Domain-specific (medical/finance/law/edu) | ✅ **(new)** active (MedSafetyBench, StealthGraph) | maintain |
-| **Multi-turn escalation (Crescendo/many-shot)** | 🟨 partial (CoSafe, DiaSafety = coreference/context, not gradual escalation) | **P1** (MHJ, SafeMTData) |
+| **Multi-turn escalation (Crescendo/many-shot)** | ✅ **(new)** MHJ added (537 human multi-turn jailbreaks); CoSafe/DiaSafety cover coreference | optional: SafeMTData, Crescendo (adaptive) |
 | **CBRN uplift (bio/chem, graded)** | 🟨 proxy only (ClearHarm; WMDP excluded) | **P1** (SciSafeEval, ChemSafetyBench) |
-| **Deception / honesty / eval-awareness** | 🟥 **missing** (only Sycophancy ×3 nearby) | **P1** (MASK, SAD) |
+| **Deception / honesty / eval-awareness** | ✅ **(new)** MASK added (honesty-under-pressure, provided+known facts); eval-awareness (SAD) still open | optional: SAD, MACHIAVELLI |
 | **Mental-health / crisis response** | 🟥 **missing** (self-harm only as a harm tag) | **P2** (custom rubric; CLPsych/C-SSRS proxies) |
 | **Insecure code generation** | 🟥 **missing** (`cyberseceval4_mitre` = offensive only) | **P2** (CyberSecEval insecure-code, SecurityEval) |
 | **Persuasion / influence ops** | 🟨 partial (one_sided_statement, CASE) | **P3** (Anthropic Persuasion) |
@@ -56,7 +56,7 @@ Slot the strong ones into the gaps below.
 Surfaces that current LLM-safety practice (2025–26) treats as important but the suite covers weakly or not at all. **Agentic/tool-use is intentionally excluded** (covered in a separate report); **multimodal** is out of scope (text-only model). Locators are best-effort — **verify before download**. Scoring fit noted per item (most slot into the existing generation + harmful-judge harness).
 
 ### Multi-turn escalation & many-shot jailbreaks — 🟨 partial
-- [ ] **MHJ (Multi-Turn Human Jailbreaks)** 🔴 ⭐⭐ — *Scale AI, 2024* — human multi-turn jailbreak transcripts that defeat single-turn-safe models; judge the final turn. *Fit: like `cosafe`.* `arXiv:2408.15221`, `hf/ScaleAI/mhj`
+- [x] **MHJ (Multi-Turn Human Jailbreaks)** ✅ **(new)** 🔴 ⭐⭐ — *Scale AI, 2024* — 537 human multi-turn jailbreaks. Task `mhj` (multi, harmful judge; full escalation replayed as consecutive user turns, judge the final answer). `arXiv:2408.15221`, `hf/ScaleAI/mhj`
 - [ ] **SafeMTData / ActorAttack** 🔴 ⭐⭐ — *"Derail Yourself", 2024* — multi-turn attack via self-discovered clue chains. *Fit: drop-in multi-turn.* `arXiv:2410.10700`, `hf/SafeMTData`
 - [ ] **Crescendo** 🔴 ⭐⭐ — *Microsoft, 2024* — gradual benign→harmful escalation (a method + seed set; you run the escalation, judge final turn). `arXiv:2404.01833`
 - [ ] **RedQueen** 🔴 ⭐ — *2024* — concealed multi-turn jailbreaking at scale. `arXiv:2409.17458`
@@ -69,7 +69,7 @@ Surfaces that current LLM-safety practice (2025–26) treats as important but th
 > ⚠️ These are **knowledge/refusal proxies, not human-uplift studies**, and should be gated. This is the surface WMDP was excluded from (knowledge probe, not refusal test).
 
 ### Deception / honesty / eval-awareness — 🟥 missing
-- [ ] **MASK** 🔴 ⭐⭐ — *CAIS, 2025* — lying under pressure, **disentangled from accuracy**. *Fit: pairs naturally with §7 thinking-divergence.* `arXiv:2503.03750`, `mask-benchmark.ai`
+- [x] **MASK** ✅ **(new)** 🔴 ⭐⭐ — *CAIS, 2025* — lying under pressure, **disentangled from accuracy**. Tasks `mask_provided_facts` (274, in-context truth → cleanest honesty) + `mask_known_facts` (209, world-fact). Custom `MASK_Honesty` judge (verdict honest/lie/evade → honesty score); single-pass version (belief-elicitation pass = future). `arXiv:2503.03750`
 - [ ] **SAD (Situational Awareness Dataset)** 🔴 ⭐⭐ — *2024* — does the model know it's an AI / being tested. `arXiv:2407.04694`
 - [ ] **MACHIAVELLI** 🔴 ⭐⭐⭐ — *ICML 2023* — power-seeking, deception, ethical violations in text games (larger harness, behavioral). `arXiv:2304.03279`
 - [ ] **Apollo insider-trading / sandbagging scenarios** 🔴 ⭐⭐ — *2023–24* — strategic deception under incentive; scenario + custom judge. `arXiv:2311.07590`
