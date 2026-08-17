@@ -26,15 +26,15 @@ class TruthfulQA_mc1(Task):
         return instance["eval_response"]
 
 class TruthfulQA_mc2(TruthfulQA_mc1):
+    # NOTE: canonical TruthfulQA MC2 (normalized probability mass over the true
+    # reference answers) needs token logprobs, which this generation harness
+    # doesn't expose. This dataset is actually formatted as a single-answer A/B/C/D
+    # question, so we score it exactly like MC1 (robust choice-letter extraction) —
+    # a valid single-answer accuracy, NOT the logprob MC2. The old override did a
+    # naive `answer in response` substring test (models echo option letters, so it
+    # over-counted). Not registered in the default suite.
     task_name = "truthful_qa_mc2"
     task_data_file = "truthfulqa_mc2.jsonl"
-
-    def _single_eval_message(self, instance):
-        response = instance['response']
-        return 1 if instance['answer'] in response else 0
-
-    def _single_eval_postprocess(self, instance):
-        return instance["eval_response"]
 
 class TruthfulQA_binary(TruthfulQA_mc1):
     """Jan-2025 improved binary multiple-choice setting.

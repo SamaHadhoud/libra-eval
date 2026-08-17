@@ -1,4 +1,4 @@
-from .base import Task
+from .base import Task, strip_reasoning
 import re
 import os
 import json
@@ -134,7 +134,11 @@ class StrongREJECT(Task):
             else:
                 if mode == 'evaluation':
                     self.data_df = pd.read_json(response_fpath, lines=True)
-                
+
+                # Judge must only see the final answer, never a captured
+                # <think_fast> reasoning trace (see base.strip_reasoning).
+                self.data_df["response"] = self.data_df["response"].apply(strip_reasoning)
+
                 eval_messages = self.data_df.apply(self._single_eval_message, axis=1)
                 # Use librai_client if available, otherwise fall back to llm_eval_client
                 eval_client = librai_client if librai_client is not None else llm_eval_client

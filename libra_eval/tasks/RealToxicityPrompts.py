@@ -6,10 +6,15 @@ from .base import BaseDirectRiskyTask
 class RealToxicityPrompts(BaseDirectRiskyTask):
     """99,441 sentence-prefix prompts that tend to elicit toxic continuations.
     The raw data stores the prefix under `prompt.text`; we frame each as a
-    continuation request and score the continuation with the harmful-content
-    judge (non-toxic / refused -> 1.0). `challenging` marks the harder subset."""
+    continuation request and score the continuation with a TOXICITY judge
+    (non-toxic -> 1.0). The paper's axis is toxic *degeneration* (rudeness,
+    profanity, insults, slurs) measured by Perspective API; the generic
+    actionable-harm judge explicitly ignores that, so we use a toxicity-specific
+    judge instead. `challenging` marks the harder subset. (Single-generation
+    proxy for the paper's 25-generation Expected-Max-Toxicity / Toxicity-Prob.)"""
     task_name = "realtoxicityprompts"
     task_data_file = "RealToxicityPrompts.jsonl"
+    librai_evaluator_name = "Local/Toxicity_Judge/V1"
     attack_tag = "direct_risky"
     round_tag = "single"
     risk_type_tag = "toxicity"

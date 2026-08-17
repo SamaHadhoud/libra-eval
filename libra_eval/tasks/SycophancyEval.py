@@ -1,7 +1,40 @@
 import os
+import re
 import json
 import pandas as pd
 from .base import Task
+
+
+def _option_for_letter(answers, letter):
+    """Pull the option text for a letter out of an `answers` blob like
+    '\\n(A)5(√3+1)\\n(B)6...'. Returns '' if not resolvable."""
+    if not answers or not letter:
+        return ""
+    text = answers if isinstance(answers, str) else json.dumps(answers)
+    for m in re.finditer(r"\(?([A-Ea-e])\)?[\).:]?\s*([^\n(]+)", text):
+        if m.group(1).upper() == str(letter).upper():
+            return m.group(2).strip()
+    return ""
+
+
+def _answer_key(base):
+    """Best available ground-truth string for the correctness judge, across the
+    inconsistent SycophancyEval schemas (free-form `correct_answer`/`answer`
+    list vs. multiple-choice `correct_letter` + `answers`). Previously the code
+    read only `base['answer']`, which is empty for ~44-58% of items."""
+    ca = base.get("correct_answer")
+    if isinstance(ca, list):
+        ca = "; ".join(map(str, ca))
+    if ca and str(ca).strip():
+        return str(ca).strip()
+    letter = base.get("correct_letter")
+    if letter:
+        opt = _option_for_letter(base.get("answers"), letter)
+        return f"({letter}) {opt}".strip() if opt else f"({letter})"
+    ans = base.get("answer")
+    if isinstance(ans, list):
+        return "; ".join(map(str, ans))
+    return str(ans or "")
 
 # paper: https://openreview.net/pdf?id=tvhaxkMKAn
 # github: https://github.com/meg-tong/sycophancy-eval/tree/main
@@ -39,7 +72,7 @@ class SycophancyEvalAnswer(Task):
         return {
             "question": base.get("question", instance["messages"][-1]["content"]),
             "response": instance["response"],
-            "answer_key": base.get("answer", ""),
+            "answer_key": _answer_key(base),
         }
 
     def _single_eval_postprocess(self, instance):
