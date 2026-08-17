@@ -9,7 +9,7 @@ and regenerates the report inputs. Two pieces:
   LaTeX fragments, numbers, and charts that your report `.tex` `\input`s.
 
 For the *why* / measured cost + time estimates, see `K2V3_FAMILY_RED_TEAM_PLAYBOOK.md`
-(detail) and `K2-V3 Chat Red-Teaming - Phase 1 Look-back and Phase 2 Plan.md`
+(detail) and `K2V3_FAMILY_Phase1_Phase2_Plan.md`
 (presentation). This doc is just *how to use the tools*.
 
 ---

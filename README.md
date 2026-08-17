@@ -491,7 +491,7 @@ If you use LibrA-Eval in your research, please cite:
 
 - **Leaderboard**: [leaderboard.librai.tech](https://leaderboard.librai.tech/LeaderBoard)
 - **GitHub**: [github.com/LibrAIResearch/libra-eval](https://github.com/LibrAIResearch/libra-eval)
-- **Documentation**: [docs/dataset_summary.md](docs/dataset_summary.md)
+- **Documentation**: [docs/](docs/README.md) — harness reference + the K2-V3 family evaluation guides ([FAMILY_EVAL.md](docs/FAMILY_EVAL.md) to run it)
 - **Email**: team@librai.tech
 
 ## License
