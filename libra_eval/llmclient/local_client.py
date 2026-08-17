@@ -18,15 +18,17 @@ class Local_Client(OpenAI_Client):
         super().__init__(model=model, api_config=api_config, max_requests_per_minute=max_requests_per_minute, request_window=request_window, client_name=client_name)
         self.client_name = client_name
 
-        # 从配置文件读取本地模型的 base_url 和 api_key
-        # Read the local model's base_url and api_key from the config file
-        assert "LOCAL_BASE_URL" in api_config and api_config["LOCAL_BASE_URL"] != "", "LOCAL_BASE_URL must be set in api_config.json"
-        assert "LOCAL_API_KEY" in api_config and api_config["LOCAL_API_KEY"] != "", "LOCAL_API_KEY must be set in api_config.json"
-        
-        self.client = openai.OpenAI(
-            base_url=api_config["LOCAL_BASE_URL"],
-            api_key=api_config["LOCAL_API_KEY"],
-        )
+        # Read the local model's base_url and api_key. Environment variables
+        # take precedence over api_config.json so several models on different
+        # endpoints can run concurrently (one process per endpoint), each with
+        # its own LOCAL_BASE_URL / LOCAL_API_KEY — the family-run driver relies
+        # on this. Falls back to the shared config file when unset.
+        base_url = os.environ.get("LOCAL_BASE_URL") or api_config.get("LOCAL_BASE_URL", "")
+        api_key = os.environ.get("LOCAL_API_KEY") or api_config.get("LOCAL_API_KEY", "")
+        assert base_url, "LOCAL_BASE_URL must be set (env var or api_config.json)"
+        assert api_key, "LOCAL_API_KEY must be set (env var or api_config.json)"
+
+        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
         self.name_mapping = name_mapping
 
         # Local servers may be reasoning models (e.g. k2moe) that return the

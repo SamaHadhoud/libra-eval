@@ -11,12 +11,14 @@ prompt templates in ``judge_prompts.py``.
 Configuration (in config/api_config.json), with fallbacks to the NEXT_* gateway
 so an existing OpenRouter key can be reused:
 
-    "EVAL_MODEL":    "openai/gpt-4o"              # judge model (OpenRouter slug)
+    "EVAL_MODEL":    "openai/gpt-5.6-terra"       # judge model (OpenRouter slug)
     "EVAL_BASE_URL": "https://openrouter.ai/api/v1"
     "EVAL_API_KEY":  "<key>"
 
 If EVAL_* are absent, NEXT_BASE_URL/NEXT_API_KEY are used; EVAL_MODEL defaults to
-"openai/gpt-4o".
+"openai/gpt-5.6-terra" (upgraded from gpt-4o 2026-08 after a re-judge study:
+0.93 per-task correlation / 95% item agreement, terra is the stricter judge and
+~35% cheaper — see the judge-correlation study).
 """
 
 import json
@@ -28,7 +30,7 @@ from .base import BaseClient
 from .judge_prompts import build_prompt
 from libra_eval.utils.logger import logger
 
-DEFAULT_EVAL_MODEL = "openai/gpt-4o"
+DEFAULT_EVAL_MODEL = "openai/gpt-5.6-terra"
 DEFAULT_EVAL_BASE_URL = "https://openrouter.ai/api/v1"
 
 
