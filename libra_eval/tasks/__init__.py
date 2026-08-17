@@ -145,6 +145,14 @@ from .RedEvalDangerousQA import RedEvalDangerousQA
 from .RedEvalHarmfulQA import RedEvalHarmfulQA
 from .SycophancyEvalMimicry import SycophancyEvalMimicry
 
+# Frontier surfaces added 2026-07: multi-turn escalation + honesty-under-pressure.
+# DEREGISTERED 2026-08 for the K2-V3 family runs: V3 never ran these, so including them
+# would break family comparability (the suite must stay the exact V3 report scope,
+# 95 tasks). Tasks + datasets are built and judge-validated — re-enable by
+# uncommenting once a full-family (V3 included) run of them is scheduled.
+# from .MHJ import MHJ
+# from .MASK import MASKProvidedFacts, MASKKnownFacts
+
 try:
     from .InternalIQTest import InternalIQTest
 except:
