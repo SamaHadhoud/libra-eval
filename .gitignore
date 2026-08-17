@@ -165,6 +165,8 @@ cython_debug/
 
 **/stdout/
 *.pdf
+# the family-report rendering demo is intentionally tracked (synthetic DEMO column)
+!family_report/DEMO_two_model_preview.pdf
 .DS_Store
 libra_eval/config/api_config.json
 scripts/batch_run.py
@@ -188,3 +190,8 @@ libra_eval/outputs_thinking_test/
 
 # Red-teaming bundle (large PDFs + raw UAE data) — handover zip only.
 uae_red_teaming/
+# family-report build artifacts + judge-study raw outputs (regenerable)
+family_report/__pycache__/
+family_report/preview.pdf
+judge_correlation/evaluations_*/
+judge_correlation/*.log

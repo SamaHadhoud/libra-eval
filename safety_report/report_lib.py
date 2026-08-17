@@ -191,9 +191,9 @@ def _strip(task_field: str) -> str:
     return task_field[:-4] if task_field.endswith("_200") else task_field
 
 
-def load_tasks() -> dict[str, Task]:
+def load_tasks(results_dir: str = RESULTS_DIR) -> dict[str, Task]:
     tasks: dict[str, Task] = {}
-    for f in sorted(glob.glob(os.path.join(RESULTS_DIR, "*.json"))):
+    for f in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
         d = json.load(open(f))
         name = _strip(d["task"])
         t = Task(

@@ -1,0 +1,51 @@
+% preview.tex — compile harness for the generated fragments. NOT the report:
+% it exists so `tectonic preview.tex` proves every fragment builds before the
+% real report \inputs them. Safe to delete once the real report exists.
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+
+\input{generated/preamble.tex}
+\input{generated/numbers.tex}
+
+\begin{document}
+
+\section*{Fragment preview (auto-generated content only)}
+
+Sanity line — every number below comes from \verb|\famnum| lookups, none is typed:
+the \famnum{family}{n_models}-model family
+(\famnum{family}{model_list}) spans \famnum{family}{n_tasks} main tasks;
+K2-V3 375B scores a mean of \famnum{v3_375b}{mean_main}
+(sample-weighted safety \famnum{v3_375b}{safety_rate}\%,
+\famnum{v3_375b}{n_ge095} tasks $\geq$ 0.95,
+jailbreak domain \famnum{v3_375b}{dom_jailbreak}).
+Generated \famnum{family}{generated_date}.
+
+\input{generated/tab_overview.tex}
+\input{generated/tab_dom_general_refusal.tex}
+\input{generated/tab_dom_jailbreak.tex}
+\input{generated/tab_dom_over_refusal.tex}
+\input{generated/tab_dom_cyber_privacy.tex}
+\input{generated/tab_dom_bias.tex}
+\input{generated/tab_dom_toxicity.tex}
+\input{generated/tab_dom_conversational.tex}
+\input{generated/tab_dom_physical.tex}
+\input{generated/tab_dom_truthfulness.tex}
+\input{generated/tab_dom_ethics.tex}
+\input{generated/tab_uae.tex}
+\input{generated/tab_multilingual.tex}
+\input{generated/tab_movers.tex}
+\input{generated/tab_comparison.tex}
+\input{generated/tab_comparison_movers.tex}
+\input{generated/tab_runhealth.tex}
+\input{generated/tab_axis_means.tex}
+\input{generated/tab_anomalies.tex}
+\input{generated/figs.tex}
+\input{generated/tab_full.tex}
+
+\end{document}

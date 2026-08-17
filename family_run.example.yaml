@@ -1,0 +1,43 @@
+# family_run.example.yaml — spec for run_family.py (the K2-V3 family driver).
+# Copy to family_run.yaml, fill in the real endpoints, then:
+#     .venv/bin/python run_family.py --spec family_run.yaml
+# Add --parallel to run all endpoints at once (only if they don't share GPUs).
+#
+# Per model:
+#   key          letters/digits/underscore; identity in the report + \famnum
+#   label        display name (tables, chart legends)
+#   size_b       parameter count in billions (x-axis of scaling charts); "" if unknown
+#   base_url     OpenAI-compatible /v1 endpoint
+#   api_key      optional; falls back to LOCAL_API_KEY in api_config.json
+#   reasoning    where the reasoning lives:
+#                  field  = reasoning_content field, answer in content  (default)
+#                  inline = ...</think>answer inside content            (k2think-style)
+#   thinking_csv optional Stage B divergence CSV to wire into the report
+#
+# The judge is set in libra_eval/config/api_config.json (openai/gpt-5.6-terra).
+
+# An already-run model (the V3 anchor) sets results_dir to its existing output
+# dir: the driver skips its eval and just includes it in the report.
+family:
+  - key: v3_375b
+    label: K2-V3 375B
+    size_b: 375
+    results_dir: outputs_full_200/results
+    thinking_csv: harmful_check_analysis_thinking/thinking_vs_response.csv
+
+  - key: v3_32b
+    label: K2-V3 32B
+    size_b: 32
+    base_url: http://REPLACE_ME:8000/v1
+    api_key: ""
+    reasoning: field
+
+  # ... add the remaining sizes as their endpoints come online ...
+
+# Baselines are judged/reported but never enter family aggregates or scaling
+# charts; they only populate the UAE comparison. Leave as-is to keep GPT-4o-mini.
+baselines:
+  - key: gpt4omini
+    label: GPT-4o-mini
+    size_b: ""
+    results_dir: outputs_uae_compare/results
