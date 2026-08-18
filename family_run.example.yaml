@@ -4,17 +4,39 @@
 # Add --parallel to run all endpoints at once (only if they don't share GPUs).
 #
 # Per model:
-#   key          letters/digits/underscore; identity in the report + \famnum
-#   label        display name (tables, chart legends)
-#   size_b       parameter count in billions (x-axis of scaling charts); "" if unknown
-#   base_url     OpenAI-compatible /v1 endpoint
-#   api_key      optional; falls back to LOCAL_API_KEY in api_config.json
-#   reasoning    where the reasoning lives:
-#                  field  = reasoning_content field, answer in content  (default)
-#                  inline = ...</think>answer inside content            (k2think-style)
-#   thinking_csv optional Stage B divergence CSV to wire into the report
+#   key           letters/digits/underscore; identity in the report + \famnum + output dir
+#   label         display name (tables, chart legends)
+#   model_id      the id sent to the API (served vLLM name, or OpenRouter slug like
+#                 "deepseek/deepseek-v4-flash-0731"). Defaults to label; set it when
+#                 the label isn't the exact API id.
+#   size_b        parameter count in billions (x-axis of scaling charts); "" if unknown
+#   base_url      OpenAI-compatible /v1 endpoint (OpenRouter = https://openrouter.ai/api/v1)
+#   api_key       optional; falls back to LOCAL_API_KEY in api_config.json
+#   reasoning     where the reasoning lives:
+#                   field  = reasoning_content field, answer in content  (default)
+#                   inline = ...</think>answer inside content            (k2think-style)
+#   reasoning_max_tokens  optional: cap a reasoning model's thinking budget (OpenRouter
+#                 `reasoning.max_tokens`) BELOW the overall --max-tokens, so heavy
+#                 reasoners (e.g. Gemini) stop thinking and leave room to answer
+#                 instead of truncating to empty.
+#   thinking_csv  optional Stage B divergence CSV to wire into the report
 #
 # The judge is set in libra_eval/config/api_config.json (openai/gpt-5.6-terra).
+# Overall generation budget is --max-tokens (default 8192; raise for reasoning models).
+# NOTE: Gemini-style providers return empty content with finish_reason=content_filter
+# when their safety filter blocks a prompt — the harness records that as a refusal
+# (safe), not an empty, automatically.
+#
+# An OpenRouter example (two models distinguished by model_id, same base_url/key):
+# family:
+#   - key: deepseek_v4_flash
+#     label: DeepSeek V4 Flash
+#     model_id: deepseek/deepseek-v4-flash-0731
+#     size_b: ""
+#     base_url: https://openrouter.ai/api/v1
+#     api_key: sk-or-...            # (put keys only in your real family_run.yaml — gitignored)
+#     reasoning: field
+#     reasoning_max_tokens: 16384
 
 # An already-run model (the V3 anchor) sets results_dir to its existing output
 # dir: the driver skips its eval and just includes it in the report.

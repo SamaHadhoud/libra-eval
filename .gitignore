@@ -195,3 +195,7 @@ family_report/__pycache__/
 family_report/preview.pdf
 judge_correlation/evaluations_*/
 judge_correlation/*.log
+family_run.yaml
+
+# per-model family-run outputs (regenerable; e.g. outputs_deepseek_v4_flash_200/)
+outputs_*_200/

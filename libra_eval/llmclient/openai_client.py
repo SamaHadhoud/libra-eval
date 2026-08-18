@@ -6,6 +6,7 @@ from libra_eval.utils.logger import logger
 
 models = list(filter(lambda x: x.startswith("gpt") or x.startswith("o"), MODEL_LIST))
 name_mapping = {i:i for i in models}
+_warned_unmapped = set()   # models we've already noted as not-in-name_mapping (log once)
 
 
 class OpenAI_Client(BaseClient):
@@ -56,14 +57,26 @@ class OpenAI_Client(BaseClient):
                 if self.model in self.name_mapping:
                     model_name = self.name_mapping[self.model]
                 else:
-                    logger.warning(f"Warning: Model {self.model} not found in name_mapping. Using original model name.")
+                    # Not in the static alias table (normal for local vLLM served
+                    # ids and OpenRouter slugs): use the id verbatim. Log once at
+                    # debug so it doesn't spam the log on every request.
+                    if self.model not in _warned_unmapped:
+                        _warned_unmapped.add(self.model)
+                        logger.debug(f"Model {self.model} not in name_mapping; using it verbatim.")
                     model_name = self.model
-                # for key, value in kwargs.items():
-                #     print(f"{key} = {value}")  # prints each key-value pair
+                # Non-standard OpenRouter params (e.g. `reasoning` to bound a
+                # reasoning model's thinking budget so it leaves room for the
+                # final answer) must go through extra_body, not as top-level
+                # kwargs the OpenAI SDK would reject.
+                call_kwargs = dict(kwargs)
+                extra_body = call_kwargs.pop("extra_body", {}) or {}
+                if "reasoning" in call_kwargs:
+                    extra_body["reasoning"] = call_kwargs.pop("reasoning")
                 response = self.client.chat.completions.create(
                     model=model_name,
                     messages=messages,
-                    **kwargs  # passing the kwargs, such as temperature, max_tokens, response_format, etc, to the OpenAI API.
+                    **call_kwargs,
+                    **({"extra_body": extra_body} if extra_body else {}),
                 )
                 if "stream" in kwargs and kwargs["stream"]:
                     r = ""
@@ -73,6 +86,19 @@ class OpenAI_Client(BaseClient):
                 else:
                     msg = response.choices[0].message
                     r = msg.content or ""
+                    # Provider-side safety block (e.g. Gemini/Google returns empty
+                    # content with finish_reason=content_filter / PROHIBITED_CONTENT):
+                    # this is the model DECLINING, i.e. a refusal — NOT a truncation
+                    # empty to retry/drop. Record it as an explicit refusal so the
+                    # harmful judge scores it safe and the refusal-detector sees a
+                    # refusal, instead of the empty-response path failing the task.
+                    fr = getattr(response.choices[0], "finish_reason", None)
+                    native = str(getattr(response.choices[0], "native_finish_reason", "") or "")
+                    blocked = (fr == "content_filter") or ("PROHIBITED" in native.upper()) \
+                        or ("SAFETY" in native.upper()) or ("BLOCK" in native.upper())
+                    if blocked and not r.strip():
+                        r = ("[PROVIDER_SAFETY_BLOCK] The provider's safety filter blocked "
+                             "this response, so the model produced no answer (treated as a refusal).")
                     # Reasoning-model capture: some servers (e.g. k2moe) return the
                     # chain-of-thought in a separate `reasoning_content`/`reasoning`
                     # field that is otherwise discarded. When enabled, prepend it
@@ -81,6 +107,15 @@ class OpenAI_Client(BaseClient):
                     # default, so non-reasoning clients are unaffected.
                     if getattr(self, "capture_reasoning", False):
                         reasoning = getattr(msg, "reasoning_content", None) or getattr(msg, "reasoning", None)
+                        if not reasoning:
+                            # OpenRouter reasoning models (e.g. Gemini) may expose the
+                            # trace only in a structured `reasoning_details` list; join
+                            # its text parts as a fallback so the trace is still stored.
+                            details = (getattr(msg, "model_extra", None) or {}).get("reasoning_details")
+                            if isinstance(details, list):
+                                reasoning = "\n".join(
+                                    p.get("text", "") for p in details
+                                    if isinstance(p, dict) and p.get("text"))
                         if reasoning:
                             r = f"<think_fast>{reasoning}</think_fast>\n{r}"
                 if post_check_function is None:

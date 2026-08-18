@@ -58,6 +58,7 @@ if not os.path.exists(PY):
 SUITE_N = 200
 SMOKE_TASKS = "advbench,confaide"
 SMOKE_N = 5
+GEN_MAX_TOKENS = 8192   # overridable via --max-tokens (raise for reasoning models)
 # tasks deregistered for the family scope live outside TASKS already; nothing
 # to exclude here — `--tasks all` == the 95-task V3 report scope.
 
@@ -68,9 +69,17 @@ SMOKE_N = 5
 class Model:
     def __init__(self, key, label, size_b, base_url, api_key="",
                  reasoning="field", thinking_csv="", is_baseline=False,
-                 results_dir=""):
+                 results_dir="", model_id="", reasoning_max_tokens=None):
         self.key = key
         self.label = label
+        # optional cap on a reasoning model's thinking budget (OpenRouter
+        # `reasoning.max_tokens`), so heavy reasoners (e.g. Gemini) stop thinking
+        # and emit an answer within max_tokens instead of truncating to empty.
+        self.reasoning_max_tokens = reasoning_max_tokens
+        # the id sent to the API and used in output filenames. For a local vLLM
+        # it's the served model name; for OpenRouter it's the slug
+        # (e.g. "deepseek/deepseek-v4-flash-0731"). Falls back to the label.
+        self.model_id = model_id or label
         self.size_b = size_b
         self.base_url = base_url
         self.api_key = api_key
@@ -92,6 +101,13 @@ class Model:
     @property
     def client(self):
         return "k2think" if self.reasoning == "inline" else "local"
+
+    def gen_params_json(self):
+        """--generation_params for this model: max_tokens (+ optional reasoning cap)."""
+        gp = {"max_tokens": GEN_MAX_TOKENS}
+        if self.reasoning_max_tokens:
+            gp["reasoning"] = {"max_tokens": int(self.reasoning_max_tokens)}
+        return json.dumps(gp)
 
     @property
     def results_dir(self):
@@ -138,10 +154,11 @@ def load_spec(path: str) -> list[Model]:
     for role, is_base in (("family", False), ("baselines", True)):
         for e in data.get(role, []):
             models.append(Model(
-                key=e["key"], label=e["label"],
+                key=e["key"], label=e["label"], model_id=e.get("model_id", ""),
                 size_b=_num_or_none(e.get("size_b", "")),
                 base_url=e.get("base_url", ""), api_key=e.get("api_key", ""),
                 reasoning=e.get("reasoning", "field"),
+                reasoning_max_tokens=_num_or_none(e.get("reasoning_max_tokens", "")),
                 thinking_csv=e.get("thinking_csv", ""), is_baseline=is_base,
                 results_dir=e.get("results_dir", "")))
     if not models:
@@ -209,10 +226,10 @@ def smoke_test(m: Model) -> bool:
     sdir = os.path.join(m.outdir, "_smoke")
     os.makedirs(sdir, exist_ok=True)
     rc = run([PY, "-m", "libra_eval.run_eval",
-              "--client", m.client, "--models", m.label,
+              "--client", m.client, "--models", m.model_id,
               "--tasks", SMOKE_TASKS, "--n_samples_per_task", str(SMOKE_N),
               "--mode", "inference",
-              "--generation_params", '{"max_tokens": 8192}',
+              "--generation_params", m.gen_params_json(),
               "--output_dir", sdir],
              env=env_for(m), log=os.path.join(m.outdir, "smoke.log"))
     if rc != 0:
@@ -244,10 +261,10 @@ def full_run(m: Model) -> bool:
     print(f"[{m.key}] full suite (95 tasks x n={SUITE_N}, judge from api_config)")
     os.makedirs(m.outdir, exist_ok=True)
     rc = run([PY, "-m", "libra_eval.run_eval",
-              "--client", m.client, "--models", m.label,
+              "--client", m.client, "--models", m.model_id,
               "--tasks", "all", "--n_samples_per_task", str(SUITE_N),
               "--mode", "full", "--evaluator", "llm",
-              "--generation_params", '{"max_tokens": 8192}',
+              "--generation_params", m.gen_params_json(),
               "--output_dir", m.outdir],
              env=env_for(m), log=os.path.join(m.outdir, "run.log"))
     marker = os.path.join(m.outdir, "RUN_DONE.txt")
@@ -313,6 +330,7 @@ def generate_report():
 # Main
 # --------------------------------------------------------------------------- #
 def main():
+    global GEN_MAX_TOKENS
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--spec", help="YAML/JSON models spec (family_run.yaml)")
@@ -325,7 +343,12 @@ def main():
     ap.add_argument("--report-only", action="store_true",
                     help="skip eval; just rebuild manifest + report from existing outputs")
     ap.add_argument("--judge-key", help="override EVAL_API_KEY for judging")
+    ap.add_argument("--max-tokens", type=int, default=GEN_MAX_TOKENS,
+                    help="generation max_tokens (raise for reasoning-heavy models "
+                         "that truncate-to-empty at 8192; 16384 is a safe bump, "
+                         "avoid 32768 — non-terminating-reasoning tail)")
     args = ap.parse_args()
+    GEN_MAX_TOKENS = args.max_tokens
 
     if args.judge_key:
         os.environ["EVAL_API_KEY"] = args.judge_key
