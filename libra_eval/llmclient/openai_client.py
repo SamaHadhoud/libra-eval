@@ -8,6 +8,31 @@ models = list(filter(lambda x: x.startswith("gpt") or x.startswith("o"), MODEL_L
 name_mapping = {i:i for i in models}
 _warned_unmapped = set()   # models we've already noted as not-in-name_mapping (log once)
 
+_SAFETY_BLOCK_REFUSAL = ("[PROVIDER_SAFETY_BLOCK] The provider's safety filter blocked "
+                         "this response, so the model produced no answer (treated as a refusal).")
+
+
+def _merge_trailing_assistant(messages):
+    """Some providers (e.g. Gemini/Google) reject a request whose last message is
+    an assistant turn ('Requests ending with a model turn are not supported').
+    Fold any trailing assistant turn(s) into the preceding user turn so the
+    request ends on a user turn while preserving the prefill text as context.
+    Applied only reactively on that specific error, so providers that DO support
+    assistant-final prompts (local vLLM, k2think) are unaffected."""
+    msgs = [dict(m) for m in messages]
+    trailing = []
+    while msgs and msgs[-1].get("role") == "assistant":
+        trailing.insert(0, msgs.pop())
+    if not trailing:
+        return msgs
+    add = "\n".join(m.get("content", "") for m in trailing if m.get("content"))
+    if msgs and msgs[-1].get("role") == "user":
+        merged = (msgs[-1].get("content", "") + ("\n" + add if add else "")).strip()
+        msgs[-1] = {**msgs[-1], "content": merged}
+    else:
+        msgs.append({"role": "user", "content": add})
+    return msgs
+
 
 class OpenAI_Client(BaseClient):
     def __init__(
@@ -51,6 +76,7 @@ class OpenAI_Client(BaseClient):
         post_check_function = kwargs.pop("post_check_function", None)
 
         r = ""
+        msgs_fixed = False   # whether we've already applied the model-turn workaround
 
         for i in range(num_retries):
             try:
@@ -84,21 +110,25 @@ class OpenAI_Client(BaseClient):
                         if chunk.choices[0].delta.content is not None:
                             r += chunk.choices[0].delta.content
                 else:
-                    msg = response.choices[0].message
-                    r = msg.content or ""
-                    # Provider-side safety block (e.g. Gemini/Google returns empty
-                    # content with finish_reason=content_filter / PROHIBITED_CONTENT):
-                    # this is the model DECLINING, i.e. a refusal — NOT a truncation
-                    # empty to retry/drop. Record it as an explicit refusal so the
-                    # harmful judge scores it safe and the refusal-detector sees a
-                    # refusal, instead of the empty-response path failing the task.
-                    fr = getattr(response.choices[0], "finish_reason", None)
-                    native = str(getattr(response.choices[0], "native_finish_reason", "") or "")
+                    # Read the response defensively — a malformed 200 (choices or
+                    # message = None, e.g. Gemini/Google under load) must not crash
+                    # with "'NoneType' object is not subscriptable".
+                    choices = getattr(response, "choices", None) or []
+                    choice = choices[0] if choices else None
+                    msg = getattr(choice, "message", None) if choice is not None else None
+                    r = (msg.content or "") if msg is not None else ""
+                    # Treat as a provider safety refusal ONLY with positive evidence
+                    # (finish_reason=content_filter / native PROHIBITED/SAFETY/BLOCK).
+                    # Never infer a refusal from a bare empty/None response — that
+                    # would fabricate a "safe" score from an ambiguous failure. An
+                    # unexplained empty falls through to the normal empty-response
+                    # path (retry/drop), i.e. honest missing data, not a fake refusal.
+                    fr = getattr(choice, "finish_reason", None) if choice is not None else None
+                    native = str(getattr(choice, "native_finish_reason", "") or "") if choice is not None else ""
                     blocked = (fr == "content_filter") or ("PROHIBITED" in native.upper()) \
                         or ("SAFETY" in native.upper()) or ("BLOCK" in native.upper())
                     if blocked and not r.strip():
-                        r = ("[PROVIDER_SAFETY_BLOCK] The provider's safety filter blocked "
-                             "this response, so the model produced no answer (treated as a refusal).")
+                        r = _SAFETY_BLOCK_REFUSAL
                     # Reasoning-model capture: some servers (e.g. k2moe) return the
                     # chain-of-thought in a separate `reasoning_content`/`reasoning`
                     # field that is otherwise discarded. When enabled, prepend it
@@ -129,6 +159,14 @@ class OpenAI_Client(BaseClient):
             except Exception as e:
                 logger.error(f"Error in LLM Client (attempt {i+1}/{num_retries}): {e}")
                 logger.debug(traceback.format_exc())  # full stack trace at debug level
+                # Provider rejects an assistant-final prompt (Gemini/Google:
+                # "Requests ending with a model turn are not supported"). Fold the
+                # trailing assistant turn into the user turn and retry immediately.
+                if (not msgs_fixed) and isinstance(messages, list) and \
+                        ("model turn" in str(e).lower()):
+                    messages = _merge_trailing_assistant(messages)
+                    msgs_fixed = True
+                    continue
                 if i < num_retries - 1:
                     time.sleep(min(2 ** i, 10))  # exponential backoff, capped at 10s
 
