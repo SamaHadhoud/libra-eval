@@ -1,6 +1,7 @@
 % preview.tex — compile harness for the generated fragments. NOT the report:
 % it exists so `tectonic preview.tex` proves every fragment builds before the
-% real report \inputs them. Safe to delete once the real report exists.
+% real report \inputs them, and demonstrates a sensible order in which related
+% tables and figures sit next to each other. Safe to delete / replace.
 \documentclass[10pt]{article}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage[T1]{fontenc}
@@ -9,27 +10,85 @@
 \usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 
 \input{generated/preamble.tex}
 \input{generated/numbers.tex}
 
+% Review-only annotation flagging figures/tables that show the SAME numbers, so
+% we can pick one per concept for the final report. Delete these in the report.
+\newcommand{\dupnote}[1]{\par\smallskip\noindent
+  {\small\itshape$\rightarrow$ Review note: #1}\par\smallskip}
+
 \begin{document}
 
-\section*{Fragment preview (auto-generated content only)}
+\section*{K2 family safety evaluation — fragment preview}
 
-Sanity line — every number below comes from \verb|\famnum| lookups, none is typed:
-the \famnum{family}{n_models}-model family
-(\famnum{family}{model_list}) spans \famnum{family}{n_tasks} main tasks;
-K2-V3 375B scores a mean of \famnum{v3_375b}{mean_main}
-(sample-weighted safety \famnum{v3_375b}{safety_rate}\%,
-\famnum{v3_375b}{n_ge095} tasks $\geq$ 0.95,
-jailbreak domain \famnum{v3_375b}{dom_jailbreak}).
-Generated \famnum{family}{generated_date}.
+Every number below is a \verb|\famnum| lookup, none typed by hand: the
+\famnum{family}{n_models}-model set (\famnum{family}{model_list}) over
+\famnum{family}{n_tasks} main tasks. Generated \famnum{family}{generated_date}.
 
+\bigskip
+\fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{%
+\small\itshape
+\textbf{Review note — figures/tables that show the same numbers} (pick one per
+group for the final report; each is also flagged inline below):
+\begin{itemize}\setlength{\itemsep}{2pt}
+  \item \textbf{Per-domain scores:} Table~\ref{tab:fam-overview},
+    Fig.~\ref{fig:fam-domain-bars}, Fig.~\ref{fig:fam-domain-bars-div} and
+    Fig.~\ref{fig:fam-scaling-domains} are the same domain$\times$model numbers.
+    Keep the table + at most one chart.
+  \item \textbf{Two domain dot-plots:} Fig.~\ref{fig:fam-domain-bars} and
+    Fig.~\ref{fig:fam-domain-bars-div} have identical means; only the whiskers
+    differ (within-task sampling noise vs.\ between-task spread). Keep one.
+  \item \textbf{Overall mean:} Fig.~\ref{fig:fam-scaling} is the ``Overall'' row
+    of Table~\ref{tab:fam-overview}.
+  \item \textbf{Attack type:} Fig.~\ref{fig:fam-by-attack} and
+    Fig.~\ref{fig:fam-attack-scaling} are the same numbers in two styles.
+  \item \textbf{Harm categories:} Fig.~\ref{fig:fam-harm-failures} (counts) and
+    Fig.~\ref{fig:fam-harm-shares} (each category as a share of the model's own
+    harm) are the same categories --- volume vs.\ profile. Keep one.
+  \item \textbf{UAE / Multilingual:} Table~\ref{tab:fam-uae} +
+    Fig.~\ref{fig:fam-uae}, and Table~\ref{tab:fam-multilingual} +
+    Fig.~\ref{fig:fam-multilingual}, are the same scores
+    (UAE-controversial Fig.~\ref{fig:fam-uae-controversial} is separate --- keep it).
+\end{itemize}}}
+
+% ---- Overview: headline table, then the overview-level charts ----------------
+\clearpage
+\section*{Overview}
 \input{generated/tab_overview.tex}
+\dupnote{The overall bar chart and the domain dot-plot below both re-plot numbers
+already in the table above (the bar = the table's ``Overall'' row; the dot-plot =
+its per-domain columns). Keep the table plus at most one chart.}
+\input{generated/fig_fam_scaling_overall.tex}
+\input{generated/fig_fam_domain_bars.tex}
+\dupnote{Same means as the dot-plot directly above; only the error-bar meaning
+differs (within-task sampling noise vs.\ between-task spread). Keep one.}
+\input{generated/fig_fam_domain_bars_div.tex}
+\input{generated/fig_fam_score_hist.tex}
+\input{generated/fig_fam_heatmap.tex}
+
+% ---- By domain: each domain table immediately followed by its own charts -----
+\clearpage
+\section*{Results by domain}
+
 \input{generated/tab_dom_general_refusal.tex}
+\input{generated/fig_fam_harm_failures.tex}
+\dupnote{Fig.~\ref{fig:fam-harm-shares} below shows the same risk categories as
+the counts above, just normalised to each model's own total (failure profile vs.\
+absolute volume). Keep one.}
+\input{generated/fig_fam_harm_shares.tex}
+
 \input{generated/tab_dom_jailbreak.tex}
+\dupnote{The two attack-type figures below show the same numbers in two different
+styles (grouped bars vs.\ per-attack panels). Keep one.}
+\input{generated/fig_fam_by_attack.tex}
+\input{generated/fig_fam_attack_scaling.tex}
+
 \input{generated/tab_dom_over_refusal.tex}
+\input{generated/fig_fam_tradeoff.tex}
+
 \input{generated/tab_dom_cyber_privacy.tex}
 \input{generated/tab_dom_bias.tex}
 \input{generated/tab_dom_toxicity.tex}
@@ -37,15 +96,48 @@ Generated \famnum{family}{generated_date}.
 \input{generated/tab_dom_physical.tex}
 \input{generated/tab_dom_truthfulness.tex}
 \input{generated/tab_dom_ethics.tex}
+
+% ---- Cross-model / scaling ---------------------------------------------------
+\clearpage
+\section*{Cross-model analysis}
+\input{generated/tab_axis_means.tex}
+\dupnote{Per-domain $\times$ model scores again --- the same numbers as the
+overview table and the domain dot-plot, just as small-multiple panels. Keep one.}
+\input{generated/fig_fam_scaling_domains.tex}
+\input{generated/tab_anomalies.tex}
+
+% ---- UAE-specific: table then the two UAE charts -----------------------------
+\clearpage
+\section*{UAE-specific benchmarks}
 \input{generated/tab_uae.tex}
+\dupnote{The UAE bar chart below re-plots this table's scores. Keep one (the
+UAE-controversial breakdown that follows is separate --- keep that).}
+\input{generated/fig_fam_uae.tex}
+\input{generated/fig_fam_uae_controversial.tex}
+
+% ---- Multilingual ------------------------------------------------------------
+\clearpage
+\section*{Multilingual safety (exploratory)}
 \input{generated/tab_multilingual.tex}
+\dupnote{The multilingual bar chart below re-plots this table. Keep one.}
+\input{generated/fig_fam_multilingual.tex}
+
+% ---- Thinking vs answer ------------------------------------------------------
+\clearpage
+\section*{Thinking vs.\ answer}
+\input{generated/fig_fam_thinking_divergence.tex}
+
+% ---- Movers / run health -----------------------------------------------------
+\clearpage
+\section*{Largest movers and run health}
 \input{generated/tab_movers.tex}
 \input{generated/tab_comparison.tex}
 \input{generated/tab_comparison_movers.tex}
 \input{generated/tab_runhealth.tex}
-\input{generated/tab_axis_means.tex}
-\input{generated/tab_anomalies.tex}
-\input{generated/figs.tex}
+
+% ---- Appendix: full per-task results (metric + n live here) ------------------
+\clearpage
+\section*{Appendix: full main-suite results}
 \input{generated/tab_full.tex}
 
 \end{document}

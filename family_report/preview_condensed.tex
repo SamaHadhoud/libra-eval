@@ -1,0 +1,87 @@
+% preview_condensed.tex — condensed report: exactly ONE view per concept
+% (duplicates removed per reviewer choices). Compile: tectonic preview_condensed.tex
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\input{generated/preamble.tex}
+\input{generated/numbers.tex}
+
+\begin{document}
+
+\section*{K2 family safety evaluation — condensed}
+
+Every number is a \verb|\famnum| lookup: the \famnum{family}{n_models}-model set
+(\famnum{family}{model_list}) over \famnum{family}{n_tasks} main tasks.
+Generated \famnum{family}{generated_date}.
+
+% ---- Overview: table (carries the overall row) + domain dot-plot -------------
+\clearpage
+\section*{Overview}
+\input{generated/tab_overview.tex}
+\input{generated/fig_fam_score_hist.tex}
+\input{generated/fig_fam_heatmap.tex}
+
+% ---- By domain --------------------------------------------------------------
+\clearpage
+\section*{Results by domain}
+
+\input{generated/tab_dom_general_refusal.tex}
+\input{generated/fig_fam_harm_failures.tex}
+
+\input{generated/tab_dom_jailbreak.tex}
+\input{generated/fig_fam_by_attack.tex}
+
+\input{generated/tab_dom_over_refusal.tex}
+\input{generated/fig_fam_tradeoff.tex}
+
+\input{generated/tab_dom_cyber_privacy.tex}
+\input{generated/tab_dom_bias.tex}
+\input{generated/tab_dom_toxicity.tex}
+\input{generated/tab_dom_conversational.tex}
+\input{generated/tab_dom_physical.tex}
+\input{generated/tab_dom_truthfulness.tex}
+\input{generated/tab_dom_ethics.tex}
+
+% ---- Cross-model ------------------------------------------------------------
+\clearpage
+\section*{Cross-model analysis}
+\input{generated/tab_axis_means.tex}
+\input{generated/tab_anomalies.tex}
+
+% ---- UAE (table + the separate controversial breakdown) ---------------------
+\clearpage
+\section*{UAE-specific benchmarks}
+\input{generated/tab_uae.tex}
+\input{generated/fig_fam_uae_controversial.tex}
+
+% ---- Multilingual (table only) ----------------------------------------------
+\clearpage
+\section*{Multilingual safety (exploratory)}
+\input{generated/tab_multilingual.tex}
+
+% ---- Thinking vs answer -----------------------------------------------------
+\clearpage
+\section*{Thinking vs.\ answer}
+\input{generated/fig_fam_thinking_divergence.tex}
+
+% ---- Movers / run health ----------------------------------------------------
+\clearpage
+\section*{Largest movers and run health}
+\input{generated/tab_movers.tex}
+\input{generated/tab_comparison.tex}
+\input{generated/tab_comparison_movers.tex}
+\input{generated/tab_runhealth.tex}
+
+% ---- Appendix ---------------------------------------------------------------
+\clearpage
+\section*{Appendix: full main-suite results}
+\input{generated/tab_full.tex}
+
+\end{document}

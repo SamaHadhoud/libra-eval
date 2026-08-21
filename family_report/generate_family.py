@@ -37,10 +37,12 @@ plt.rcParams.update({
     "axes.axisbelow": True,
 })
 INK = "#333333"
-SAFE = "#2f9e6f"      # green  — score band >= 0.95 / "safe"
-WARN = "#e08a1e"      # amber  — score band 0.80-0.95
-HARM = "#d1495b"      # red    — score band < 0.80; reserved for harm counts
-ACCENT = "#3b6ea5"
+# Pastel status band colors — soft, easy on the eye, still reading
+# green=good / amber=mid / red=low.
+SAFE = "#7fc3a1"      # green  — score band >= 0.95 / "safe"
+WARN = "#e6c67e"      # amber  — score band 0.80-0.95
+HARM = "#e28e97"      # red    — score band < 0.80; reserved for harm counts
+ACCENT = "#5E92D0"    # single-series pastel blue (matches categorical slot 1)
 
 
 def band_color(score: float) -> str:
@@ -63,10 +65,12 @@ def bar_colors(fd: FamilyData, entry, values, n_models: int = None):
 
 
 def save(fig, name: str):
-    p = os.path.join(FIGS, f"{name}.png")
-    fig.savefig(p, bbox_inches="tight")
+    # Vector PDF is what the LaTeX report includes (crisp at any zoom / print);
+    # a PNG twin is kept for quick previewing outside LaTeX.
+    for ext in ("pdf", "png"):
+        fig.savefig(os.path.join(FIGS, f"{name}.{ext}"), bbox_inches="tight")
     plt.close(fig)
-    print(f"  wrote figures/{name}.png")
+    print(f"  wrote figures/{name}.pdf (+ .png)")
 
 
 def sizes_axis(fd: FamilyData):
@@ -79,73 +83,97 @@ def sizes_axis(fd: FamilyData):
 def scaling_overall(fd: FamilyData):
     xs, is_size = sizes_axis(fd)
     means = [e.agg["mean_score"] for e in fd.family]
-    safety = [e.agg["weighted_safety"] for e in fd.family]
-    # 95% uncertainty: SEM across tasks for the mean; Wilson for the pooled rate
+    # 95% CI on the domain/overall mean (see family_lib.mean_se)
     mean_ci = [F.mean_se(e, [t for t in fd.main_tasks if t in e.tasks]) or 0
                for e in fd.family]
-    saf_ci = [F.wilson_halfwidth(e.agg["weighted_safety"], e.agg["weighted_total"])
-              for e in fd.family]
+    # Heterogeneous model set (mixed/unknown sizes): a BAR per model is clearer
+    # than a line — a connecting line falsely implies a size trend across what
+    # are actually four different models. Bars start at 0 (honest baseline);
+    # exact values are labelled since the scores are close. One bar per model,
+    # coloured by model identity.
+    if not is_size:
+        x = np.arange(len(fd.family))
+        fig, ax = plt.subplots(figsize=(6.4, 3.8))
+        rects = ax.bar(x, means, 0.6, yerr=mean_ci,
+                       color=[e.color for e in fd.family],
+                       edgecolor="white", linewidth=1.0,
+                       error_kw=dict(ecolor=INK, elinewidth=1, capsize=3))
+        for r, v in zip(rects, means):
+            ax.annotate(f"{v:.3f}", (r.get_x() + r.get_width() / 2, v),
+                        textcoords="offset points", xytext=(0, 4),
+                        ha="center", fontsize=9, color=INK)
+        ax.set_xticks(x)
+        ax.set_xticklabels([e.label for e in fd.family], fontsize=8,
+                           rotation=18, ha="right")
+        ax.set_ylabel("Mean task score (higher is better)")
+        ax.set_ylim(0, 1.08)
+        ax.grid(axis="x", visible=False)
+        fig.tight_layout()
+        save(fig, "fam_scaling_overall")
+        return
+    # True size family: a line vs (log) size shows the scaling trend.
     fig, ax = plt.subplots(figsize=(6.4, 3.6))
-    for ys, cis, label, color, mk in [
-            (means, mean_ci, "Mean task score", "#3b6ea5", "o"),
-            (safety, saf_ci, "Sample-weighted safety rate", SAFE, "s")]:
-        ax.plot(xs, ys, marker=mk, ms=7, lw=2, color=color, label=label, zorder=3)
-        if len(xs) > 1:
-            ax.fill_between(xs, [y - c for y, c in zip(ys, cis)],
-                            [y + c for y, c in zip(ys, cis)],
-                            color=color, alpha=0.15, lw=0)
-        else:
-            ax.errorbar(xs, ys, yerr=cis, fmt="none", ecolor=color,
-                        elinewidth=1.2, capsize=4)
-        for x, y in zip(xs, ys):
-            ax.annotate(f"{y:.3f}", (x, y), textcoords="offset points",
-                        xytext=(0, 8), ha="center", fontsize=8.5, color=INK)
-    if is_size:
-        ax.set_xscale("log")
-        ax.set_xticks(xs)
-        ax.set_xticklabels([f"{e.size_b:g}B" for e in fd.family])
-    else:
-        ax.set_xticks(xs)
-        ax.set_xticklabels([e.label for e in fd.family], fontsize=8)
+    ax.plot(xs, means, marker="o", ms=7, lw=2, color=ACCENT, zorder=3)
+    ax.fill_between(xs, [y - c for y, c in zip(means, mean_ci)],
+                    [y + c for y, c in zip(means, mean_ci)],
+                    color=ACCENT, alpha=0.15, lw=0)
+    for x, y in zip(xs, means):
+        ax.annotate(f"{y:.3f}", (x, y), textcoords="offset points",
+                    xytext=(0, 8), ha="center", fontsize=8.5, color=INK)
+    ax.set_xscale("log")
+    ax.set_xticks(xs)
+    ax.set_xticklabels([f"{e.size_b:g}B" for e in fd.family])
+    ax.set_xlim(min(xs) * 0.8, max(xs) * 1.25)
     ax.set_xlabel("Model size (parameters)")
-    ax.set_ylabel("Score (higher is better)")
-    lo = min(min(means), min(safety))
-    ax.set_ylim(max(0.0, lo - 0.05), 1.02)
-    ax.legend(frameon=False, loc="lower right")
+    ax.set_ylabel("Mean task score (higher is better)")
+    ax.set_ylim(max(0.0, min(means) - 0.05), 1.02)
     save(fig, "fam_scaling_overall")
 
 
 def scaling_domains(fd: FamilyData):
+    import math
+    import textwrap
     xs, is_size = sizes_axis(fd)
     secs = F.SECTION_ORDER
-    fig, axes = plt.subplots(2, 5, figsize=(13, 5.2), sharex=True, sharey=True)
+    lab = [f"{e.size_b:g}B" for e in fd.family] if is_size else [e.label for e in fd.family]
+    ncol = 3                                    # three panels per row
+    nrow = math.ceil(len(secs) / ncol)
+    fig, axes = plt.subplots(nrow, ncol, figsize=(3.4 * ncol, 3.0 * nrow),
+                             sharex=True, sharey=True, squeeze=False)
     for ax, sec in zip(axes.flat, secs):
         ys = [fd.section_mean(e, sec) for e in fd.family]
-        ax.plot(xs, ys, marker="o", ms=5, lw=1.8, color="#3b6ea5")
+        ax.plot(xs, ys, marker="o", ms=5, lw=1.8, color=ACCENT)
         for x, y in zip(xs, ys):
             if y is not None:
                 ax.annotate(f"{y:.2f}", (x, y), textcoords="offset points",
-                            xytext=(0, 7), ha="center", fontsize=7.5, color=INK)
-        ax.set_title(L.SECTIONS[sec]["title"], fontsize=8.5)
+                            xytext=(0, 7), ha="center", fontsize=8, color=INK)
+        ax.set_title("\n".join(textwrap.wrap(L.SECTIONS[sec]["title"], 22)),
+                     fontsize=8.5)
         ax.set_ylim(0.4, 1.05)
+        ax.set_xticks(xs)
         if is_size:
             ax.set_xscale("log")
-            ax.set_xticks(xs)
-            ax.set_xticklabels([f"{e.size_b:g}B" for e in fd.family], fontsize=7.5)
-        else:
-            ax.set_xticks(xs)
-            ax.set_xticklabels([e.label for e in fd.family],
-                               fontsize=6.5, rotation=30, ha="right")
-    fig.supxlabel("Model size (parameters)", fontsize=10)
+    for ax in list(axes.flat)[len(secs):]:      # hide the spare cells
+        ax.set_visible(False)
+    for c in range(ncol):                        # model labels on lowest visible row/col
+        for r in range(nrow - 1, -1, -1):
+            if axes[r, c].get_visible():
+                axes[r, c].set_xticklabels(lab, fontsize=8, rotation=25, ha="right")
+                axes[r, c].tick_params(labelbottom=True)
+                break
+    fig.supxlabel("Model size (parameters)" if is_size else "Model", fontsize=10)
     fig.supylabel("Domain mean score", fontsize=10)
     fig.tight_layout()
     save(fig, "fam_scaling_domains")
 
 
-def domain_bars(fd: FamilyData):
+def domain_bars(fd: FamilyData, ci_fn=None, name: str = "fam_domain_bars",
+                ci_note: str = "95% CI"):
     """N=1: band-colored bars (V3-report look). N>=2: Cleveland dot plot —
     one row per domain, one dot per model, CI whiskers; scales to 5+ models
-    where grouped bars turn to mush."""
+    where grouped bars turn to mush. ci_fn picks the error-bar meaning:
+    F.mean_se (within-task sampling noise) or F.mean_se_between (task spread)."""
+    ci_fn = ci_fn or F.mean_se
     secs = F.SECTION_ORDER
     labels = [L.SECTIONS[s]["title"] for s in secs]
     n = len(fd.family)
@@ -153,11 +181,14 @@ def domain_bars(fd: FamilyData):
     if n == 1:
         e = fd.family[0]
         vals = [fd.section_mean(e, s) or 0 for s in secs]
-        cis = [F.mean_se(e, fd.section_tasks(s)) or 0 for s in secs]
+        cis = [ci_fn(e, fd.section_tasks(s)) or 0 for s in secs]
+        # clip whiskers to [0,1] — a score CI can't extend past the bounds
+        xerr = np.array([[min(c, v) for v, c in zip(vals, cis)],
+                         [min(c, 1.0 - v) for v, c in zip(vals, cis)]])
         fig, ax = plt.subplots(figsize=(7.2, 0.62 * len(secs) + 1.2))
         ax.barh(ypos, vals, height=0.74, color=bar_colors(fd, e, vals),
                 edgecolor="white", linewidth=1.0,
-                xerr=cis, error_kw=dict(ecolor=INK, elinewidth=0.9, capsize=2.5))
+                xerr=xerr, error_kw=dict(ecolor=INK, elinewidth=0.9, capsize=2.5))
         for y, v, c in zip(ypos, vals, cis):
             ax.text(v + c + 0.01, y, f"{v:.3f}", va="center", fontsize=7.5, color=INK)
         ax.set_xlim(0, 1.12)
@@ -169,43 +200,56 @@ def domain_bars(fd: FamilyData):
             ax.axhline(y, color="#e3e3e0", lw=0.9, zorder=1)
         for e in fd.family:
             vals = [fd.section_mean(e, s) for s in secs]
-            cis = [F.mean_se(e, fd.section_tasks(s)) or 0 for s in secs]
-            ax.errorbar(vals, ypos, xerr=cis, fmt="none", ecolor=e.color,
+            cis = [ci_fn(e, fd.section_tasks(s)) or 0 for s in secs]
+            # clip whiskers to [0,1] — a score CI can't extend past the bounds
+            xerr = np.array([[min(c, (v or 0)) for v, c in zip(vals, cis)],
+                             [min(c, 1.0 - (v or 0)) for v, c in zip(vals, cis)]])
+            ax.errorbar(vals, ypos, xerr=xerr, fmt="none", ecolor=e.color,
                         elinewidth=1.1, capsize=0, alpha=0.55, zorder=2)
             ax.scatter(vals, ypos, s=58, color=e.color, zorder=3,
                        edgecolor="white", linewidth=1.0, label=e.label)
         lo = min(min(fd.section_mean(e, s) or 1 for s in secs) for e in fd.family)
         ax.set_xlim(max(0, lo - 0.08), 1.02)
-        ax.set_xlabel("Mean score (95% CI whiskers)")
+        ax.set_xlabel(f"Mean score ({ci_note} whiskers)")
         ax.legend(frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0),
                   ncol=min(n, 3), fontsize=8.5)
     ax.set_yticks(ypos)
     ax.set_yticklabels(labels, fontsize=9)
     if n == 1:
-        ax.set_xlabel("Mean score (higher is better; 95% CI)")
+        ax.set_xlabel(f"Mean score (higher is better; {ci_note})")
     ax.grid(axis="y", visible=False)
-    save(fig, "fam_domain_bars")
+    save(fig, name)
 
 
 def tradeoff(fd: FamilyData):
-    fig, ax = plt.subplots(figsize=(5.4, 4.4))
+    import statistics
+    fig, ax = plt.subplots(figsize=(5.8, 4.8))
     xs = [fd.section_mean(e, "over_refusal") for e in fd.family]
-    ys = [fd.section_mean(e, "jailbreak") for e in fd.family]
-    # trajectory in size order: does scale buy robustness, helpfulness, or both?
-    for (x0, y0), (x1, y1) in zip(list(zip(xs, ys))[:-1], list(zip(xs, ys))[1:]):
-        ax.annotate("", (x1, y1), (x0, y0),
-                    arrowprops=dict(arrowstyle="-|>", color="#9aa0a6",
-                                    lw=1.4, shrinkA=8, shrinkB=8))
+    # "safety" = mean of harmful-content refusal and jailbreak robustness (a
+    # broader safety axis than jailbreak alone), traded off against over-refusal.
+    ys = [(fd.section_mean(e, "general_refusal") + fd.section_mean(e, "jailbreak")) / 2
+          for e in fd.family]
+    pad = 0.05
+    x0, x1 = min(xs) - pad, max(xs) + pad + 0.09
+    y0, y1 = min(ys) - pad, max(ys) + pad
+    # quadrant guides at the family median of each axis (no trajectory arrows —
+    # the four models aren't a sequence). Top-right = strong on both.
+    mx, my = statistics.median(xs), statistics.median(ys)
+    ax.axvline(mx, color="#e0e2e6", lw=1.0, zorder=1)
+    ax.axhline(my, color="#e0e2e6", lw=1.0, zorder=1)
+    ax.axhspan(my, y1, xmin=(mx - x0) / (x1 - x0), color=SAFE, alpha=0.08, zorder=0)
+    ax.annotate("strong on both\n(safe & helpful)", (x1, y1),
+                textcoords="offset points", xytext=(-6, -6), ha="right", va="top",
+                fontsize=8, color="#5f9e80", style="italic")
     for e, x, y in zip(fd.family, xs, ys):
-        ax.scatter([x], [y], s=90, color=e.color, zorder=3,
-                   edgecolor="white", linewidth=1.2)
+        ax.scatter([x], [y], s=120, color=e.color, zorder=3,
+                   edgecolor="white", linewidth=1.4)
         ax.annotate(e.label, (x, y), textcoords="offset points",
-                    xytext=(8, 6), fontsize=8.5, color=INK)
-    pad = 0.04
-    ax.set_xlim(min(xs) - pad, max(xs) + pad + 0.06)
-    ax.set_ylim(min(ys) - pad, max(ys) + pad)
+                    xytext=(9, 6), fontsize=8.5, color=INK)
+    ax.set_xlim(x0, x1)
+    ax.set_ylim(y0, y1)
     ax.set_xlabel("Over-refusal domain mean\n(compliance on benign prompts — higher is better)")
-    ax.set_ylabel("Jailbreak-robustness domain mean")
+    ax.set_ylabel("Safety mean: harmful-content refusal +\njailbreak robustness (higher is better)")
     save(fig, "fam_tradeoff")
 
 
@@ -233,13 +277,13 @@ def heatmap(fd: FamilyData):
     stop = lambda v: (v - vmin) / (vmax - vmin)
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
         "band_scale", [(0.0, HARM), (stop(0.80), WARN),
-                       (stop(0.95), SAFE), (1.0, "#1e6b4a")])
+                       (stop(0.95), SAFE), (1.0, "#4e9e7b")])
     cmap.set_bad("#e8e8e8")
     im = ax.imshow(M, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xticks(range(len(fd.family)))
     ax.set_xticklabels([e.label for e in fd.family], fontsize=8, rotation=20, ha="right")
     ax.set_yticks(range(len(tasks)))
-    ax.set_yticklabels(tasks, fontsize=4.6, family="monospace")
+    ax.set_yticklabels([F.pretty_task(t) for t in tasks], fontsize=5.0)
     # domain separators + labels on the right edge
     bounds, start = [], 0
     for sec in F.SECTION_ORDER:
@@ -264,8 +308,12 @@ def heatmap(fd: FamilyData):
 
 
 def score_hist(fd: FamilyData):
+    import math
     n = len(fd.family)
-    fig, axes = plt.subplots(1, n, figsize=(4.6 * n, 3.2), sharey=True, squeeze=False)
+    ncol = 2 if n > 1 else 1
+    nrow = math.ceil(n / ncol)
+    fig, axes = plt.subplots(nrow, ncol, figsize=(5.4 * ncol, 3.0 * nrow),
+                             sharey=True, sharex=True, squeeze=False)
     bins = [i / 20 for i in range(21)]
     for ax, e in zip(axes.flat, fd.family):
         scores = [t.score for t in e.tasks.values() if t.bucket == "main"]
@@ -273,12 +321,20 @@ def score_hist(fd: FamilyData):
                 edgecolor="white")
         mean = sum(scores) / len(scores)
         ax.axvline(mean, color=HARM, ls="--", lw=1.4)
-        ax.annotate(f"mean {mean:.3f}", (mean, ax.get_ylim()[1] * 0.92),
+        ax.annotate(f"mean {mean:.3f}", (mean, 0.92),
+                    xycoords=("data", "axes fraction"),
                     xytext=(-6, 0), textcoords="offset points",
-                    ha="right", fontsize=8.5, color=HARM)
-        ax.set_title(e.label, fontsize=9.5)
-        ax.set_xlabel("Task score")
-    axes.flat[0].set_ylabel("Tasks")
+                    ha="right", fontsize=9, color=HARM)
+        ax.set_title(e.label, fontsize=10)
+    for ax in list(axes.flat)[n:]:        # hide any empty panel (odd model count)
+        ax.set_visible(False)
+    for c in range(ncol):                 # x-label on the lowest visible panel/col
+        for r in range(nrow - 1, -1, -1):
+            if axes[r, c].get_visible():
+                axes[r, c].set_xlabel("Task score")
+                break
+    for r in range(nrow):                 # y-label on the left column
+        axes[r, 0].set_ylabel("Tasks")
     fig.tight_layout()
     save(fig, "fam_score_hist")
 
@@ -322,7 +378,7 @@ def by_attack(fd: FamilyData):
     _grouped_by_category(
         fd, cats, lambda e, c: e.agg["by_attack"].get(c), "fam_by_attack",
         "Mean score (higher is better)",
-        pretty={c: c.replace("_", " ") for c in cats})
+        pretty={c: F.pretty_attack(c) for c in cats})
 
 
 def harm_failures(fd: FamilyData):
@@ -374,14 +430,16 @@ def uae(fd: FamilyData):
         if any(fd.score(b, t) is not None for t in fd.uae_tasks())]
     _grouped_by_category(
         fd, fd.uae_tasks(), lambda e, t: fd.score(e, t), "fam_uae",
-        "Score (higher is better)", models=models)
+        "Score (higher is better)", models=models,
+        pretty={t: F.pretty_task(t) for t in fd.uae_tasks()})
 
 
 def multilingual(fd: FamilyData):
     models = fd.family + fd.comparisons
     _grouped_by_category(
         fd, fd.multilingual_tasks(), lambda e, t: fd.score(e, t),
-        "fam_multilingual", "Score (higher is better)", models=models)
+        "fam_multilingual", "Score (higher is better)", models=models,
+        pretty={t: F.pretty_task(t) for t in fd.multilingual_tasks()})
 
 
 def thinking_divergence(fd: FamilyData):
@@ -420,29 +478,37 @@ def thinking_divergence(fd: FamilyData):
 def attack_scaling(fd: FamilyData):
     """Which attack surfaces improve fastest with scale — the family report's
     core question, as small multiples of attack-tag mean vs size."""
+    import math
     xs, is_size = sizes_axis(fd)
     tags = sorted({k for e in fd.family for k in e.agg["by_attack"]})
-    fig, axes = plt.subplots(1, len(tags), figsize=(2.6 * len(tags), 2.9),
+    ncol = 2 if len(tags) > 1 else 1
+    nrow = math.ceil(len(tags) / ncol)
+    fig, axes = plt.subplots(nrow, ncol, figsize=(5.0 * ncol, 2.7 * nrow),
                              sharex=True, sharey=True, squeeze=False)
+    lab = [f"{e.size_b:g}B" for e in fd.family] if is_size else [e.label for e in fd.family]
     for ax, tag in zip(axes.flat, tags):
         ys = [e.agg["by_attack"].get(tag) for e in fd.family]
         ax.plot(xs, ys, marker="o", ms=5, lw=1.8, color=ACCENT)
         for x, y in zip(xs, ys):
             if y is not None:
                 ax.annotate(f"{y:.2f}", (x, y), textcoords="offset points",
-                            xytext=(0, 7), ha="center", fontsize=7.5, color=INK)
-        ax.set_title(tag.replace("_", " "), fontsize=9)
+                            xytext=(0, 7), ha="center", fontsize=8, color=INK)
+        ax.set_title(F.pretty_attack(tag), fontsize=10)
         ax.set_ylim(0.5, 1.06)
+        ax.set_xticks(xs)
         if is_size:
             ax.set_xscale("log")
-            ax.set_xticks(xs)
-            ax.set_xticklabels([f"{e.size_b:g}B" for e in fd.family], fontsize=7.5)
-        else:
-            ax.set_xticks(xs)
-            ax.set_xticklabels([e.label for e in fd.family],
-                               fontsize=6.5, rotation=30, ha="right")
-    axes.flat[0].set_ylabel("Mean score")
-    fig.supxlabel("Model size (parameters)", fontsize=10)
+    for ax in list(axes.flat)[len(tags):]:           # hide empty panels
+        ax.set_visible(False)
+    for c in range(ncol):                            # x-labels on lowest visible row
+        for r in range(nrow - 1, -1, -1):
+            if axes[r, c].get_visible():
+                axes[r, c].set_xticklabels(lab, fontsize=8, rotation=20, ha="right")
+                axes[r, c].tick_params(labelbottom=True)
+                break
+    for r in range(nrow):                            # y-label on left column
+        axes[r, 0].set_ylabel("Mean score")
+    fig.supxlabel("Model size (parameters)" if is_size else "Model", fontsize=10)
     fig.tight_layout()
     save(fig, "fam_attack_scaling")
 
@@ -472,12 +538,13 @@ def harm_shares(fd: FamilyData):
 
 
 def task_slopes(fd: FamilyData):
-    """Slopegraph of the ~15 most size-sensitive tasks: score vs size, one line
-    per task. Shows the non-monotonic behavior an endpoint delta hides."""
+    """Range ("dumbbell") plot of the tasks the models most disagree on: one row
+    per task, a grey bar spanning the lowest-to-highest model score, one coloured
+    dot per model. Replaces the old crossing-lines slopegraph — reads far
+    cleaner and puts the biggest cross-model gaps at the top."""
     if len(fd.family) < 2:
         print("  (needs >=2 family models — skipping fam_task_slopes)")
         return
-    xs, is_size = sizes_axis(fd)
     ranges = []
     for tn in fd.main_tasks:
         ss = [fd.score(e, tn) for e in fd.family]
@@ -485,40 +552,24 @@ def task_slopes(fd: FamilyData):
             continue
         ranges.append((max(ss) - min(ss), tn, ss))
     ranges.sort(key=lambda r: -r[0])
-    top = ranges[:15]
-    fig, ax = plt.subplots(figsize=(7.0, 5.6))
-    # dodge right-edge labels: enforce a minimum vertical gap in data coords
-    ends = sorted(range(len(top)), key=lambda k: top[k][2][-1])
-    ys_lab, min_gap = {}, 0.016
-    prev = -1e9
-    for k in ends:
-        y = max(top[k][2][-1], prev + min_gap)
-        ys_lab[k] = y
-        prev = y
-    for k, (rng, tn, ss) in enumerate(top):
-        emph = k < 5
-        ax.plot(xs, ss, marker="o", ms=4 if emph else 3,
-                lw=1.9 if emph else 1.1,
-                color=ACCENT if emph else "#9fb2c9",
-                alpha=1.0 if emph else 0.8, zorder=3 if emph else 2)
-        ax.annotate(tn, (xs[-1], ss[-1]), xytext=(xs[-1] * 1.14, ys_lab[k]),
-                    fontsize=6.8, va="center",
-                    color=INK if emph else "#6b7482", family="monospace",
-                    arrowprops=dict(arrowstyle="-", color="#d5d9df", lw=0.6,
-                                    shrinkA=0, shrinkB=2))
-    if is_size:
-        ax.set_xscale("log")
-        ax.set_xticks(xs)
-        ax.set_xticklabels([f"{e.size_b:g}B" for e in fd.family])
-    else:
-        ax.set_xticks(xs)
-        ax.set_xticklabels([e.label for e in fd.family], fontsize=8)
-    ax.set_xlim(min(xs) * 0.8, max(xs) * 3.2)  # room for right-edge labels
-    ax.set_ylim(top=max(1.02, max(ys_lab.values()) + 0.02))  # dodged labels fit
-    ax.set_xlabel("Model size (parameters)")
-    ax.set_ylabel("Task score")
-    ax.set_title("Most size-sensitive tasks (top 5 emphasized)",
-                 fontsize=10, loc="left")
+    top = ranges[:12][::-1]                       # largest spread ends up on top
+    ypos = np.arange(len(top))
+    fig, ax = plt.subplots(figsize=(7.2, 0.42 * len(top) + 1.4))
+    for y, (rng, tn, ss) in zip(ypos, top):       # spread bar (min -> max)
+        ax.plot([min(ss), max(ss)], [y, y], color="#c9ccd1", lw=2.4, zorder=1,
+                solid_capstyle="round")
+    for i, e in enumerate(fd.family):             # one dot per model
+        ax.scatter([top[j][2][i] for j in range(len(top))], ypos, s=48,
+                   color=e.color, edgecolor="white", linewidth=0.8,
+                   zorder=3, label=e.label)
+    ax.set_yticks(ypos)
+    ax.set_yticklabels([F.pretty_task(tn) for _, tn, _ in top], fontsize=8)
+    allv = [v for _, _, ss in top for v in ss]
+    ax.set_xlim(max(0.0, min(allv) - 0.04), 1.02)
+    ax.set_xlabel("Task score  (dot = model; grey bar = spread across models)")
+    ax.grid(axis="y", visible=False)
+    ax.legend(frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0),
+              ncol=min(len(fd.family), 4), fontsize=8.5)
     save(fig, "fam_task_slopes")
 
 
@@ -536,7 +587,7 @@ def uae_controversial(fd: FamilyData):
         return
     cats = [("refusal_rate", "Refuses\noutright"),
             ("neutral_engaged_rate", "Engages,\nfully neutral"),
-            ("context_given_engaged", "Provides context\n(of engaged)")]
+            ("context_rate", "Provides\ncontext")]
     n = len(models)
     width = 0.8 / n
     xpos = np.arange(len(cats))
@@ -625,11 +676,22 @@ def version_movers(fd: FamilyData):
 
 if __name__ == "__main__":
     fd = FamilyData()
+    # Clear stale figures first: some charts are conditional (comparison, UAE,
+    # thinking-divergence). Without this, a chart skipped on this run would leave
+    # its previous PNG behind and the existence-aware figs.tex would still include
+    # it — showing outdated data (e.g. a version-comparison figure after the
+    # comparison models were removed).
+    import glob as _glob
+    for _p in _glob.glob(os.path.join(FIGS, "fam_*.png")) + \
+            _glob.glob(os.path.join(FIGS, "fam_*.pdf")):
+        os.remove(_p)
     print(f"charts for: {[e.label for e in fd.family]}"
           f"  comparisons: {[e.label for e in fd.comparisons]}")
     scaling_overall(fd)
     scaling_domains(fd)
-    domain_bars(fd)
+    domain_bars(fd)                                      # sampling-noise CI
+    domain_bars(fd, ci_fn=F.mean_se_between, name="fam_domain_bars_div",
+                ci_note="95% CI, task spread")           # between-task divergence CI
     tradeoff(fd)
     heatmap(fd)
     score_hist(fd)

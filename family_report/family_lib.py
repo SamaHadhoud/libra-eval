@@ -26,12 +26,76 @@ FIGURES = os.path.join(HERE, "figures")
 # Validated (dataviz six checks, light surface): CVD-safe order; the amber's low
 # surface contrast and the magenta<->green CVD band are compensated by direct
 # value labels + bar gaps in every chart (see generate_family.py).
-FAMILY_COLORS = ["#3b6ea5", "#e08a1e", "#8b5cd6", "#2f9e6f", "#b0548b"]
+# Pastel categorical order (dataviz CVD checker): passes lightness + chroma
+# floors and the normal-vision separation floor on ALL pairs (>=15), so every
+# model is distinguishable to normal vision. The one deuteranope-confusable pair
+# (rose vs teal) is inherent to any pastel pink+green combo and is mitigated by
+# the legend + direct value labels every chart carries. Kept clear of the
+# red/amber/green score-band hues so a model is never confused with a status.
+FAMILY_COLORS = ["#5E92D0", "#52B892", "#EA6FA0", "#A75FC9", "#F0A868"]
 BASELINE_COLOR = "#9aa0a6"
 # version-comparison models (e.g. K2-V2) — distinct from the family palette
 COMPARISON_COLORS = ["#b0548b", "#8a6d3b", "#4a7c59"]
 
 SECTION_ORDER = list(L.SECTIONS.keys())
+
+import re as _re
+
+# Human-readable dataset/task names for tables and charts. Names that plain
+# title-casing would get wrong (brand CamelCase, acronym-heavy ids) are listed
+# explicitly; everything else falls back to splitting on _/- and capitalizing
+# each word, with a small per-word acronym map.
+_TASK_SPECIAL = {
+    "aart": "AART", "bbq": "BBQ", "catqa": "CatQA", "confaide": "ConfAIde",
+    "cona": "CoNa", "crows_pairs": "CrowS-Pairs",
+    "cyberseceval4_mitre": "CyberSecEval4 MITRE", "gptfuzzer": "GPTFuzzer",
+    "hatexplain": "HateXplain", "hex_phi": "HEx-PHI",
+    "jbdistill_bench": "JBDistill-Bench", "jbshield": "JBShield",
+    "or_bench_hard_1k": "OR-Bench Hard-1k", "or_bench_toxic": "OR-Bench Toxic",
+    "prompthijackingrobustness": "Prompt-Hijacking Robustness",
+    "realtoxicityprompts": "RealToxicityPrompts",
+    "sp_misconceptions": "SP Misconceptions", "tdc_red_teaming": "TDC Red-Teaming",
+    "toxicchat": "ToxicChat", "toxigen": "ToxiGen",
+    "truthful_qa_binary": "TruthfulQA Binary", "truthful_qa_mc1": "TruthfulQA MC1",
+    "xsafety": "XSafety", "xstest": "XSTest", "dices350": "DICES-350",
+    "sorry_bench": "SORRY-Bench", "salad_bench": "SALAD-Bench",
+    "harmfulq": "HarmfulQ", "coconot_original": "CoCoNot Original",
+    "coconot_contrast": "CoCoNot Contrast", "aya_redteaming": "Aya Red-Teaming",
+    "anthropic_redteam": "Anthropic Red-Team", "beavertails_bad": "BeaverTails Bad",
+    "beavertails_good": "BeaverTails Good", "stereoset": "StereoSet", "bold": "BOLD",
+    "jailbreakbench": "JailbreakBench", "jailbreakbench_benign": "JailbreakBench Benign",
+    "wildjailbreak": "WildJailbreak", "latent_jailbreak": "Latent Jailbreak",
+    "personalinfoleak_few_shot": "Personal-Info-Leak Few-Shot",
+    "hack_a_prompt": "Hack-a-Prompt", "diasafety": "DiaSafety", "cosafe": "CoSafe",
+    "med_safety_bench": "Med-Safety-Bench", "harm_bench_new": "HarmBench",
+}
+_TASK_WORD = {"uae": "UAE", "qa": "QA", "sp": "SP", "tdc": "TDC", "dan": "DAN",
+              "ga": "GA", "fn": "FN", "fp": "FP", "mc1": "MC1", "mc2": "MC2",
+              "or": "OR", "adv": "Adv", "librai": "LibrAI", "dhow": "DHOW",
+              "wmdp": "WMDP", "llm": "LLM"}
+
+
+def pretty_task(name: str) -> str:
+    if name in _TASK_SPECIAL:
+        return _TASK_SPECIAL[name]
+    parts = _re.split(r"[_\-]", name)
+    return " ".join(_TASK_WORD.get(p, p.capitalize()) for p in parts)
+
+
+_ATTACK_PRETTY = {
+    "direct_risky": "Direct (risky)",
+    "instruction_hierarchy": "Instruction hierarchy",
+    "instr-hierarchy": "Instruction hierarchy",
+    "over_sensitive": "Over-sensitive",
+}
+
+
+def pretty_attack(s: str) -> str:
+    """Human-readable attack-type label: 'adversarial' -> 'Adversarial',
+    'instruction_hierarchy' -> 'Instruction hierarchy'."""
+    if s in _ATTACK_PRETTY:
+        return _ATTACK_PRETTY[s]
+    return s.replace("_", " ").replace("-", " ").capitalize()
 
 
 @dataclass
@@ -65,8 +129,11 @@ def load_manifest(path: str = os.path.join(HERE, "models.json")):
                 thinking_csv=(os.path.join(REPO, e["thinking_csv"])
                               if e.get("thinking_csv") else None),
             ))
-    # family ordered by size (unknown sizes last, manifest order preserved among them)
-    fam.sort(key=lambda e: (e.size_b is None, e.size_b or 0))
+    # Order the family by size ONLY when every model has a size_b (a real size
+    # family); otherwise keep the manifest order as authored. The anchor
+    # (reference for comparisons) is always the last family entry.
+    if fam and all(e.size_b is not None for e in fam):
+        fam.sort(key=lambda e: e.size_b)
     for i, e in enumerate(fam):
         e.color = FAMILY_COLORS[i % len(FAMILY_COLORS)]
     for i, e in enumerate(comp):
@@ -96,8 +163,11 @@ class FamilyData:
 
     @property
     def anchor(self):
-        """The largest family model — the reference for version comparisons."""
-        return self.family[-1]
+        """Reference model for version comparisons: the largest by known size_b
+        (independent of display order); falls back to the last family entry if no
+        sizes are set."""
+        sized = [e for e in self.family if e.size_b is not None]
+        return max(sized, key=lambda e: e.size_b) if sized else self.family[-1]
 
     # ---- lookups ---------------------------------------------------------- #
     def score(self, entry: ModelEntry, task: str) -> float | None:
@@ -156,7 +226,11 @@ def harm_failures(entry: ModelEntry):
                     label = L.RISK_TYPES[int(idx)]
                 elif idx in L.RISK_TYPES:
                     label = idx
-            counts[label or "unspecified"] += 1
+            # Only count harmful responses the judge tagged with a known risk
+            # category; untagged ones (no/invalid risk_type_index) are excluded
+            # so the chart shows genuinely categorized harm, not a catch-all.
+            if label:
+                counts[label] += 1
     return counts
 
 
@@ -203,6 +277,47 @@ def mean_se(entry: ModelEntry, tasks: list[str]) -> float | None:
         return None
     var = sum(max(p, 0) * max(1 - p, 0) / n for p, n in ps if n)
     return 1.96 * (var ** 0.5) / len(ps)
+
+
+# Two-sided 95% Student-t critical values by degrees of freedom (df = k-1).
+_T975 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365,
+         8: 2.306, 9: 2.262, 10: 2.228, 11: 2.201, 12: 2.179, 13: 2.160,
+         14: 2.145, 15: 2.131, 16: 2.120, 17: 2.110, 18: 2.101, 19: 2.093,
+         20: 2.086, 21: 2.080, 22: 2.074, 23: 2.069, 24: 2.064, 25: 2.060,
+         26: 2.056, 27: 2.052, 28: 2.048, 29: 2.045, 30: 2.042}
+
+
+def t975(df: int) -> float:
+    """Two-sided 95% t critical value. Uses scipy's exact quantile when
+    available; otherwise an exact table (df<=30) + normal approximation."""
+    if df <= 0:
+        return 1.96
+    try:
+        from scipy import stats
+        return float(stats.t.ppf(0.975, df))
+    except Exception:
+        if df in _T975:
+            return _T975[df]
+        z = 1.959964
+        return z * (1 + (z * z + 1) / (4 * df))       # df > 30
+
+
+def mean_se_between(entry: ModelEntry, tasks: list[str]) -> float | None:
+    """Proper 95% CI half-width of the domain mean, treating the k tasks as the
+    sample: t(0.975, k-1) * stdev(task scores) / sqrt(k) — the textbook
+    Student-t CI of a mean. Captures between-task divergence (contrast with
+    mean_se, which is within-task sampling noise). A single-task domain has no
+    spread, so it falls back to that task's sampling CI."""
+    import statistics
+    present = [t for t in tasks if t in entry.tasks]
+    scores = [entry.tasks[t].score for t in present]
+    k = len(scores)
+    if k == 0:
+        return None
+    if k >= 2:
+        return t975(k - 1) * statistics.stdev(scores) / (k ** 0.5)
+    t = entry.tasks[present[0]]
+    return wilson_halfwidth(min(max(t.score, 0.0), 1.0), t.n_samples) if t.n_samples else 0.0
 
 
 def axis_means(entry: ModelEntry) -> dict[str, tuple[float, int]]:
@@ -262,9 +377,13 @@ def uae_controversial_breakdown(entry: ModelEntry) -> dict | None:
             ctx += 1
     if not n:
         return None
+    # All three on the SAME base (share of all controversial prompts) so the
+    # bars are directly comparable. They still overlap (a reply can be both
+    # fully neutral and provide context), so they are independent diagnostics,
+    # not a partition that sums to 100%.
     return {"n": n, "refusal_rate": refusals / n,
             "neutral_engaged_rate": neutral / n,
-            "context_given_engaged": (ctx / engaged) if engaged else None}
+            "context_rate": ctx / n}
 
 
 def scaling_anomalies(fd: "FamilyData") -> list[dict]:

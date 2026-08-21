@@ -199,3 +199,11 @@ family_run.yaml
 
 # per-model family-run outputs (regenerable; e.g. outputs_deepseek_v4_flash_200/)
 outputs_*_200/
+
+# thinking-vs-answer harmful-check outputs (large, regenerable eval artifacts)
+harmful_check_*/
+
+# but DO track the family-report figure PDFs — the report \includegraphics them
+# and the eval outputs needed to regenerate them are gitignored, so a fresh
+# clone must ship the built vector figures (overrides the global *.pdf rule).
+!family_report/figures/*.pdf

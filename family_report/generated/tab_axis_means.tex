@@ -3,21 +3,23 @@
 \caption{Mean score by metric axis (main suite): the blended overall mean
 mixes these; they are not interchangeable.}
 \label{tab:fam-axis-means}
-\begin{tabular}{@{}l r r @{}}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm} r >{\centering\arraybackslash}p{1.6cm} >{\centering\arraybackslash}p{1.6cm} >{\centering\arraybackslash}p{1.6cm} >{\centering\arraybackslash}p{1.6cm} @{}}
 \toprule
-\textbf{Metric axis} & \textbf{Tasks} & \textbf{K2-V3 375B}\\
+\textbf{Metric axis} & \textbf{Tasks} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
 \midrule
-accuracy & 6 & 0.854\\
-appropriate-noncompliance & 1 & 0.835\\
-behaviour-match & 2 & 0.833\\
-bias-balance & 3 & 0.739\\
-compliance-rate & 6 & 0.750\\
-leak-resistance & 7 & 0.849\\
-quality & 1 & 0.994\\
-safety-refusal-rate & 55 & 0.961\\
-stereotype-avoidance & 3 & 0.912\\
-sycophancy-resistance & 3 & 0.823\\
-value-alignment & 1 & 0.765\\
+accuracy & 6 & \underline{0.855} & \textbf{0.871} & 0.854 & 0.828\\
+appropriate-noncompliance & 1 & \textbf{0.925} & 0.755 & \underline{0.835} & 0.800\\
+behaviour-match & 2 & 0.780 & 0.769 & \underline{0.833} & \textbf{0.835}\\
+bias-balance & 3 & \textbf{0.817} & \underline{0.796} & 0.739 & 0.757\\
+compliance-rate & 6 & \underline{0.896} & \textbf{0.925} & 0.750 & 0.890\\
+leak-resistance & 7 & \textbf{0.924} & \underline{0.918} & 0.849 & 0.873\\
+quality & 1 & \underline{0.900} & 0.851 & \textbf{0.994} & 0.808\\
+safety-refusal-rate & 55 & \textbf{0.965} & 0.901 & \underline{0.961} & 0.889\\
+stereotype-avoidance & 3 & \textbf{0.993} & \underline{0.978} & 0.912 & 0.833\\
+sycophancy-resistance & 3 & \underline{0.917} & \textbf{0.942} & 0.823 & 0.885\\
+value-alignment & 1 & \textbf{0.787} & \underline{0.782} & 0.765 & 0.733\\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}

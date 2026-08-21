@@ -2,27 +2,33 @@
   "_comment": "Family manifest for the K2-V3 size-family report. Add one entry per model as its run lands, then rerun generate_latex.py + generate_family.py. 'key' is the model's identity in \\famnum{<key>}{<stat>} lookups, table columns, and chart legends. 'size_b' is the parameter count in billions (x-axis of the scaling charts; may be null). 'results_dir' is repo-relative and must contain exactly one model's result files. Baselines appear only in the UAE comparison table, never in family aggregates or scaling charts.",
   "family": [
     {
+      "key": "kimi_k3",
+      "label": "Kimi K3 2.8T",
+      "size_b": 2800,
+      "results_dir": "outputs_kimi_k3_200/results"
+    },
+    {
+      "key": "gemini_3_7_flash",
+      "label": "Gemini 3.7 Flash",
+      "size_b": null,
+      "results_dir": "outputs_gemini_3_7_flash_200/results"
+    },
+    {
       "key": "v3_375b",
       "label": "K2-V3 375B",
       "size_b": 375,
       "results_dir": "outputs_full_200/results",
       "thinking_csv": "harmful_check_analysis_thinking/thinking_vs_response.csv"
-    }
-  ],
-  "baselines": [
+    },
     {
-      "key": "gpt4omini",
-      "label": "GPT-4o-mini",
-      "size_b": null,
-      "results_dir": "outputs_uae_compare/results"
+      "key": "deepseek_v4_flash",
+      "label": "DeepSeek V4 Flash 291B",
+      "size_b": 291,
+      "results_dir": "outputs_deepseek_v4_flash_200/results"
     }
+
   ],
+  "baselines": [],
   "_comparisons_comment": "Full-suite VERSION comparisons against the largest family model (the anchor). Shown in the version-comparison table/chart + movers, but NOT in family aggregates or size-scaling curves (they are not size points). Re-scored with the same fixed scorers/judge as the family on the tasks that changed.",
-  "comparisons": [
-    {
-      "key": "v2",
-      "label": "K2-Think V2",
-      "results_dir": "outputs_v2_200/results"
-    }
-  ]
+  "comparisons": []
 }

@@ -59,6 +59,28 @@ def attack_short(s: str) -> str:
     return ATTACK_SHORT.get(s, s.replace("_", "-"))
 
 
+def rank_cells(values) -> list[str]:
+    """Format one row of per-model scores: bold the best value, underline the
+    (distinct) second-best. Higher is better for every score in these tables.
+    Ties share a rank (all bests bold, all seconds underlined). None -> plain."""
+    nums = [v for v in values if isinstance(v, (int, float))]
+    if len(nums) < 2:                       # need >=2 models to rank
+        return [fmt(v) for v in values]
+    best = max(nums) if nums else None
+    seconds = [v for v in nums if v != best]
+    second = max(seconds) if seconds else None
+    out = []
+    for v in values:
+        s = fmt(v)
+        if isinstance(v, (int, float)):
+            if best is not None and v == best:
+                s = f"\\textbf{{{s}}}"
+            elif second is not None and v == second:
+                s = f"\\underline{{{s}}}"
+        out.append(s)
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # preamble.tex
 # --------------------------------------------------------------------------- #
@@ -144,18 +166,26 @@ def _model_heads(models) -> str:
     return " & ".join(f"\\textbf{{{esc(e.label)}}}" for e in models)
 
 
+def _mcols(n: int, w: str = "1.5cm") -> str:
+    """Fixed-width, centered model columns. Long model labels (e.g.
+    'DeepSeek V4 Flash 291B') wrap inside the header cell instead of forcing an
+    over-wide column that pushes the table past the page margin. Numbers center
+    cleanly in the fixed width."""
+    return (">{\\centering\\arraybackslash}p{%s} " % w) * n
+
+
 def gen_overview(fd: FamilyData):
-    cols = "l r " + "r " * len(fd.family)
+    cols = ">{\\raggedright\\arraybackslash}p{5.2cm} r " + _mcols(len(fd.family), "1.7cm")
     rows = []
     for sec in F.SECTION_ORDER:
         title = esc(L.SECTIONS[sec]["title"])
         n = len(fd.section_tasks(sec))
-        cells = " & ".join(fmt(fd.section_mean(e, sec)) for e in fd.family)
+        cells = " & ".join(rank_cells([fd.section_mean(e, sec) for e in fd.family]))
         rows.append(f"{title} & {n} & {cells}\\\\")
-    overall = " & ".join(fmt(e.agg["mean_score"]) for e in fd.family)
+    overall = " & ".join(rank_cells([e.agg["mean_score"] for e in fd.family]))
     body = "\n".join(rows)
     write("tab_overview.tex", f"""
-\\begin{{table}}[t]\\centering\\small
+\\begin{{table}}[t]\\centering\\small\\setlength{{\\tabcolsep}}{{4pt}}
 \\caption{{Mean score by safety domain across the K2-V3 family (higher is better).}}
 \\label{{tab:fam-overview}}
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
@@ -172,11 +202,12 @@ def gen_overview(fd: FamilyData):
 
 
 def _task_rows(fd: FamilyData, tasks: list[str], models) -> str:
+    # Domain tables show dataset + one score column per model only; the metric
+    # and n live in the full results table (tab_full) to keep these readable.
     rows = []
     for tn in tasks:
-        m, attack, n = fd.task_meta(tn)
-        cells = " & ".join(fmt(fd.score(e, tn)) for e in models)
-        rows.append(f"\\task{{{esc(tn)}}} & {meaning(m)} & {n} & {attack_short(attack)} & {cells}\\\\")
+        cells = " & ".join(rank_cells([fd.score(e, tn) for e in models]))
+        rows.append(f"{esc(F.pretty_task(tn))} & {cells}\\\\")
     return "\n".join(rows)
 
 
@@ -186,18 +217,18 @@ def gen_domain_tables(fd: FamilyData):
         if not tasks:
             continue
         title = esc(L.SECTIONS[sec]["title"])
-        cols = ">{\\raggedright\\arraybackslash}p{4.6cm} l r l " + "r " * len(fd.family)
+        cols = ">{\\raggedright\\arraybackslash}p{5.0cm} " + _mcols(len(fd.family), "1.9cm")
         write(f"tab_dom_{sec}.tex", f"""
-\\begin{{table}}[t]\\centering\\footnotesize
+\\begin{{table}}[H]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{5pt}}
 \\caption{{{title}: per-task scores.}}
 \\label{{tab:fam-dom-{sec.replace('_', '-')}}}
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
 \\toprule
-\\textbf{{Dataset}} & \\textbf{{Metric}} & \\textbf{{$n$}} & \\textbf{{Attack}} & {_model_heads(fd.family)}\\\\
+\\textbf{{Dataset}} & {_model_heads(fd.family)}\\\\
 \\midrule
 {_task_rows(fd, tasks, fd.family)}
 \\midrule
-\\textbf{{Domain mean}} & & & & {" & ".join(fmt(fd.section_mean(e, sec)) for e in fd.family)}\\\\
+\\textbf{{Domain mean}} & {" & ".join(rank_cells([fd.section_mean(e, sec) for e in fd.family]))}\\\\
 \\bottomrule
 \\end{{tabular}}
 \\end{{table}}
@@ -205,7 +236,8 @@ def gen_domain_tables(fd: FamilyData):
 
 
 def gen_full_table(fd: FamilyData):
-    cols = ">{\\raggedright\\arraybackslash}p{4.6cm} l r " + "r " * len(fd.family)
+    cols = (">{\\raggedright\\arraybackslash}p{4.2cm} "
+            ">{\\raggedright\\arraybackslash}p{1.9cm} r " + _mcols(len(fd.family), "1.5cm"))
     head = (f"\\textbf{{Dataset}} & \\textbf{{Metric}} & \\textbf{{$n$}} & "
             f"{_model_heads(fd.family)}\\\\")
     chunks = []
@@ -218,14 +250,14 @@ def gen_full_table(fd: FamilyData):
                       f"{{\\textbf{{{esc(L.SECTIONS[sec]['title'])}}}}}\\\\*")
         for tn in tasks:
             m, _, n = fd.task_meta(tn)
-            cells = " & ".join(fmt(fd.score(e, tn)) for e in fd.family)
-            chunks.append(f"\\task{{{esc(tn)}}} & {meaning(m)} & {n} & {cells}\\\\")
+            cells = " & ".join(rank_cells([fd.score(e, tn) for e in fd.family]))
+            chunks.append(f"{esc(F.pretty_task(tn))} & {meaning(m)} & {n} & {cells}\\\\")
         chunks.append("\\midrule")
     if chunks and chunks[-1] == "\\midrule":
         chunks.pop()
     body = "\n".join(chunks)
     write("tab_full.tex", f"""
-\\footnotesize
+\\begingroup\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
 \\begin{{longtable}}{{@{{}}{cols}@{{}}}}
 \\caption{{Full main-suite results across the K2-V3 family.}}
 \\label{{tab:fam-full}}\\\\
@@ -241,7 +273,7 @@ def gen_full_table(fd: FamilyData):
 \\endlastfoot
 {body}
 \\end{{longtable}}
-\\normalsize
+\\endgroup
 """.lstrip())
 
 
@@ -249,10 +281,10 @@ def gen_uae_multiling(fd: FamilyData):
     models = fd.family + fd.comparisons + [
         b for b in fd.baselines
         if any(fd.score(b, t) is not None for t in fd.uae_tasks())]
-    cols = (">{\\raggedright\\arraybackslash}p{3.2cm} "
-            ">{\\raggedright\\arraybackslash}p{2.1cm} " + "r " * len(models))
+    cols = (">{\\raggedright\\arraybackslash}p{2.9cm} "
+            ">{\\raggedright\\arraybackslash}p{1.9cm} " + _mcols(len(models), "1.5cm"))
     write("tab_uae.tex", f"""
-\\begin{{table}}[t]\\centering\\footnotesize
+\\begin{{table}}[t]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
 \\caption{{UAE-specific benchmarks: K2-V3 family vs.\\ prior version(s) and baseline.}}
 \\label{{tab:fam-uae}}
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
@@ -260,8 +292,8 @@ def gen_uae_multiling(fd: FamilyData):
 \\textbf{{Dataset}} & \\textbf{{Metric}} & {_model_heads(models)}\\\\
 \\midrule
 {chr(10).join(
-    f"\\task{{{esc(tn)}}} & {meaning(fd.task_meta(tn)[0])} & "
-    + " & ".join(fmt(fd.score(e, tn)) for e in models) + "\\\\"
+    f"{esc(F.pretty_task(tn))} & {meaning(fd.task_meta(tn)[0])} & "
+    + " & ".join(rank_cells([fd.score(e, tn) for e in models])) + "\\\\"
     for tn in fd.uae_tasks())}
 \\bottomrule
 \\end{{tabular}}
@@ -269,10 +301,10 @@ def gen_uae_multiling(fd: FamilyData):
 """.lstrip())
 
     ml_models = fd.family + fd.comparisons
-    cols = (">{\\raggedright\\arraybackslash}p{3.2cm} "
-            ">{\\raggedright\\arraybackslash}p{2.1cm} " + "r " * len(ml_models))
+    cols = (">{\\raggedright\\arraybackslash}p{2.9cm} "
+            ">{\\raggedright\\arraybackslash}p{1.9cm} " + _mcols(len(ml_models), "1.5cm"))
     write("tab_multilingual.tex", f"""
-\\begin{{table}}[t]\\centering\\footnotesize
+\\begin{{table}}[t]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
 \\caption{{Multilingual safety (exploratory; outside the main aggregates).}}
 \\label{{tab:fam-multilingual}}
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
@@ -280,8 +312,8 @@ def gen_uae_multiling(fd: FamilyData):
 \\textbf{{Dataset}} & \\textbf{{Metric}} & {_model_heads(ml_models)}\\\\
 \\midrule
 {chr(10).join(
-    f"\\task{{{esc(tn)}}} & {meaning(fd.task_meta(tn)[0])} & "
-    + " & ".join(fmt(fd.score(e, tn)) for e in ml_models) + "\\\\"
+    f"{esc(F.pretty_task(tn))} & {meaning(fd.task_meta(tn)[0])} & "
+    + " & ".join(rank_cells([fd.score(e, tn) for e in ml_models])) + "\\\\"
     for tn in fd.multilingual_tasks())}
 \\bottomrule
 \\end{{tabular}}
@@ -301,9 +333,9 @@ def gen_comparison(fd: FamilyData):
     models = [anchor] + cols
     body = []
     for sec in F.SECTION_ORDER:
-        cells = " & ".join(fmt(fd.section_mean(e, sec)) for e in models)
+        cells = " & ".join(rank_cells([fd.section_mean(e, sec) for e in models]))
         body.append(f"{esc(L.SECTIONS[sec]['title'])} & {cells}\\\\")
-    overall = " & ".join(fmt(e.agg['mean_score']) if e.agg else "--" for e in models)
+    overall = " & ".join(rank_cells([e.agg['mean_score'] if e.agg else None for e in models]))
     write("tab_comparison.tex", f"""
 \\begin{{table}}[t]\\centering\\small
 \\caption{{Version comparison: {esc(anchor.label)} vs.\\ prior version(s), mean score by domain.}}
@@ -329,7 +361,7 @@ def gen_comparison(fd: FamilyData):
             deltas.append((tn, a, b, a - b))
     deltas.sort(key=lambda r: -abs(r[3]))
     rows = "\n".join(
-        f"\\task{{{esc(tn)}}} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
+        f"{esc(F.pretty_task(tn))} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
         for tn, a, b, d in deltas[:15])
     write("tab_comparison_movers.tex", f"""
 \\begin{{table}}[t]\\centering\\small
@@ -378,21 +410,23 @@ def gen_axis_means(fd: FamilyData):
     for ax_name in axes:
         ns = {per[e.key].get(ax_name, (None, 0))[1] for e in fd.family}
         ntasks = max(ns)
-        cells = " & ".join(fmt(per[e.key].get(ax_name, (None, 0))[0])
-                           for e in fd.family)
+        cells = " & ".join(rank_cells([per[e.key].get(ax_name, (None, 0))[0]
+                                       for e in fd.family]))
         rows.append(f"{meaning(ax_name)} & {ntasks} & {cells}\\\\")
     write("tab_axis_means.tex", f"""
 \\begin{{table}}[t]\\centering\\small
 \\caption{{Mean score by metric axis (main suite): the blended overall mean
 mixes these; they are not interchangeable.}}
 \\label{{tab:fam-axis-means}}
-\\begin{{tabular}}{{@{{}}l r {"r " * len(fd.family)}@{{}}}}
+\\resizebox{{\\textwidth}}{{!}}{{%
+\\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{3.4cm}} r {_mcols(len(fd.family), "1.6cm")}@{{}}}}
 \\toprule
 \\textbf{{Metric axis}} & \\textbf{{Tasks}} & {_model_heads(fd.family)}\\\\
 \\midrule
 {chr(10).join(rows)}
 \\bottomrule
-\\end{{tabular}}
+\\end{{tabular}}%
+}}
 \\end{{table}}
 """.lstrip())
 
@@ -410,8 +444,8 @@ def gen_anomalies(fd: FamilyData):
         return
     heads = " & ".join(f"\\textbf{{{esc(e.label)}}}" for e in fd.family)
     rows = "\n".join(
-        f"\\task{{{esc(r['task'])}}} & "
-        + " & ".join(fmt(s) for s in r["scores"])
+        f"{esc(F.pretty_task(r['task']))} & "
+        + " & ".join(rank_cells(r["scores"]))
         + f" & {fmt(r['amplitude'])}\\\\"
         for r in an[:15])
     write("tab_anomalies.tex", f"""
@@ -419,13 +453,15 @@ def gen_anomalies(fd: FamilyData):
 \\caption{{Scaling anomalies: tasks whose score is non-monotonic in model size
 beyond 95\\%-CI noise (read these first).}}
 \\label{{tab:fam-anomalies}}
-\\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{4.6cm}} {"r " * len(fd.family)}r@{{}}}}
+\\resizebox{{\\textwidth}}{{!}}{{%
+\\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{3.3cm}} {_mcols(len(fd.family), "1.5cm")}r@{{}}}}
 \\toprule
 \\textbf{{Dataset}} & {heads} & \\textbf{{Amplitude}}\\\\
 \\midrule
 {rows}
 \\bottomrule
-\\end{{tabular}}
+\\end{{tabular}}%
+}}
 \\end{{table}}
 """.lstrip())
 
@@ -443,7 +479,7 @@ def gen_movers(fd: FamilyData):
             deltas.append((tn, a, b, b - a))
     deltas.sort(key=lambda r: -abs(r[3]))
     rows = "\n".join(
-        f"\\task{{{esc(tn)}}} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
+        f"{esc(F.pretty_task(tn))} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
         for tn, a, b, d in deltas[:15])
     write("tab_movers.tex", f"""
 \\begin{{table}}[t]\\centering\\small
@@ -462,15 +498,22 @@ def gen_movers(fd: FamilyData):
 
 # (name, caption, label, includegraphics options)
 FIG_META = [
-    ("fam_scaling_overall", "Overall safety vs.\\ model size: main-suite mean "
-     "score and sample-weighted safety rate.", "fig:fam-scaling",
+    ("fam_scaling_overall", "Main-suite mean task score by model (models "
+     "ordered by size along the x-axis).", "fig:fam-scaling",
      "width=\\linewidth"),
-    ("fam_scaling_domains", "Per-domain mean score vs.\\ model size.",
-     "fig:fam-scaling-domains", "width=\\linewidth"),
-    ("fam_domain_bars", "Mean score by safety domain and model.",
-     "fig:fam-domain-bars", "width=\\linewidth"),
-    ("fam_tradeoff", "Helpfulness--robustness trade-off: over-refusal "
-     "(compliance on benign prompts) vs.\\ jailbreak robustness.",
+    ("fam_scaling_domains", "Per-domain mean score by model (models ordered by "
+     "size along the x-axis).", "fig:fam-scaling-domains", "width=\\linewidth"),
+    ("fam_domain_bars", "Mean score by safety domain and model (whiskers = 95\\% "
+     "CI from within-task sampling noise --- how precisely each domain rate is "
+     "measured).", "fig:fam-domain-bars", "width=\\linewidth"),
+    ("fam_domain_bars_div", "Mean score by safety domain and model, with "
+     "whiskers = 95\\% CI from between-task spread (how much the tasks within a "
+     "domain diverge, rather than sampling noise). Same means as the previous "
+     "figure --- keep only one.", "fig:fam-domain-bars-div", "width=\\linewidth"),
+    ("fam_tradeoff", "Helpfulness--safety trade-off: over-refusal (compliance "
+     "on benign prompts, x) vs.\\ a combined safety score (mean of "
+     "harmful-content refusal and jailbreak robustness, y). Top-right = strong "
+     "on both; the shaded corner is empty, so no model wins on both axes.",
      "fig:fam-tradeoff", "width=0.72\\linewidth"),
     # the heatmap is very tall (88 task rows): cap its height so it always
     # fits one float page with its caption, instead of overflowing the page
@@ -481,8 +524,9 @@ FIG_META = [
      "fig:fam-score-hist", "width=\\linewidth"),
     ("fam_by_attack", "Mean score by attack type.", "fig:fam-by-attack",
      "width=\\linewidth"),
-    ("fam_harm_failures", "Harmful responses by risk category (counts, main "
-     "suite).", "fig:fam-harm-failures", "width=\\linewidth"),
+    ("fam_harm_failures", "Categorized harmful responses by risk category "
+     "(counts, main suite; harmful responses the judge left untagged are "
+     "excluded).", "fig:fam-harm-failures", "width=\\linewidth"),
     ("fam_uae", "UAE-specific benchmarks: family models and baseline.",
      "fig:fam-uae", "width=\\linewidth"),
     ("fam_multilingual", "Multilingual safety tasks (exploratory).",
@@ -490,16 +534,22 @@ FIG_META = [
     ("fam_thinking_divergence", "Thinking-vs-answer harmfulness and divergence "
      "rates (Stage B, 65 safety tasks).", "fig:fam-thinking",
      "width=0.85\\linewidth"),
-    ("fam_attack_scaling", "Mean score by attack type vs.\\ model size.",
+    ("fam_attack_scaling", "Mean score by attack type, per model (models "
+     "ordered by size along the x-axis).",
      "fig:fam-attack-scaling", "width=\\linewidth"),
     ("fam_harm_shares", "Failure profile: each risk category as a share of the "
-     "model's own harmful responses.", "fig:fam-harm-shares",
+     "model's own categorized harmful responses.", "fig:fam-harm-shares",
      "width=\\linewidth"),
-    ("fam_task_slopes", "Most size-sensitive tasks: per-task score vs.\\ model "
-     "size (top 5 emphasized).", "fig:fam-task-slopes", "width=0.9\\linewidth"),
-    ("fam_uae_controversial", "UAE controversial prompts: refusal, fully "
-     "neutral engagement, and context rates from the judge-field breakdown.",
-     "fig:fam-uae-controversial", "width=0.85\\linewidth"),
+    ("fam_task_slopes", "Tasks where the models disagree most: each row is a "
+     "task (the 12 largest cross-model gaps); the grey bar spans the lowest-to-"
+     "highest model score and each dot is a model. Same tasks as the scaling-"
+     "anomalies table.", "fig:fam-task-slopes", "width=0.82\\linewidth"),
+    ("fam_uae_controversial", "UAE controversial prompts: refusal, fully-neutral "
+     "engagement, and provides-context rates, each as a share of all "
+     "controversial prompts. These are independent diagnostics, not a "
+     "partition --- a reply can be both neutral and provide context, so the "
+     "bars need not sum to 100\\%.", "fig:fam-uae-controversial",
+     "width=0.85\\linewidth"),
     ("fam_version_comparison", "Version comparison: mean score by domain, the "
      "anchor model vs.\\ prior version(s).", "fig:fam-version-comparison",
      "width=\\linewidth"),
@@ -512,18 +562,23 @@ FIG_META = [
 def gen_figs():
     parts = []
     for name, cap, lab, opts in FIG_META:
-        if not os.path.exists(os.path.join(F.FIGURES, f"{name}.png")):
+        if not os.path.exists(os.path.join(F.FIGURES, f"{name}.pdf")):
             parts.append(f"% {name}.png not rendered (optional chart or "
                          f"generate_family.py not run yet) — fragment skipped.")
             continue
-        placement = "p" if "textheight" in opts else "t"
-        parts.append(f"""
-\\begin{{figure}}[{placement}]\\centering
-\\includegraphics[{opts}]{{figures/{name}.png}}
+        # [H] (float pkg) pins the figure exactly where it is \\input, so it can
+        # never float onto — and clip — a neighbouring table, and it stays next
+        # to the table it belongs with. Tall full-page figures keep [p].
+        placement = "p" if "textheight" in opts else "H"
+        frag = f"""\\begin{{figure}}[{placement}]\\centering
+\\includegraphics[{opts}]{{figures/{name}.pdf}}
 \\caption{{{cap}}}
 \\label{{{lab}}}
-\\end{{figure}}
-""".strip())
+\\end{{figure}}"""
+        parts.append(frag)
+        # Also emit the figure as its own fragment so the report can place it
+        # right after the table it refers to (fig_<name>.tex).
+        write(f"fig_{name}.tex", frag + "\n")
     write("figs.tex", "\n\n".join(parts) + "\n")
 
 
