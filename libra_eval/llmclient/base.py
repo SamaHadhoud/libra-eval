@@ -1,9 +1,11 @@
+import os
 import time
 import asyncio
 from abc import abstractmethod
 import traceback
 from functools import partial
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
 from typing import Dict, List, Any, Optional
@@ -341,6 +343,15 @@ class BaseClient:
         all_responses = []
         total_batches = (len(messages_list) - 1) // batch_size + 1
 
+        # Real request concurrency is otherwise capped by the event loop's DEFAULT
+        # ThreadPoolExecutor: _async_call runs the synchronous _call via
+        # run_in_executor(None, ...), and that default pool is only
+        # min(32, cores+4) threads (~14 on a 10-core box) — so a batch of 100
+        # silently ran ~14-wide. Size a pool to the batch so all requests are
+        # genuinely in flight. LIBRA_MAX_CONCURRENCY overrides it; per-endpoint
+        # caps still apply on top (e.g. K2_CONCURRENCY's semaphore for k2think).
+        max_workers = int(os.environ.get("LIBRA_MAX_CONCURRENCY", batch_size))
+
         # Process in batches to avoid overwhelming system resources
         for i in range(0, len(messages_list), batch_size):
             batch = messages_list[i:i+batch_size]
@@ -352,6 +363,12 @@ class BaseClient:
             tasks = [self._async_call(messages=msg, **kwargs) for msg in batch]
 
             async def run_batch():
+                # Install a batch-sized executor as this loop's default so
+                # run_in_executor(None, ...) is no longer throttled to ~14.
+                # asyncio.run() shuts this executor down when the batch completes.
+                asyncio.get_running_loop().set_default_executor(
+                    ThreadPoolExecutor(max_workers=max_workers)
+                )
                 # Use return_exceptions=True to handle exceptions gracefully
                 responses = await asyncio.gather(*tasks, return_exceptions=True)
                 return responses
