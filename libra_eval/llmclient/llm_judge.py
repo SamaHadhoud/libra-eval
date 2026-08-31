@@ -22,6 +22,7 @@ If EVAL_* are absent, NEXT_BASE_URL/NEXT_API_KEY are used; EVAL_MODEL defaults t
 """
 
 import json
+import os
 import re
 
 from openai import OpenAI
@@ -63,6 +64,17 @@ class LLMJudge_Client(BaseClient):
         super().__init__(model, api_config, max_requests_per_minute, request_window)
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         logger.info(f"LLMJudge_Client using model={model} base_url={base_url}")
+
+    def multi_call(self, messages_list, batch_size=100, **kwargs):
+        # Several eval processes may judge concurrently against the same
+        # EVAL_API_KEY (run_family.py's multi-endpoint task dispatcher runs one
+        # process per replica). JUDGE_MAX_CONCURRENCY caps THIS process's judge
+        # burst width so N workers don't multiply the default 100 into a 429
+        # storm on the judge key. Unset/0 = unchanged single-run behaviour.
+        cap = int(os.environ.get("JUDGE_MAX_CONCURRENCY", "0") or 0)
+        if cap > 0:
+            batch_size = min(batch_size, cap)
+        return super().multi_call(messages_list, batch_size=batch_size, **kwargs)
 
     @staticmethod
     def _parse_json(text):

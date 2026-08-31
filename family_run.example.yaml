@@ -10,7 +10,12 @@
 #                 "deepseek/deepseek-v4-flash-0731"). Defaults to label; set it when
 #                 the label isn't the exact API id.
 #   size_b        parameter count in billions (x-axis of scaling charts); "" if unknown
-#   base_url      OpenAI-compatible /v1 endpoint (OpenRouter = https://openrouter.ai/api/v1)
+#   base_url      OpenAI-compatible /v1 endpoint (OpenRouter = https://openrouter.ai/api/v1).
+#                 Comma-separate several replicas serving the SAME model to run
+#                 tasks in parallel across them (one worker per replica, shared
+#                 task queue). Each worker also judges concurrently; export
+#                 JUDGE_MAX_CONCURRENCY=<n> only if the judge key 429s:
+#                   base_url: http://node-a:8000/v1,http://node-b:8000/v1
 #   api_key       optional; falls back to LOCAL_API_KEY in api_config.json
 #   reasoning     where the reasoning lives:
 #                   field  = reasoning_content field, answer in content  (default)
