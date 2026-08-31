@@ -71,7 +71,13 @@ if not os.path.exists(PY):
 SUITE_N = 200
 SMOKE_TASKS = "advbench,confaide"
 SMOKE_N = 5
-GEN_MAX_TOKENS = 8192   # overridable via --max-tokens (raise for reasoning models)
+GEN_MAX_TOKENS = 32768  # overridable via --max-tokens. Measured on K2-V3
+                        # (outputs_thinking_full_32k): raising 8k->32k left the
+                        # mean response unchanged (~1.35k tok) and produced no
+                        # runaway-reasoning tail (0/2100 near cap, worst ~15.5k)
+                        # — it only lets the ~0.5% longest traces finish instead
+                        # of truncating. Pair heavy reasoners (Gemini-style) with
+                        # reasoning_max_tokens to keep room for the final answer.
 # tasks deregistered for the family scope live outside TASKS already; nothing
 # to exclude here — `--tasks all` == the 95-task V3 report scope.
 
@@ -492,9 +498,10 @@ def main():
                     help="skip eval; just rebuild manifest + report from existing outputs")
     ap.add_argument("--judge-key", help="override EVAL_API_KEY for judging")
     ap.add_argument("--max-tokens", type=int, default=GEN_MAX_TOKENS,
-                    help="generation max_tokens (raise for reasoning-heavy models "
-                         "that truncate-to-empty at 8192; 16384 is a safe bump, "
-                         "avoid 32768 — non-terminating-reasoning tail)")
+                    help="generation max_tokens (default 32768; measured safe on "
+                         "K2-V3 — no runaway-reasoning tail, mean unchanged vs 8192. "
+                         "For heavy reasoners set reasoning_max_tokens in the spec "
+                         "so thinking can't eat the whole budget)")
     args = ap.parse_args()
     GEN_MAX_TOKENS = args.max_tokens
 

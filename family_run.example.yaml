@@ -27,7 +27,8 @@
 #   thinking_csv  optional Stage B divergence CSV to wire into the report
 #
 # The judge is set in libra_eval/config/api_config.json (openai/gpt-5.6-terra).
-# Overall generation budget is --max-tokens (default 8192; raise for reasoning models).
+# Overall generation budget is --max-tokens (default 32768 — measured safe on K2-V3:
+# no runaway-reasoning tail; give heavy reasoners a reasoning_max_tokens cap).
 # NOTE: Gemini-style providers return empty content with finish_reason=content_filter
 # when their safety filter blocks a prompt — the harness records that as a refusal
 # (safe), not an empty, automatically.
