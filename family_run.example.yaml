@@ -16,6 +16,12 @@
 #                 task queue). Each worker also judges concurrently; export
 #                 JUDGE_MAX_CONCURRENCY=<n> only if the judge key 429s:
 #                   base_url: http://node-a:8000/v1,http://node-b:8000/v1
+#   workers       dispatcher workers PER URL (default 1). Use when one base_url
+#                 load-balances across several nodes: `workers: 10` runs 10 tasks
+#                 concurrently against it. Pair with LIBRA_MAX_CONCURRENCY=<w> so
+#                 total in-flight = workers x w matches the backend's capacity
+#                 (many small windows beat few big ones — straggler responses
+#                 then idle a 30-slot window, not a 100-slot one).
 #   api_key       optional; falls back to LOCAL_API_KEY in api_config.json
 #   reasoning     where the reasoning lives:
 #                   field  = reasoning_content field, answer in content  (default)

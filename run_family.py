@@ -88,7 +88,8 @@ GEN_MAX_TOKENS = 32768  # overridable via --max-tokens. Measured on K2-V3
 class Model:
     def __init__(self, key, label, size_b, base_url, api_key="",
                  reasoning="field", thinking_csv="", is_baseline=False,
-                 results_dir="", model_id="", reasoning_max_tokens=None):
+                 results_dir="", model_id="", reasoning_max_tokens=None,
+                 workers=1):
         self.key = key
         self.label = label
         # optional cap on a reasoning model's thinking budget (OpenRouter
@@ -102,8 +103,13 @@ class Model:
         self.size_b = size_b
         # base_url may be a comma-separated list of interchangeable replicas
         # serving the SAME model; full_run then parallelizes at the task level
-        # (one worker per replica pulling from a shared task queue).
+        # (one worker per replica pulling from a shared task queue). `workers`
+        # multiplies that: N dispatcher workers per URL — use it when one URL
+        # load-balances across several nodes, so N tasks run concurrently
+        # against it (pair with LIBRA_MAX_CONCURRENCY to size each worker's
+        # in-flight window; total in flight = workers x window).
         self.base_urls = [u.strip() for u in base_url.split(",") if u.strip()]
+        self.base_urls = self.base_urls * max(int(workers or 1), 1)
         self.base_url = self.base_urls[0] if self.base_urls else ""
         self.live_urls = list(self.base_urls)   # smoke_test prunes dead replicas
         self.api_key = api_key
@@ -184,7 +190,8 @@ def load_spec(path: str) -> list[Model]:
                 reasoning=e.get("reasoning", "field"),
                 reasoning_max_tokens=_num_or_none(e.get("reasoning_max_tokens", "")),
                 thinking_csv=e.get("thinking_csv", ""), is_baseline=is_base,
-                results_dir=e.get("results_dir", "")))
+                results_dir=e.get("results_dir", ""),
+                workers=_num_or_none(e.get("workers", "")) or 1))
     if not models:
         sys.exit(f"no models found in {path}")
     return models
@@ -248,23 +255,25 @@ class _nullcm:
 # Stages
 # --------------------------------------------------------------------------- #
 def smoke_test(m: Model) -> bool:
-    """Smoke every replica of the model; keep the ones that answer (live_urls).
-    Single-endpoint models behave exactly as before; with replicas, a partial
-    pass is a warning (the run continues on the healthy ones), all-fail aborts."""
-    multi = len(m.base_urls) > 1
-    live = []
-    for i, url in enumerate(m.base_urls):
+    """Smoke every distinct replica URL once; keep workers whose URL answers
+    (live_urls). Single-endpoint models behave exactly as before; with
+    replicas, a partial pass is a warning (the run continues on the healthy
+    ones), all-fail aborts."""
+    unique = list(dict.fromkeys(m.base_urls))
+    multi = len(unique) > 1
+    healthy = set()
+    for i, url in enumerate(unique):
         tag = f"_ep{i}" if multi else ""
         label = f"[{m.key}]" + (f"[ep{i}]" if multi else "")
         if _smoke_one(m, url, tag, label):
-            live.append(url)
-    m.live_urls = live
-    if not live:
+            healthy.add(url)
+    m.live_urls = [u for u in m.base_urls if u in healthy]
+    if not m.live_urls:
         return False
-    if multi and len(live) < len(m.base_urls):
-        print(f"[{m.key}] WARNING: {len(m.base_urls) - len(live)} of "
-              f"{len(m.base_urls)} endpoints failed smoke — continuing on "
-              f"{len(live)} healthy endpoint(s)")
+    if len(healthy) < len(unique):
+        print(f"[{m.key}] WARNING: {len(unique) - len(healthy)} of "
+              f"{len(unique)} endpoints failed smoke — continuing with "
+              f"{len(m.live_urls)} worker(s) on the healthy one(s)")
     return True
 
 
