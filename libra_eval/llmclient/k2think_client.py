@@ -14,7 +14,7 @@ from .openai_client import OpenAI_Client
 
 class K2Think_Client(OpenAI_Client):
     # Per-event-loop concurrency primitives (multi_call uses a fresh event loop
-    # per batch, so a primitive bound to a closed loop can't be reused).
+    # per call, so a primitive bound to a closed loop can't be reused).
     _loop_primitives: dict = {}
     _next_slot: float = 0.0  # monotonic clock; safe to persist across loops
 

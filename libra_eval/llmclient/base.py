@@ -330,79 +330,72 @@ class BaseClient:
 
     def multi_call(self, messages_list, batch_size=100, **kwargs):
         """
-        Call LLM asynchronously with batch processing support.
+        Call LLM asynchronously with a bounded sliding window of in-flight requests.
 
         Args:
             messages_list: List of messages to process
-            batch_size: Number of messages to process in each batch (default: 100)
+            batch_size: Maximum concurrent in-flight requests (window width).
+                Name kept for backward compatibility with callers/overrides
+                that pass it to throttle (e.g. LLMJudge_Client).
             **kwargs: Additional arguments passed to _async_call
 
         Returns:
             List of responses corresponding to input messages
         """
-        all_responses = []
-        total_batches = (len(messages_list) - 1) // batch_size + 1
+        n = len(messages_list)
+        if n == 0:
+            return []
 
         # Real request concurrency is otherwise capped by the event loop's DEFAULT
         # ThreadPoolExecutor: _async_call runs the synchronous _call via
         # run_in_executor(None, ...), and that default pool is only
-        # min(32, cores+4) threads (~14 on a 10-core box) — so a batch of 100
-        # silently ran ~14-wide. Size a pool to the batch so all requests are
-        # genuinely in flight. LIBRA_MAX_CONCURRENCY overrides it; per-endpoint
-        # caps still apply on top (e.g. K2_CONCURRENCY's semaphore for k2think).
+        # min(32, cores+4) threads (~14 on a 10-core box). Size the pool to the
+        # window so every slot is genuinely in flight. LIBRA_MAX_CONCURRENCY
+        # overrides it; per-endpoint caps still apply on top (e.g.
+        # K2_CONCURRENCY's semaphore for k2think).
         max_workers = int(os.environ.get("LIBRA_MAX_CONCURRENCY", batch_size))
+        done_count = [0]
 
-        # Process in batches to avoid overwhelming system resources
-        for i in range(0, len(messages_list), batch_size):
-            batch = messages_list[i:i+batch_size]
-            batch_num = i // batch_size + 1
+        async def run_all():
+            loop = asyncio.get_running_loop()
+            loop.set_default_executor(ThreadPoolExecutor(max_workers=max_workers))
+            # Sliding window: a new request starts the moment any slot frees up.
+            # The old barrier batches of `batch_size` made every batch wait for
+            # its single slowest response (a straggling 8k-token reasoning trace
+            # idled the other 99 slots), which dominated wall time on long tasks.
+            sem = asyncio.Semaphore(max_workers)
 
-            if total_batches > 1:
-                logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} messages)...")
+            async def guarded(msg):
+                async with sem:
+                    try:
+                        return await self._async_call(messages=msg, **kwargs)
+                    finally:
+                        done_count[0] += 1
+                        if n > max_workers and done_count[0] % max_workers == 0:
+                            logger.info(f"Progress: {done_count[0]}/{n} responses")
 
-            tasks = [self._async_call(messages=msg, **kwargs) for msg in batch]
+            # return_exceptions=True so one failure doesn't cancel the rest
+            return await asyncio.gather(*(guarded(m) for m in messages_list),
+                                        return_exceptions=True)
 
-            async def run_batch():
-                # Install a batch-sized executor as this loop's default so
-                # run_in_executor(None, ...) is no longer throttled to ~14.
-                # asyncio.run() shuts this executor down when the batch completes.
-                asyncio.get_running_loop().set_default_executor(
-                    ThreadPoolExecutor(max_workers=max_workers)
-                )
-                # Use return_exceptions=True to handle exceptions gracefully
-                responses = await asyncio.gather(*tasks, return_exceptions=True)
-                return responses
-
-            # Use asyncio.run() with fallback to existing event loop
+        # Use asyncio.run() with fallback to existing event loop
+        try:
+            responses = asyncio.run(run_all())
+        except RuntimeError:
+            # If there's already an event loop running, use it
             try:
-                batch_responses = asyncio.run(run_batch())
-            except RuntimeError:
-                # If there's already an event loop running, use it
-                try:
-                    loop = asyncio.get_event_loop()
-                    if loop.is_running():
-                        # Create a new event loop if current one is running
-                        loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(loop)
-                    batch_responses = loop.run_until_complete(run_batch())
-                except Exception as e:
-                    logger.error(f"Error running batch {batch_num}: {e}")
-                    # Return empty responses for this batch
-                    batch_responses = [""] * len(batch)
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Create a new event loop if current one is running
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                responses = loop.run_until_complete(run_all())
+            except Exception as e:
+                logger.error(f"Error running multi_call: {e}")
+                responses = [""] * n
 
-            # Convert exceptions to empty strings
-            batch_responses = [
-                resp if not isinstance(resp, Exception) else ""
-                for resp in batch_responses
-            ]
-
-            all_responses.extend(batch_responses)
-
-            # Add delay between batches to avoid rate limiting
-            if i + batch_size < len(messages_list):
-                time.sleep(1.5)  # 增加到1.5秒，避免rate limit | Increase to 1.5 seconds to avoid rate limit
-
-        return all_responses
+        # Convert exceptions to empty strings
+        return [r if not isinstance(r, Exception) else "" for r in responses]
 
     def _expire_old_traffic(self):
         """Expires traffic older than the request window."""
