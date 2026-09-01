@@ -36,6 +36,11 @@ FAMILY_COLORS = ["#5E92D0", "#52B892", "#EA6FA0", "#A75FC9", "#F0A868"]
 BASELINE_COLOR = "#9aa0a6"
 # version-comparison models (e.g. K2-V2) — distinct from the family palette
 COMPARISON_COLORS = ["#b0548b", "#8a6d3b", "#4a7c59"]
+# external frontier reference models. Validated all-pairs with the family blue
+# and the comparison magenta (dataviz six checks, light surface): every pair
+# clears the CVD floor and the normal-vision floor, so frontier series stay
+# distinguishable in any chart they share with family or comparison models.
+FRONTIER_COLORS = ["#AA7B18", "#2F4C9C"]
 
 SECTION_ORDER = list(L.SECTIONS.keys())
 
@@ -104,7 +109,7 @@ class ModelEntry:
     label: str
     size_b: float | None
     results_dir: str        # absolute
-    role: str               # "family" | "baseline"
+    role: str               # "family" | "frontier" | "comparison"
     thinking_csv: str = None  # absolute path to thinking_vs_response.csv, or None
     color: str = BASELINE_COLOR
     tasks: dict = None      # {task_name: report_lib.Task}
@@ -118,9 +123,9 @@ class ModelEntry:
 
 def load_manifest(path: str = os.path.join(HERE, "models.json")):
     m = json.load(open(path))
-    fam, base, comp = [], [], []
+    fam, fro, comp = [], [], []
     for role, bucket, out in (("family", "family", fam),
-                              ("baseline", "baselines", base),
+                              ("frontier", "frontier", fro),
                               ("comparison", "comparisons", comp)):
         for e in m.get(bucket, []):
             out.append(ModelEntry(
@@ -136,15 +141,17 @@ def load_manifest(path: str = os.path.join(HERE, "models.json")):
         fam.sort(key=lambda e: e.size_b)
     for i, e in enumerate(fam):
         e.color = FAMILY_COLORS[i % len(FAMILY_COLORS)]
+    for i, e in enumerate(fro):
+        e.color = FRONTIER_COLORS[i % len(FRONTIER_COLORS)]
     for i, e in enumerate(comp):
         e.color = COMPARISON_COLORS[i % len(COMPARISON_COLORS)]
-    return fam, base, comp
+    return fam, fro, comp
 
 
 class FamilyData:
     def __init__(self, manifest_path: str = os.path.join(HERE, "models.json")):
-        self.family, self.baselines, self.comparisons = load_manifest(manifest_path)
-        for e in self.family + self.baselines + self.comparisons:
+        self.family, self.frontier, self.comparisons = load_manifest(manifest_path)
+        for e in self.family + self.frontier + self.comparisons:
             if not os.path.isdir(e.results_dir):
                 raise SystemExit(f"[{e.key}] results dir not found: {e.results_dir}")
             e.tasks = L.load_tasks(e.results_dir)
@@ -418,7 +425,7 @@ def fmt(x, nd: int = 3) -> str:
 
 if __name__ == "__main__":
     fd = FamilyData()
-    print(f"family: {[e.key for e in fd.family]}  baselines: {[e.key for e in fd.baselines]}")
+    print(f"family: {[e.key for e in fd.family]}  frontier: {[e.key for e in fd.frontier]}")
     print(f"main task union: {len(fd.main_tasks)}")
     for e in fd.family:
         print(f"  {e.key}: mean={e.agg['mean_score']:.4f} "

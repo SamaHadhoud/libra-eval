@@ -13,7 +13,7 @@ Emitted files (all under generated/):
   tab_overview.tex    domains x models mean-score table
   tab_dom_<sec>.tex   per-domain task table, one score column per model
   tab_full.tex        appendix longtable: all main tasks x models
-  tab_uae.tex         UAE tasks: family models + baselines
+  tab_uae.tex         UAE tasks: family models + frontier reference models
   tab_multilingual.tex
   tab_movers.tex      largest per-task deltas smallest->largest (>=2 models only)
   figs.tex            figure environments for the generate_family.py charts
@@ -96,6 +96,17 @@ def gen_preamble():
   \fi}
 % task names: typewriter, escaped underscores that allow line breaks
 \providecommand{\task}[1]{{\ttfamily\small\def\_{\textunderscore\allowbreak}#1}}
+% \maxwidthbox{...}: render at natural size, but shrink to the line width if (and
+% only if) the content is wider. Uses graphicx's \resizebox only (no extra package),
+% so it works offline. Never enlarges a narrow table — that is the whole point.
+\newsavebox{\fammwbox}
+\providecommand{\maxwidthbox}[1]{%
+  \sbox{\fammwbox}{#1}%
+  \ifdim\wd\fammwbox>\linewidth
+    \resizebox{\linewidth}{!}{\usebox{\fammwbox}}%
+  \else
+    \usebox{\fammwbox}%
+  \fi}
 """.lstrip())
 
 
@@ -133,9 +144,19 @@ def gen_numbers(fd: FamilyData):
             s = fd.score(e, tn)
             if s is not None:
                 put(e.key, f"task_{tn}", fmt(s))
-    for e in fd.baselines:
+    for e in fd.frontier:
+        a = e.agg
         put(e.key, "label", esc(e.label))
-        for tn in fd.uae_tasks():
+        if a:
+            put(e.key, "mean_main", fmt(a["mean_score"]))
+            put(e.key, "median_main", fmt(a["median_score"]))
+            put(e.key, "n_main_tasks", a["n_main_tasks"])
+            put(e.key, "n_ge095", a["n_ge_095"])
+            put(e.key, "n_lt080", a["n_lt_080"])
+            put(e.key, "safety_rate", f"{a['weighted_safety'] * 100:.1f}")
+            for sec in F.SECTION_ORDER:
+                put(e.key, f"dom_{sec}", fmt(fd.section_mean(e, sec)))
+        for tn in fd.uae_tasks() + fd.multilingual_tasks():
             s = fd.score(e, tn)
             if s is not None:
                 put(e.key, f"task_{tn}", fmt(s))
@@ -147,6 +168,10 @@ def gen_numbers(fd: FamilyData):
             put(e.key, "safety_rate", f"{a['weighted_safety'] * 100:.1f}")
             for sec in F.SECTION_ORDER:
                 put(e.key, f"dom_{sec}", fmt(fd.section_mean(e, sec)))
+        for tn in fd.uae_tasks() + fd.multilingual_tasks():
+            s = fd.score(e, tn)
+            if s is not None:
+                put(e.key, f"task_{tn}", fmt(s))
 
     put("family", "n_models", len(fd.family))
     put("family", "n_tasks", len(fd.main_tasks))
@@ -175,28 +200,59 @@ def _mcols(n: int, w: str = "1.5cm") -> str:
 
 
 def gen_overview(fd: FamilyData):
-    cols = ">{\\raggedright\\arraybackslash}p{5.2cm} r " + _mcols(len(fd.family), "1.7cm")
+    # The headline table: the family's domain means, with the external frontier
+    # reference models as extra ranked columns (they share the judge, the suite,
+    # and the scorer fixes, so the comparison is apples-to-apples). Frontier
+    # models never enter the family aggregates — they are reference points only.
+    models = fd.family + fd.frontier
+    cols = ">{\\raggedright\\arraybackslash}p{4.6cm} r " + _mcols(len(models), "1.7cm")
     rows = []
     for sec in F.SECTION_ORDER:
         title = esc(L.SECTIONS[sec]["title"])
         n = len(fd.section_tasks(sec))
-        cells = " & ".join(rank_cells([fd.section_mean(e, sec) for e in fd.family]))
+        cells = " & ".join(rank_cells([fd.section_mean(e, sec) for e in models]))
         rows.append(f"{title} & {n} & {cells}\\\\")
-    overall = " & ".join(rank_cells([e.agg["mean_score"] for e in fd.family]))
+    overall = " & ".join(rank_cells(
+        [e.agg["mean_score"] if e.agg else None for e in models]))
     body = "\n".join(rows)
+    if fd.frontier:
+        nf, nr = len(fd.family), len(fd.frontier)
+        group = (f" & & \\multicolumn{{{nf}}}{{c}}{{\\textbf{{K2-V3 family}}}} & "
+                 f"\\multicolumn{{{nr}}}{{c}}{{Frontier reference}}\\\\\n"
+                 f"\\cmidrule(lr){{3-{2 + nf}}}\\cmidrule(lr){{{3 + nf}-{2 + nf + nr}}}\n")
+        # data-driven takeaway: who takes the most domain rows
+        wins = {e.key: 0 for e in models}
+        for sec in F.SECTION_ORDER:
+            vals = [(fd.section_mean(e, sec), e) for e in models]
+            nums = [(v, e) for v, e in vals if v is not None]
+            if nums:
+                top = max(v for v, _ in nums)
+                for v, e in nums:
+                    if v == top:
+                        wins[e.key] += 1
+        lead = max(models, key=lambda e: wins[e.key])
+        caption = ("Mean score by safety domain (higher is better), the K2-V3 "
+                   "family alongside the frontier reference models; bold = best "
+                   "in row, underline = second. "
+                   f"\\textbf{{{esc(lead.label)} takes the top score in "
+                   f"{wins[lead.key]} of the {len(F.SECTION_ORDER)} domains.}}")
+    else:
+        group = ""
+        caption = "Mean score by safety domain across the K2-V3 family (higher is better)."
     write("tab_overview.tex", f"""
-\\begin{{table}}[t]\\centering\\small\\setlength{{\\tabcolsep}}{{4pt}}
-\\caption{{Mean score by safety domain across the K2-V3 family (higher is better).}}
+\\begin{{table}}[H]\\centering\\small\\setlength{{\\tabcolsep}}{{4pt}}
+\\caption{{{caption}}}
 \\label{{tab:fam-overview}}
+\\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
 \\toprule
-\\textbf{{Domain}} & \\textbf{{Tasks}} & {_model_heads(fd.family)}\\\\
+{group}\\textbf{{Domain}} & \\textbf{{Tasks}} & {_model_heads(models)}\\\\
 \\midrule
 {body}
 \\midrule
 \\textbf{{Overall (main suite)}} & {len(fd.main_tasks)} & {overall}\\\\
 \\bottomrule
-\\end{{tabular}}
+\\end{{tabular}}}}
 \\end{{table}}
 """.lstrip())
 
@@ -236,12 +292,16 @@ def gen_domain_tables(fd: FamilyData):
 
 
 def gen_full_table(fd: FamilyData):
+    # The appendix reference table carries the frontier models too: it is the
+    # one place every per-task frontier number is findable (the domain tables
+    # stay family-only by design; the heatmap shows colours, not values).
+    models = fd.family + fd.frontier
     cols = (">{\\raggedright\\arraybackslash}p{4.2cm} "
-            ">{\\raggedright\\arraybackslash}p{1.9cm} r " + _mcols(len(fd.family), "1.5cm"))
+            ">{\\raggedright\\arraybackslash}p{1.9cm} r " + _mcols(len(models), "1.5cm"))
     head = (f"\\textbf{{Dataset}} & \\textbf{{Metric}} & \\textbf{{$n$}} & "
-            f"{_model_heads(fd.family)}\\\\")
+            f"{_model_heads(models)}\\\\")
     chunks = []
-    ncol = 3 + len(fd.family)
+    ncol = 3 + len(models)
     for sec in F.SECTION_ORDER:
         tasks = fd.section_tasks(sec)
         if not tasks:
@@ -250,16 +310,19 @@ def gen_full_table(fd: FamilyData):
                       f"{{\\textbf{{{esc(L.SECTIONS[sec]['title'])}}}}}\\\\*")
         for tn in tasks:
             m, _, n = fd.task_meta(tn)
-            cells = " & ".join(rank_cells([fd.score(e, tn) for e in fd.family]))
+            cells = " & ".join(rank_cells([fd.score(e, tn) for e in models]))
             chunks.append(f"{esc(F.pretty_task(tn))} & {meaning(m)} & {n} & {cells}\\\\")
         chunks.append("\\midrule")
     if chunks and chunks[-1] == "\\midrule":
         chunks.pop()
     body = "\n".join(chunks)
+    caption = ("Full main-suite results: the K2-V3 family and the frontier "
+               "reference models." if fd.frontier else
+               "Full main-suite results across the K2-V3 family.")
     write("tab_full.tex", f"""
 \\begingroup\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
 \\begin{{longtable}}{{@{{}}{cols}@{{}}}}
-\\caption{{Full main-suite results across the K2-V3 family.}}
+\\caption{{{caption}}}
 \\label{{tab:fam-full}}\\\\
 \\toprule
 {head}
@@ -278,15 +341,30 @@ def gen_full_table(fd: FamilyData):
 
 
 def gen_uae_multiling(fd: FamilyData):
-    models = fd.family + fd.comparisons + [
-        b for b in fd.baselines
+    # UAE table compares the family against the external frontier models only.
+    # Prior versions (comparisons) are deliberately excluded here — the
+    # cross-version story lives in the version-comparison section, not the UAE one.
+    models = fd.family + [
+        b for b in fd.frontier
         if any(fd.score(b, t) is not None for t in fd.uae_tasks())]
     cols = (">{\\raggedright\\arraybackslash}p{2.9cm} "
             ">{\\raggedright\\arraybackslash}p{1.9cm} " + _mcols(len(models), "1.5cm"))
+    anchor = fd.anchor
+    uae_wins = 0
+    for tn in fd.uae_tasks():
+        a = fd.score(anchor, tn)
+        others = [fd.score(e, tn) for e in models if e.key != anchor.key]
+        others = [s for s in others if s is not None]
+        if a is not None and others and a > max(others):
+            uae_wins += 1
+    uae_cap = ("Region-specific safety, neutrality, and knowledge, family vs.\\ frontier. "
+               f"\\textbf{{{esc(anchor.label)} takes the top score on {uae_wins} of the "
+               f"{len(fd.uae_tasks())} UAE benchmarks.}}")
     write("tab_uae.tex", f"""
-\\begin{{table}}[t]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
-\\caption{{UAE-specific benchmarks: K2-V3 family vs.\\ prior version(s) and baseline.}}
+\\begin{{table}}[H]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
+\\caption{{{uae_cap}}}
 \\label{{tab:fam-uae}}
+\\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
 \\toprule
 \\textbf{{Dataset}} & \\textbf{{Metric}} & {_model_heads(models)}\\\\
@@ -296,17 +374,26 @@ def gen_uae_multiling(fd: FamilyData):
     + " & ".join(rank_cells([fd.score(e, tn) for e in models])) + "\\\\"
     for tn in fd.uae_tasks())}
 \\bottomrule
-\\end{{tabular}}
+\\end{{tabular}}}}
 \\end{{table}}
 """.lstrip())
 
-    ml_models = fd.family + fd.comparisons
+    ml_models = fd.family + fd.comparisons + [
+        b for b in fd.frontier
+        if any(fd.score(b, t) is not None for t in fd.multilingual_tasks())]
     cols = (">{\\raggedright\\arraybackslash}p{2.9cm} "
             ">{\\raggedright\\arraybackslash}p{1.9cm} " + _mcols(len(ml_models), "1.5cm"))
+    ml_scores = [fd.score(e, t) for e in ml_models for t in fd.multilingual_tasks()]
+    ml_scores = [s for s in ml_scores if s is not None]
+    ml_cap = "Multilingual safety (exploratory; outside the main aggregates)."
+    if ml_scores:
+        ml_cap += (f" \\textbf{{Little separates the models here: every score falls in a "
+                   f"{min(ml_scores):.2f}--{max(ml_scores):.2f} band.}}")
     write("tab_multilingual.tex", f"""
-\\begin{{table}}[t]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
-\\caption{{Multilingual safety (exploratory; outside the main aggregates).}}
+\\begin{{table}}[H]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{4pt}}
+\\caption{{{ml_cap}}}
 \\label{{tab:fam-multilingual}}
+\\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
 \\toprule
 \\textbf{{Dataset}} & \\textbf{{Metric}} & {_model_heads(ml_models)}\\\\
@@ -316,7 +403,7 @@ def gen_uae_multiling(fd: FamilyData):
     + " & ".join(rank_cells([fd.score(e, tn) for e in ml_models])) + "\\\\"
     for tn in fd.multilingual_tasks())}
 \\bottomrule
-\\end{{tabular}}
+\\end{{tabular}}}}
 \\end{{table}}
 """.lstrip())
 
@@ -336,9 +423,23 @@ def gen_comparison(fd: FamilyData):
         cells = " & ".join(rank_cells([fd.section_mean(e, sec) for e in models]))
         body.append(f"{esc(L.SECTIONS[sec]['title'])} & {cells}\\\\")
     overall = " & ".join(rank_cells([e.agg['mean_score'] if e.agg else None for e in models]))
+    wa = wc = 0
+    for sec in F.SECTION_ORDER:
+        a = fd.section_mean(anchor, sec)
+        c = max((fd.section_mean(e, sec) or 0) for e in cols)
+        if a is None:
+            continue
+        if a > c:
+            wa += 1
+        elif c > a:
+            wc += 1
+    comp_label = esc(cols[0].label) if len(cols) == 1 else "the prior versions"
+    comp_cap = ("Version comparison, mean score by domain. "
+                f"\\textbf{{No clean winner: {esc(anchor.label)} leads {wa} domains, "
+                f"{comp_label} {wc}.}}")
     write("tab_comparison.tex", f"""
-\\begin{{table}}[t]\\centering\\small
-\\caption{{Version comparison: {esc(anchor.label)} vs.\\ prior version(s), mean score by domain.}}
+\\begin{{table}}[H]\\centering\\small
+\\caption{{{comp_cap}}}
 \\label{{tab:fam-comparison}}
 \\begin{{tabular}}{{@{{}}l {"r " * len(models)}@{{}}}}
 \\toprule
@@ -363,9 +464,16 @@ def gen_comparison(fd: FamilyData):
     rows = "\n".join(
         f"{esc(F.pretty_task(tn))} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
         for tn, a, b, d in deltas[:15])
+    movers_cap = f"Largest per-task differences, {esc(anchor.label)} vs.\\ {esc(comp.label)} ($\\Delta$ = anchor $-$ prior)."
+    if deltas:
+        gain = max(deltas, key=lambda r: r[3])
+        loss = min(deltas, key=lambda r: r[3])
+        movers_cap += (f" \\textbf{{The largest swings run in opposite directions: "
+                       f"{esc(F.pretty_task(gain[0]))} ({gain[3]:+.3f}) and "
+                       f"{esc(F.pretty_task(loss[0]))} ({loss[3]:+.3f}).}}")
     write("tab_comparison_movers.tex", f"""
-\\begin{{table}}[t]\\centering\\small
-\\caption{{Largest per-task differences, {esc(anchor.label)} vs.\\ {esc(comp.label)} ($\\Delta$ = anchor $-$ prior).}}
+\\begin{{table}}[H]\\centering\\small
+\\caption{{{movers_cap}}}
 \\label{{tab:fam-comparison-movers}}
 \\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{5.2cm}} r r r@{{}}}}
 \\toprule
@@ -387,7 +495,7 @@ def gen_runhealth(fd: FamilyData):
         rows.append(f"{esc(e.label)} & {h['n_tasks']} & {h['n_missing']} & "
                     f"{h['n_samples']:,} & {h['n_ambig_err']}\\\\")
     write("tab_runhealth.tex", f"""
-\\begin{{table}}[t]\\centering\\small
+\\begin{{table}}[H]\\centering\\small
 \\caption{{Run health / data quality (main suite).}}
 \\label{{tab:fam-runhealth}}
 \\begin{{tabular}}{{@{{}}l r r r r@{{}}}}
@@ -414,19 +522,18 @@ def gen_axis_means(fd: FamilyData):
                                        for e in fd.family]))
         rows.append(f"{meaning(ax_name)} & {ntasks} & {cells}\\\\")
     write("tab_axis_means.tex", f"""
-\\begin{{table}}[t]\\centering\\small
-\\caption{{Mean score by metric axis (main suite): the blended overall mean
-mixes these; they are not interchangeable.}}
+\\begin{{table}}[H]\\centering\\small
+\\caption{{Mean score per metric axis over the main suite. \\textbf{{The blended
+overall mean mixes axes that are not interchangeable.}}}}
 \\label{{tab:fam-axis-means}}
-\\resizebox{{\\textwidth}}{{!}}{{%
+\\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{3.4cm}} r {_mcols(len(fd.family), "1.6cm")}@{{}}}}
 \\toprule
 \\textbf{{Metric axis}} & \\textbf{{Tasks}} & {_model_heads(fd.family)}\\\\
 \\midrule
 {chr(10).join(rows)}
 \\bottomrule
-\\end{{tabular}}%
-}}
+\\end{{tabular}}}}
 \\end{{table}}
 """.lstrip())
 
@@ -449,19 +556,18 @@ def gen_anomalies(fd: FamilyData):
         + f" & {fmt(r['amplitude'])}\\\\"
         for r in an[:15])
     write("tab_anomalies.tex", f"""
-\\begin{{table}}[t]\\centering\\small
+\\begin{{table}}[H]\\centering\\small
 \\caption{{Scaling anomalies: tasks whose score is non-monotonic in model size
 beyond 95\\%-CI noise (read these first).}}
 \\label{{tab:fam-anomalies}}
-\\resizebox{{\\textwidth}}{{!}}{{%
+\\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{3.3cm}} {_mcols(len(fd.family), "1.5cm")}r@{{}}}}
 \\toprule
 \\textbf{{Dataset}} & {heads} & \\textbf{{Amplitude}}\\\\
 \\midrule
 {rows}
 \\bottomrule
-\\end{{tabular}}%
-}}
+\\end{{tabular}}}}
 \\end{{table}}
 """.lstrip())
 
@@ -482,7 +588,7 @@ def gen_movers(fd: FamilyData):
         f"{esc(F.pretty_task(tn))} & {fmt(a)} & {fmt(b)} & {d:+.3f}\\\\"
         for tn, a, b, d in deltas[:15])
     write("tab_movers.tex", f"""
-\\begin{{table}}[t]\\centering\\small
+\\begin{{table}}[H]\\centering\\small
 \\caption{{Largest per-task score changes, {esc(small.label)} $\\rightarrow$ {esc(large.label)}.}}
 \\label{{tab:fam-movers}}
 \\begin{{tabular}}{{@{{}}>{{\\raggedright\\arraybackslash}}p{{5.4cm}} r r r@{{}}}}
@@ -513,12 +619,12 @@ FIG_META = [
     ("fam_tradeoff", "Helpfulness--safety trade-off: over-refusal (compliance "
      "on benign prompts, x) vs.\\ a combined safety score (mean of "
      "harmful-content refusal and jailbreak robustness, y). Top-right = strong "
-     "on both; the shaded corner is empty, so no model wins on both axes.",
+     "on both; the guides cross at the per-axis medians of the plotted models.",
      "fig:fam-tradeoff", "width=0.72\\linewidth"),
     # the heatmap is very tall (88 task rows): cap its height so it always
     # fits one float page with its caption, instead of overflowing the page
-    ("fam_heatmap", "Per-task score heatmap across the family (main suite, "
-     "grouped by domain).", "fig:fam-heatmap",
+    ("fam_heatmap", "Per-task score heatmap: the family and the frontier "
+     "reference models (main suite, grouped by domain).", "fig:fam-heatmap",
      "width=\\linewidth,height=0.9\\textheight,keepaspectratio"),
     ("fam_score_hist", "Distribution of the main-suite task scores per model.",
      "fig:fam-score-hist", "width=\\linewidth"),
@@ -527,8 +633,8 @@ FIG_META = [
     ("fam_harm_failures", "Categorized harmful responses by risk category "
      "(counts, main suite; harmful responses the judge left untagged are "
      "excluded).", "fig:fam-harm-failures", "width=\\linewidth"),
-    ("fam_uae", "UAE-specific benchmarks: family models and baseline.",
-     "fig:fam-uae", "width=\\linewidth"),
+    ("fam_uae", "UAE-specific benchmarks: family, prior version, and the "
+     "frontier reference models.", "fig:fam-uae", "width=\\linewidth"),
     ("fam_multilingual", "Multilingual safety tasks (exploratory).",
      "fig:fam-multilingual", "width=\\linewidth"),
     ("fam_thinking_divergence", "Thinking-vs-answer harmfulness and divergence "
@@ -585,7 +691,7 @@ def gen_figs():
 if __name__ == "__main__":
     fd = FamilyData()
     print(f"models: {[e.key for e in fd.family]} "
-          f"(+baselines {[e.key for e in fd.baselines]}), "
+          f"(+frontier {[e.key for e in fd.frontier]}), "
           f"{len(fd.main_tasks)} main tasks")
     gen_preamble()
     gen_numbers(fd)
