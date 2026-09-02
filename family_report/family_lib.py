@@ -34,13 +34,15 @@ FIGURES = os.path.join(HERE, "figures")
 # red/amber/green score-band hues so a model is never confused with a status.
 FAMILY_COLORS = ["#5E92D0", "#52B892", "#EA6FA0", "#A75FC9", "#F0A868"]
 BASELINE_COLOR = "#9aa0a6"
-# version-comparison models (e.g. K2-V2) — distinct from the family palette
-COMPARISON_COLORS = ["#b0548b", "#8a6d3b", "#4a7c59"]
-# external frontier reference models. Validated all-pairs with the family blue
-# and the comparison magenta (dataviz six checks, light surface): every pair
-# clears the CVD floor and the normal-vision floor, so frontier series stay
-# distinguishable in any chart they share with family or comparison models.
-FRONTIER_COLORS = ["#AA7B18", "#2F4C9C"]
+# version-comparison models (e.g. K2-V2) — distinct from the family palette.
+# Charcoal, matching the condensed cross-surface report (K2-V3-Family-Red-Teaming)
+# so K2-V2 wears the same colour in every published chart.
+COMPARISON_COLORS = ["#444444", "#8a6d3b", "#4a7c59"]
+# external frontier reference models (DeepSeek goldenrod, Kimi dark red) —
+# aligned with the condensed report's frontier palette. Every pair against the
+# family blue and the comparison charcoal stays distinguishable to normal
+# vision and clear of the red/amber/green score-band hues used for status.
+FRONTIER_COLORS = ["#AA7B18", "#B3261E"]
 
 SECTION_ORDER = list(L.SECTIONS.keys())
 
