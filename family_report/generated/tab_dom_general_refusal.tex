@@ -2,35 +2,36 @@
 \begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{5pt}
 \caption{General Harmful-Content Refusal: per-task scores.}
 \label{tab:fam-dom-general-refusal}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\maxwidthbox{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
 \toprule
-\textbf{Dataset} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
+\textbf{Dataset} & \textbf{K2V3 375B} & \textbf{K2V3 36B} & \textbf{K2V3 7B} & \textbf{K2V3 4B} & \textbf{K2V3 1B}\\
 \midrule
-AART & \underline{0.960} & 0.832 & \textbf{0.990} & 0.915\\
-Advbench & \underline{0.990} & 0.940 & \textbf{1.000} & \textbf{1.000}\\
-Anthropic Red-Team & \textbf{0.985} & 0.960 & \underline{0.980} & 0.955\\
-Bad & \textbf{0.995} & \underline{0.960} & \textbf{0.995} & 0.915\\
-BeaverTails Bad & \underline{0.965} & 0.880 & \textbf{0.980} & 0.920\\
-CatQA & \underline{0.965} & 0.738 & \textbf{0.980} & 0.955\\
-Clearharm & \underline{0.939} & 0.927 & \textbf{0.989} & 0.905\\
-CoCoNot Original & \textbf{0.925} & 0.755 & \underline{0.835} & 0.800\\
-CoNa & \underline{0.994} & 0.955 & \textbf{1.000} & 0.989\\
-Do Not Answer & \textbf{1.000} & 0.960 & \underline{0.995} & 0.985\\
-Forbidden Questions & \underline{0.965} & 0.860 & \textbf{1.000} & 0.950\\
-HarmBench & \textbf{0.968} & 0.939 & \underline{0.960} & 0.833\\
-HarmfulQ & \underline{0.985} & 0.835 & \textbf{1.000} & 0.980\\
-HEx-PHI & \underline{0.980} & 0.904 & \textbf{0.995} & 0.895\\
-Malicious Instruct New & \underline{0.980} & 0.770 & \textbf{1.000} & 0.950\\
-Malicious Instructions New & \textbf{1.000} & 0.880 & \textbf{1.000} & \underline{0.990}\\
-Med-Safety-Bench & \underline{0.970} & 0.780 & \textbf{0.995} & 0.920\\
-Red Eval Dangerous QA & \underline{0.985} & 0.825 & \textbf{1.000} & 0.975\\
-Red Eval Harmful QA & \underline{0.955} & 0.593 & \textbf{0.995} & 0.890\\
-SALAD-Bench & \underline{0.965} & 0.889 & \textbf{0.990} & 0.930\\
-Simple Safety Test & \textbf{1.000} & \underline{0.988} & \textbf{1.000} & \textbf{1.000}\\
-SORRY-Bench & \underline{0.965} & 0.836 & \textbf{0.980} & 0.840\\
-TDC Red-Teaming & \underline{0.990} & 0.959 & \textbf{1.000} & 0.920\\
+AART & \textbf{0.990} & \underline{0.985} & \underline{0.985} & 0.975 & 0.925\\
+Advbench & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & \underline{0.985}\\
+Anthropic Red-Team & 0.945 & \underline{0.950} & \textbf{0.955} & 0.880 & 0.865\\
+Bad & \textbf{0.985} & \underline{0.930} & 0.820 & 0.865 & 0.815\\
+BeaverTails Bad & 0.965 & \textbf{0.975} & \underline{0.970} & 0.950 & 0.880\\
+CatQA & \textbf{0.980} & \textbf{0.980} & \underline{0.970} & \underline{0.970} & 0.940\\
+Clearharm & \underline{0.930} & \textbf{0.969} & 0.927 & 0.908 & 0.838\\
+CoCoNot Original & \textbf{0.900} & 0.820 & \underline{0.890} & 0.855 & 0.640\\
+CoNa & \textbf{0.989} & 0.978 & \underline{0.983} & 0.944 & 0.798\\
+Do Not Answer & \textbf{1.000} & \underline{0.995} & 0.965 & 0.900 & 0.905\\
+Forbidden Questions & \underline{0.975} & \textbf{0.980} & 0.970 & 0.900 & 0.840\\
+HarmBench & \underline{0.935} & \textbf{0.938} & \textbf{0.938} & 0.890 & 0.823\\
+HarmfulQ & \underline{0.995} & \textbf{1.000} & \textbf{1.000} & \underline{0.995} & 0.955\\
+HEx-PHI & \textbf{0.995} & \underline{0.990} & \underline{0.990} & 0.975 & 0.835\\
+Malicious Instruct New & \textbf{1.000} & \textbf{1.000} & \underline{0.990} & 0.980 & 0.950\\
+Malicious Instructions New & \underline{0.990} & \textbf{1.000} & 0.980 & \textbf{1.000} & 0.940\\
+Med-Safety-Bench & \textbf{0.980} & 0.950 & \underline{0.975} & 0.915 & 0.820\\
+Red Eval Dangerous QA & \textbf{0.995} & \textbf{0.995} & \underline{0.990} & \textbf{0.995} & 0.965\\
+Red Eval Harmful QA & \textbf{0.990} & 0.965 & \underline{0.970} & 0.965 & 0.880\\
+SALAD-Bench & \underline{0.975} & \textbf{0.985} & \textbf{0.985} & 0.925 & 0.850\\
+Simple Safety Test & \textbf{0.990} & \textbf{0.990} & 0.950 & \underline{0.980} & 0.910\\
+SORRY-Bench & \textbf{0.970} & \underline{0.950} & \underline{0.950} & 0.870 & 0.785\\
+TDC Red-Teaming & 0.980 & \textbf{1.000} & \underline{0.985} & 0.980 & 0.925\\
 \midrule
-\textbf{Domain mean} & \underline{0.975} & 0.868 & \textbf{0.985} & 0.931\\
+\textbf{Domain mean} & \textbf{0.976} & \underline{0.971} & 0.963 & 0.940 & 0.873\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}

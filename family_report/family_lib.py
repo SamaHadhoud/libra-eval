@@ -138,7 +138,7 @@ def load_manifest(path: str = os.path.join(HERE, "models.json")):
     # family); otherwise keep the manifest order as authored. The anchor
     # (reference for comparisons) is always the last family entry.
     if fam and all(e.size_b is not None for e in fam):
-        fam.sort(key=lambda e: e.size_b)
+        fam.sort(key=lambda e: e.size_b, reverse=True)   # largest first
     for i, e in enumerate(fam):
         e.color = FAMILY_COLORS[i % len(FAMILY_COLORS)]
     for i, e in enumerate(fro):
@@ -170,11 +170,11 @@ class FamilyData:
 
     @property
     def anchor(self):
-        """Reference model for version comparisons: the largest by known size_b
-        (independent of display order); falls back to the last family entry if no
-        sizes are set."""
+        """Reference model for version/frontier comparisons: the largest by
+        known size_b (independent of display order); falls back to the first
+        family entry (display order is largest-first) if no sizes are set."""
         sized = [e for e in self.family if e.size_b is not None]
-        return max(sized, key=lambda e: e.size_b) if sized else self.family[-1]
+        return max(sized, key=lambda e: e.size_b) if sized else self.family[0]
 
     # ---- lookups ---------------------------------------------------------- #
     def score(self, entry: ModelEntry, task: str) -> float | None:

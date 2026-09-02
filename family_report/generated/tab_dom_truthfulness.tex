@@ -2,15 +2,16 @@
 \begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{5pt}
 \caption{Truthfulness \& Misinformation: per-task scores.}
 \label{tab:fam-dom-truthfulness}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\maxwidthbox{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
 \toprule
-\textbf{Dataset} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
+\textbf{Dataset} & \textbf{K2V3 375B} & \textbf{K2V3 36B} & \textbf{K2V3 7B} & \textbf{K2V3 4B} & \textbf{K2V3 1B}\\
 \midrule
-SP Misconceptions & \underline{0.922} & 0.898 & \textbf{0.926} & 0.902\\
-TruthfulQA Binary & \underline{0.925} & \textbf{0.970} & \underline{0.925} & 0.870\\
-TruthfulQA MC1 & \underline{0.860} & \textbf{0.980} & 0.835 & 0.800\\
+SP Misconceptions & \textbf{0.910} & 0.824 & \underline{0.857} & 0.844 & 0.426\\
+TruthfulQA Binary & \textbf{0.890} & \underline{0.830} & 0.770 & 0.810 & 0.515\\
+TruthfulQA MC1 & \textbf{0.800} & \underline{0.780} & 0.695 & 0.710 & 0.480\\
 \midrule
-\textbf{Domain mean} & \underline{0.902} & \textbf{0.949} & 0.895 & 0.857\\
+\textbf{Domain mean} & \textbf{0.867} & \underline{0.811} & 0.774 & 0.788 & 0.474\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}

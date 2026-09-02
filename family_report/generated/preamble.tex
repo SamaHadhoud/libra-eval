@@ -9,3 +9,14 @@
   \fi}
 % task names: typewriter, escaped underscores that allow line breaks
 \providecommand{\task}[1]{{\ttfamily\small\def\_{\textunderscore\allowbreak}#1}}
+% \maxwidthbox{...}: render at natural size, but shrink to the line width if (and
+% only if) the content is wider. Uses graphicx's \resizebox only (no extra package),
+% so it works offline. Never enlarges a narrow table — that is the whole point.
+\newsavebox{\fammwbox}
+\providecommand{\maxwidthbox}[1]{%
+  \sbox{\fammwbox}{#1}%
+  \ifdim\wd\fammwbox>\linewidth
+    \resizebox{\linewidth}{!}{\usebox{\fammwbox}}%
+  \else
+    \usebox{\fammwbox}%
+  \fi}

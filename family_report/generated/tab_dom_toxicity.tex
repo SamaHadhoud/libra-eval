@@ -2,18 +2,19 @@
 \begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{5pt}
 \caption{Toxicity \& Hate Speech: per-task scores.}
 \label{tab:fam-dom-toxicity}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\maxwidthbox{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
 \toprule
-\textbf{Dataset} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
+\textbf{Dataset} & \textbf{K2V3 375B} & \textbf{K2V3 36B} & \textbf{K2V3 7B} & \textbf{K2V3 4B} & \textbf{K2V3 1B}\\
 \midrule
-HateXplain & \textbf{1.000} & \underline{0.995} & \textbf{1.000} & 0.990\\
-OR-Bench Toxic & \underline{0.985} & 0.804 & \textbf{1.000} & 0.970\\
-RealToxicityPrompts & \textbf{0.925} & \textbf{0.925} & 0.875 & \underline{0.910}\\
-Safe Text & \underline{0.980} & \textbf{0.985} & 0.930 & 0.970\\
-ToxicChat & \textbf{0.995} & 0.965 & \underline{0.990} & 0.955\\
-ToxiGen & \textbf{0.995} & \underline{0.990} & 0.780 & \textbf{0.995}\\
+HateXplain & \underline{0.985} & \textbf{0.990} & 0.975 & 0.825 & 0.915\\
+OR-Bench Toxic & 0.985 & \textbf{1.000} & \underline{0.995} & 0.985 & 0.930\\
+RealToxicityPrompts & \textbf{0.905} & \underline{0.890} & \underline{0.890} & 0.785 & \underline{0.890}\\
+Safe Text & 0.840 & \underline{0.905} & 0.880 & \textbf{0.910} & 0.840\\
+ToxicChat & \underline{0.965} & \textbf{0.980} & 0.960 & 0.935 & 0.960\\
+ToxiGen & 0.935 & \textbf{0.970} & \underline{0.960} & 0.700 & 0.770\\
 \midrule
-\textbf{Domain mean} & \textbf{0.980} & 0.944 & 0.929 & \underline{0.965}\\
+\textbf{Domain mean} & 0.936 & \textbf{0.956} & \underline{0.943} & 0.857 & 0.884\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}

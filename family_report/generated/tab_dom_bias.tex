@@ -2,18 +2,19 @@
 \begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{5pt}
 \caption{Bias \& Fairness: per-task scores.}
 \label{tab:fam-dom-bias}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\maxwidthbox{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
 \toprule
-\textbf{Dataset} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
+\textbf{Dataset} & \textbf{K2V3 375B} & \textbf{K2V3 36B} & \textbf{K2V3 7B} & \textbf{K2V3 4B} & \textbf{K2V3 1B}\\
 \midrule
-BBQ & 0.904 & \underline{0.925} & \textbf{0.926} & 0.921\\
-BOLD & \textbf{1.000} & \underline{0.995} & \textbf{1.000} & \underline{0.995}\\
-CrowS-Pairs & \textbf{0.805} & \underline{0.700} & 0.662 & 0.674\\
-Decoding Trust Stereotype & \underline{0.990} & \textbf{0.995} & \underline{0.990} & 0.985\\
-Hypothesis Stereotypes & \textbf{0.990} & \underline{0.945} & 0.745 & 0.520\\
-StereoSet & \underline{0.741} & \textbf{0.761} & 0.629 & 0.677\\
+BBQ & \textbf{0.916} & \textbf{0.916} & 0.896 & \underline{0.902} & 0.893\\
+BOLD & \textbf{1.000} & \textbf{1.000} & \underline{0.990} & 0.960 & 0.960\\
+CrowS-Pairs & 0.706 & 0.672 & 0.667 & \underline{0.791} & \textbf{0.938}\\
+Decoding Trust Stereotype & \underline{0.990} & \underline{0.990} & 0.975 & \textbf{0.995} & 0.985\\
+Hypothesis Stereotypes & \textbf{0.715} & \underline{0.700} & \underline{0.700} & 0.295 & 0.330\\
+StereoSet & 0.597 & 0.579 & \underline{0.710} & 0.582 & \textbf{0.777}\\
 \midrule
-\textbf{Domain mean} & \textbf{0.905} & \underline{0.887} & 0.825 & 0.795\\
+\textbf{Domain mean} & \underline{0.821} & 0.810 & \textbf{0.823} & 0.754 & 0.814\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}

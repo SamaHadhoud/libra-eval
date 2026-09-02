@@ -1,34 +1,60 @@
 {
-  "_comment": "Family manifest for the K2-V3 size-family report. Add one entry per model as its run lands, then rerun generate_latex.py + generate_family.py. 'key' is the model's identity in \\famnum{<key>}{<stat>} lookups, table columns, and chart legends. 'size_b' is the parameter count in billions (x-axis of the scaling charts; may be null). 'results_dir' is repo-relative and must contain exactly one model's result files. Baselines appear only in the UAE comparison table, never in family aggregates or scaling charts.",
+  "_comment": "Family manifest: K2V3 size family (1B/4B/7B/36B/375B, all terra-judged, all with the machine-ethics rescore applied) vs K2V2. Older pre-focused manifest preserved in models.full.json. 'comparisons' holds V2-terra.",
   "family": [
     {
-      "key": "kimi_k3",
-      "label": "Kimi K3 2.8T",
-      "size_b": 2800,
-      "results_dir": "outputs_kimi_k3_200/results"
+      "key": "k2_1b_final",
+      "label": "K2V3 1B",
+      "size_b": 1,
+      "results_dir": "outputs_k2_1b_final_200/results"
     },
     {
-      "key": "gemini_3_7_flash",
-      "label": "Gemini 3.7 Flash",
-      "size_b": null,
-      "results_dir": "outputs_gemini_3_7_flash_200/results"
+      "key": "k2_4b_ph1_10000",
+      "label": "K2V3 4B",
+      "size_b": 4,
+      "results_dir": "outputs_k2_4b_ph1_10000_200/results"
     },
     {
-      "key": "v3_375b",
-      "label": "K2-V3 375B",
+      "key": "k2_7b_ph2_2500",
+      "label": "K2V3 7B",
+      "size_b": 7,
+      "results_dir": "outputs_k2_7b_ph2_2500_200/results"
+    },
+    {
+      "key": "k2mova36b_mid5_2500",
+      "label": "K2V3 36B",
+      "size_b": 36,
+      "results_dir": "outputs_k2mova36b_mid5_2500_200/results"
+    },
+    {
+      "key": "k2moe375b_mid5_ph3_1500",
+      "label": "K2V3 375B",
       "size_b": 375,
-      "results_dir": "outputs_full_200/results",
-      "thinking_csv": "harmful_check_analysis_thinking/thinking_vs_response.csv"
-    },
+      "results_dir": "outputs_k2moe375b_mid5_ph3_1500_200/results",
+      "thinking_csv": "thinking_analysis_375b/thinking_vs_response.csv"
+    }
+  ],
+  "_frontier_comment": "External frontier reference models (terra-judged, same 95-task suite, same scorer fixes as the family). Shown as reference columns/series in the overview table, radar, domain-means chart, trade-off chart, and the UAE table — but excluded from the family aggregates, per-task domain tables, and every scaling analysis, so they never pollute a family mean or a size trend.",
+  "frontier": [
     {
       "key": "deepseek_v4_flash",
-      "label": "DeepSeek V4 Flash 291B",
-      "size_b": 291,
+      "label": "DeepSeek-V4-Flash",
+      "size_b": null,
       "results_dir": "outputs_deepseek_v4_flash_200/results"
+    },
+    {
+      "key": "kimi_k3",
+      "label": "Kimi-K3",
+      "size_b": null,
+      "results_dir": "outputs_kimi_k3_200/results"
     }
-
   ],
-  "baselines": [],
-  "_comparisons_comment": "Full-suite VERSION comparisons against the largest family model (the anchor). Shown in the version-comparison table/chart + movers, but NOT in family aggregates or size-scaling curves (they are not size points). Re-scored with the same fixed scorers/judge as the family on the tasks that changed.",
-  "comparisons": []
+  "_comparisons_comment": "Version comparison against the anchor (K2V3 375B). V2 re-judged with terra so the comparison is judge-consistent.",
+  "comparisons": [
+    {
+      "key": "v2_terra",
+      "label": "K2V2",
+      "size_b": null,
+      "results_dir": "outputs_v2_200_terra/results"
+    }
+  ]
 }

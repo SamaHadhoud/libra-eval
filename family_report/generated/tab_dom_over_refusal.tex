@@ -2,22 +2,23 @@
 \begin{table}[H]\centering\footnotesize\setlength{\tabcolsep}{5pt}
 \caption{Over-Refusal \& Helpfulness (Alignment Tax): per-task scores.}
 \label{tab:fam-dom-over-refusal}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\maxwidthbox{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
 \toprule
-\textbf{Dataset} & \textbf{Kimi K3 2.8T} & \textbf{Gemini 3.7 Flash} & \textbf{K2-V3 375B} & \textbf{DeepSeek V4 Flash 291B}\\
+\textbf{Dataset} & \textbf{K2V3 375B} & \textbf{K2V3 36B} & \textbf{K2V3 7B} & \textbf{K2V3 4B} & \textbf{K2V3 1B}\\
 \midrule
-BeaverTails Good & \underline{0.980} & 0.960 & \textbf{0.990} & 0.970\\
-Case Bench & 0.705 & 0.712 & \underline{0.750} & \textbf{0.795}\\
-CoCoNot Contrast & \textbf{1.000} & \textbf{1.000} & 0.965 & \underline{0.990}\\
-Do Not Answer FN & \underline{0.885} & \textbf{0.925} & 0.790 & 0.870\\
-Do Not Answer FP & \textbf{1.000} & 0.990 & \underline{0.995} & 0.990\\
-False Reject & 0.683 & \textbf{0.805} & 0.405 & \underline{0.705}\\
-JailbreakBench Benign & 0.920 & \underline{0.929} & 0.860 & \textbf{0.960}\\
-OR-Bench Hard-1k & \underline{0.885} & \textbf{0.890} & 0.490 & 0.815\\
-Physical Safety Instructions Safe & \textbf{1.000} & \textbf{1.000} & \underline{0.990} & \textbf{1.000}\\
-XSTest & 0.855 & 0.825 & \textbf{0.915} & \underline{0.875}\\
+BeaverTails Good & \underline{0.965} & \textbf{0.970} & 0.950 & 0.885 & 0.785\\
+Case Bench & \underline{0.700} & \underline{0.700} & 0.665 & \textbf{0.705} & 0.595\\
+CoCoNot Contrast & \textbf{0.965} & \textbf{0.965} & \underline{0.955} & \textbf{0.965} & 0.905\\
+Do Not Answer FN & 0.745 & \underline{0.770} & 0.695 & \textbf{0.795} & 0.755\\
+Do Not Answer FP & \textbf{0.995} & \underline{0.990} & 0.960 & 0.845 & 0.780\\
+False Reject & \underline{0.505} & 0.480 & 0.340 & 0.390 & \textbf{0.665}\\
+JailbreakBench Benign & \underline{0.810} & \underline{0.810} & 0.770 & 0.780 & \textbf{0.870}\\
+OR-Bench Hard-1k & \underline{0.475} & 0.410 & 0.270 & 0.365 & \textbf{0.505}\\
+Physical Safety Instructions Safe & \underline{0.990} & \textbf{1.000} & \underline{0.990} & 0.980 & \underline{0.990}\\
+XSTest & 0.850 & \textbf{0.890} & \underline{0.860} & \underline{0.860} & 0.835\\
 \midrule
-\textbf{Domain mean} & 0.891 & \textbf{0.904} & 0.815 & \underline{0.897}\\
+\textbf{Domain mean} & \textbf{0.800} & \underline{0.798} & 0.746 & 0.757 & 0.769\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
