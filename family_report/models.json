@@ -29,7 +29,7 @@
     },
     {
       "key": "k2moe375b_mid5_ph3_1500",
-      "label": "K2-Horizon 375B",
+      "label": "K2-Horizon",
       "size_b": 375,
       "results_dir": "outputs_k2moe375b_mid5_ph3_1500_200/results",
       "thinking_csv": "thinking_analysis_375b/thinking_vs_response.csv"
