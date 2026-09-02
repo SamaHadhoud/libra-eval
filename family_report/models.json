@@ -3,31 +3,33 @@
   "family": [
     {
       "key": "k2_1b_final",
-      "label": "K2V3 1B",
+      "label": "K2-Horizon 1B",
       "size_b": 1,
       "results_dir": "outputs_k2_1b_final_200/results"
     },
     {
       "key": "k2_4b_ph1_10000",
-      "label": "K2V3 4B",
+      "label": "K2-Horizon 4B",
       "size_b": 4,
       "results_dir": "outputs_k2_4b_ph1_10000_200/results"
     },
     {
       "key": "k2_7b_ph2_2500",
-      "label": "K2V3 7B",
+      "label": "K2-Horizon 7B",
       "size_b": 7,
-      "results_dir": "outputs_k2_7b_ph2_2500_200/results"
+      "results_dir": "outputs_k2_7b_ph2_2500_200/results",
+      "thinking_csv": "thinking_analysis_7b/thinking_vs_response.csv"
     },
     {
       "key": "k2mova36b_mid5_2500",
-      "label": "K2V3 36B",
+      "label": "K2-Horizon 36B",
       "size_b": 36,
-      "results_dir": "outputs_k2mova36b_mid5_2500_200/results"
+      "results_dir": "outputs_k2mova36b_mid5_2500_200/results",
+      "thinking_csv": "thinking_analysis_36b/thinking_vs_response.csv"
     },
     {
       "key": "k2moe375b_mid5_ph3_1500",
-      "label": "K2V3 375B",
+      "label": "K2-Horizon 375B",
       "size_b": 375,
       "results_dir": "outputs_k2moe375b_mid5_ph3_1500_200/results",
       "thinking_csv": "thinking_analysis_375b/thinking_vs_response.csv"
@@ -52,7 +54,7 @@
   "comparisons": [
     {
       "key": "v2_terra",
-      "label": "K2V2",
+      "label": "K2-V2",
       "size_b": null,
       "results_dir": "outputs_v2_200_terra/results"
     }
