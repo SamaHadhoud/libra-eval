@@ -88,7 +88,7 @@ _RADAR_LABELS = {
 }
 
 
-def radar(fd: FamilyData, name: str = "fam_radar", models=None):
+def radar(fd: FamilyData, name: str = "fam_radar", models=None, rmin=None):
     """The report's hero figure: the ten domain means as a radar/safety profile.
     Default = the family alone. Pass models (e.g. [anchor] + frontier) for the
     separate frontier-comparison edition. A single model keeps the original
@@ -102,10 +102,13 @@ def radar(fd: FamilyData, name: str = "fam_radar", models=None):
     angles = np.linspace(0, 2 * np.pi, N, endpoint=False)
     loop = np.concatenate([angles, angles[:1]])
     models = fd.family if models is None else models
-    lowest = min(fd.section_mean(e, s) or 0.0 for e in models for s in secs)
-    RMIN = 0.5
-    while RMIN > 0.05 and lowest < RMIN + 0.02:   # keep every polygon inside
-        RMIN = round(RMIN - 0.1, 1)
+    if rmin is not None:
+        RMIN = rmin
+    else:
+        lowest = min(fd.section_mean(e, s) or 0.0 for e in models for s in secs)
+        RMIN = 0.5
+        while RMIN > 0.05 and lowest < RMIN + 0.02:   # keep every polygon inside
+            RMIN = round(RMIN - 0.1, 1)
 
     fig, ax = plt.subplots(figsize=(6.8, 6.8), subplot_kw=dict(polar=True))
     ax.set_theta_offset(np.pi / 2)
@@ -140,17 +143,24 @@ def radar(fd: FamilyData, name: str = "fam_radar", models=None):
                   handletextpad=0.3, columnspacing=1.4)
     else:
         fam_keys = {e.key for e in fd.family}
+        comp_keys = {e.key for e in fd.comparisons}
         for e in models:
             vals = [fd.section_mean(e, s) or 0.0 for s in secs]
             vloop = vals + vals[:1]
             if e.key in fam_keys:
                 ax.plot(loop, vloop, color=e.color, lw=2.2, zorder=4, label=e.label)
                 ax.fill(loop, vloop, color=e.color, alpha=0.10, zorder=2)
+            elif e.key in comp_keys:
+                # version-comparison model (e.g. K2-V2): solid but unfilled,
+                # so it reads as "ours, prior" against the dashed externals
+                ax.plot(loop, vloop, color=e.color, lw=1.9, zorder=3,
+                        label=e.label)
             else:
                 ax.plot(loop, vloop, color=e.color, lw=1.7, ls=(0, (5, 3)),
                         zorder=3, label=e.label)
         ax.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, -0.19),
-                  ncol=min(len(models), 3), fontsize=8.5)
+                  ncol=2 if len(models) == 4 else min(len(models), 3),
+                  fontsize=8.5)
     save(fig, name)
 
 
@@ -850,7 +860,11 @@ if __name__ == "__main__":
     # frontier reference models (they never appear in the family charts above)
     if fd.frontier:
         frontier_models = [fd.anchor] + fd.frontier
-        radar(fd, name="fam_frontier_radar", models=frontier_models)
+        # condensed-report edition: predecessor (solid unfilled) + frontier
+        # (dashed) around the anchor, radial axis pinned to the family radar's
+        # 0.1 floor so the two radars share a scale side by side
+        radar(fd, name="fam_frontier_radar",
+              models=[fd.anchor] + fd.comparisons + fd.frontier, rmin=0.1)
         domain_bars(fd, name="fam_frontier_domain_bars", models=frontier_models)
         uae_frontier(fd)
     print("done.")
