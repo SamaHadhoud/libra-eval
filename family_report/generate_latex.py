@@ -286,10 +286,63 @@ def gen_overview(fd: FamilyData):
 """.lstrip())
 
 
+# Source-benchmark citation key (chat family report references.bib) per pretty
+# task name. Tasks without an entry are LibrAI in-house sets with no external
+# source. Keys must exist in the consuming report's .bib.
+DATASET_CITES = {
+    "AART": "aart", "Advbench": "advbench", "Anthropic Red-Team": "anthropicredteam",
+    "BBQ": "bbq", "BOLD": "bold", "Bad": "bad",
+    "BeaverTails Bad": "beavertails", "BeaverTails Good": "beavertails",
+    "Case Bench": "casebench", "CatQA": "catqa", "Clearharm": "clearharm",
+    "CoCoNot Contrast": "coconot", "CoCoNot Original": "coconot",
+    "CoNa": "safetunedllamas", "CoSafe": "cosafe", "ConfAIde": "confaide",
+    "CrowS-Pairs": "crowspairs",
+    "CyberSecEval4 MITRE": "cyberseceval", "Cyberattack Assistance": "cyberseceval",
+    "DAN Jailbreak": "dan", "DAN Regular": "dan", "DICES-350": "dices",
+    "Decoding Trust Machine Ethics": "decodingtrust",
+    "Decoding Trust Privacy": "decodingtrust",
+    "Decoding Trust Stereotype": "decodingtrust",
+    "DiaSafety": "diasafety", "Dialogue Safety": "bibfi",
+    "Do Not Answer": "donotanswer", "Do Not Answer FN": "donotanswer",
+    "Do Not Answer FP": "donotanswer",
+    "False Reject": "falsereject", "Forbidden Questions": "dan",
+    "GA Jailbreak": "gajailbreakbench", "GPTFuzzer": "gptfuzzer",
+    "Gandalf Ignore Instructions": "gandalf", "HEx-PHI": "hexphi",
+    "Hack-a-Prompt": "hackaprompt", "HarmBench": "harmbench",
+    "HarmfulQ": "harmfulq", "HateXplain": "hatexplain",
+    "Hypothesis Stereotypes": "hypothesisstereotypes",
+    "JBDistill-Bench": "jbdistill", "JBShield": "jbshield",
+    "JailbreakBench": "jailbreakbench", "JailbreakBench Benign": "jailbreakbench",
+    "Latent Jailbreak": "latentjailbreak",
+    "Malicious Instruct New": "maliciousinstruct",
+    "Malicious Instructions New": "safetunedllamas",
+    "Med-Safety-Bench": "medsafetybench", "Moral Choice": "moralchoice",
+    "OR-Bench Hard-1k": "orbench", "OR-Bench Toxic": "orbench",
+    "Personal-Info-Leak Few-Shot": "personalinfoleak",
+    "Physical Safety Instructions Safe": "safetunedllamas",
+    "Physical Safety Instructions Unsafe": "safetunedllamas",
+    "Prompt Extraction Robustness": "tensortrust",
+    "Prompt-Hijacking Robustness": "tensortrust",
+    "RealToxicityPrompts": "rtp",
+    "Red Eval Dangerous QA": "redeval", "Red Eval Harmful QA": "redeval",
+    "SALAD-Bench": "saladbench", "SORRY-Bench": "sorrybench",
+    "SP Misconceptions": "spmisconceptions", "Safe Text": "safetext",
+    "Simple Safety Test": "simplesafetytests", "Stealth Graph": "stealthgraph",
+    "StereoSet": "stereoset",
+    "Sycophancy Eval Answer": "sycophancy",
+    "Sycophancy Eval Are You Sure": "sycophancy",
+    "Sycophancy Eval Mimicry": "sycophancy",
+    "TDC Red-Teaming": "tdc", "ToxiGen": "toxigen", "ToxicChat": "toxicchat",
+    "TruthfulQA Binary": "truthfulqa", "TruthfulQA MC1": "truthfulqa",
+    "Vicuna Bench": "vicuna", "WildJailbreak": "wildjailbreak", "XSTest": "xstest",
+}
+
+
 def gen_domain_tables(fd: FamilyData):
     # Domain tables are flagship-only and compact: dataset + score, split into
     # two side-by-side halves once the domain has enough rows to warrant it.
-    # Per-task metric and n live in the appendix (tab_full).
+    # Per-task metric and n live in the appendix (tab_full); the source
+    # citation rides next to each dataset name.
     cols = (">{\\raggedright\\arraybackslash}p{5.0cm} "
             ">{\\centering\\arraybackslash}p{1.6cm}")
     head = f"\\textbf{{Dataset}} & \\textbf{{{esc(fd.anchor.label)}}}\\\\"
@@ -303,8 +356,12 @@ def gen_domain_tables(fd: FamilyData):
         if not tasks:
             continue
         title = esc(L.SECTIONS[sec]["title"])
-        rows = [f"{esc(F.pretty_task(tn))} & {fmt(fd.score(fd.anchor, tn))}\\\\"
-                for tn in tasks]
+        rows = []
+        for tn in tasks:
+            pretty = F.pretty_task(tn)
+            key = DATASET_CITES.get(pretty)
+            name = esc(pretty) + (f"~\\cite{{{key}}}" if key else "")
+            rows.append(f"{name} & {fmt(fd.score(fd.anchor, tn))}\\\\")
         mean_row = (f"\\textbf{{Domain mean}} & "
                     f"{fmt(fd.section_mean(fd.anchor, sec))}\\\\")
         if len(rows) >= 6:
