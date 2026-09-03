@@ -1,7 +1,8 @@
 """fam_version_tasks: per-task grouped bars, anchor vs the version-comparison
 model (K2-V2), across all shared main-suite tasks, split over two stacked rows.
-Used by the condensed cross-surface report (K2-V3-Family-Red-Teaming); the
-family LaTeX report uses the by-domain fam_version_comparison instead.
+Used by BOTH the condensed cross-surface report (K2-V3-Family-Red-Teaming) and
+the family chat report (K2-V3-Family-Chat-Red-Teaming, section 9, alongside the
+by-domain fam_version_comparison).
 
 Run AFTER generate_family.py (which clears figures/fam_*.pdf on each run):
     python3 make_version_tasks.py
