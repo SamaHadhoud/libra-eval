@@ -5,13 +5,15 @@
       "key": "k2_1b_final",
       "label": "K2-Horizon 1B",
       "size_b": 1,
-      "results_dir": "outputs_k2_1b_final_200/results"
+      "results_dir": "outputs_k2_1b_final_200/results",
+      "thinking_csv": "thinking_analysis_1b/thinking_vs_response.csv"
     },
     {
       "key": "k2_4b_ph1_10000",
       "label": "K2-Horizon 4B",
       "size_b": 4,
-      "results_dir": "outputs_k2_4b_ph1_10000_200/results"
+      "results_dir": "outputs_k2_4b_ph1_10000_200/results",
+      "thinking_csv": "thinking_analysis_4b/thinking_vs_response.csv"
     },
     {
       "key": "k2_7b_ph2_2500",
@@ -24,7 +26,8 @@
       "key": "k2_32b_mid5_11000",
       "label": "K2-Horizon 32B",
       "size_b": 32,
-      "results_dir": "outputs_k2_32b_mid5_11000_200/results"
+      "results_dir": "outputs_k2_32b_mid5_11000_200/results",
+      "thinking_csv": "thinking_analysis_32b/thinking_vs_response.csv"
     },
     {
       "key": "k2mova36b_mid5_2500",
