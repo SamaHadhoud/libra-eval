@@ -395,30 +395,44 @@ def tradeoff(fd: FamilyData):
                 textcoords="offset points", xytext=(-6, -6), ha="right", va="top",
                 fontsize=8, color="#5f9e80", style="italic")
     # reversed draw order: the anchor's point stays on top of near-ties.
-    # Labels are the bare sizes (the caption names the family) so the tight
-    # top-tier cluster stays legible; each label tries several slots and takes
-    # the first that collides with neither a placed label nor another point.
+    # Labels are the bare sizes (the caption names the family). Visually
+    # coincident points share ONE label ("375B / 36B") — two labels on one dot
+    # always collide with something. Each label then tries several slots and
+    # takes the first clear of both placed labels and other points.
     npts = [((px - x0) / (x1 - x0), (py - y0) / (y1 - y0))
             for px, py in zip(xs, ys)]
-    placed = []  # approximate label centers in normalized axis coords
+    groups = []
+    for idx in range(len(models)):
+        for g in groups:
+            if (abs(npts[idx][0] - npts[g[0]][0]) < 0.015
+                    and abs(npts[idx][1] - npts[g[0]][1]) < 0.015):
+                g.append(idx)
+                break
+        else:
+            groups.append([idx])
+    for idx in reversed(range(len(models))):
+        ax.scatter([xs[idx]], [ys[idx]], s=120, color=models[idx].color,
+                   zorder=3, edgecolor="white", linewidth=1.4)
+    placed = []  # (center-x, center-y, half-width) of placed labels, normalized
     slots = [((9, 5), "left"), ((9, -13), "left"), ((-9, 5), "right"),
              ((-9, -13), "right"), ((0, 12), "center"), ((0, -20), "center")]
-    for idx in reversed(range(len(models))):
-        e, x, y = models[idx], xs[idx], ys[idx]
-        ax.scatter([x], [y], s=120, color=e.color, zorder=3,
-                   edgecolor="white", linewidth=1.4)
-        nx, ny = npts[idx]
-        lab = f"{e.size_b:g}B" if e.size_b else e.label
+    for g in groups:
+        nx, ny = npts[g[0]]
+        lab = " / ".join(f"{models[i].size_b:g}B" if models[i].size_b
+                         else models[i].label for i in g)
+        hw = 0.012 * len(lab)  # rough half-width of the label, axis-normalized
         for (dxp, dyp), ha in slots:
-            lx = nx + dxp / 400 + {"left": 0.045, "right": -0.045, "center": 0}[ha]
+            lx = nx + dxp / 400 + {"left": hw, "right": -hw, "center": 0}[ha]
             ly = ny + dyp / 340
-            if (all(abs(lx - qx) > 0.10 or abs(ly - qy) > 0.05 for qx, qy in placed)
-                    and all(j == idx or abs(lx - px) > 0.05 or abs(ly - py) > 0.045
+            if (all(abs(lx - qx) > hw + qw + 0.02 or abs(ly - qy) > 0.05
+                    for qx, qy, qw in placed)
+                    and all(j in g or abs(lx - px) > hw + 0.03
+                            or abs(ly - py) > 0.045
                             for j, (px, py) in enumerate(npts))):
                 break
-        ax.annotate(lab, (x, y), textcoords="offset points",
+        ax.annotate(lab, (xs[g[0]], ys[g[0]]), textcoords="offset points",
                     xytext=(dxp, dyp), ha=ha, fontsize=8.5, color=INK)
-        placed.append((lx, ly))
+        placed.append((lx, ly, hw))
     ax.set_xlim(x0, x1)
     ax.set_ylim(y0, y1)
     ax.set_xlabel("Over-refusal domain mean\n(compliance on benign prompts — higher is better)")
