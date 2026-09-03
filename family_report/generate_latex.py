@@ -356,6 +356,12 @@ def gen_domain_tables(fd: FamilyData):
         if not tasks:
             continue
         title = esc(L.SECTIONS[sec]["title"])
+        if len(tasks) == 1:
+            # a one-row table would only repeat the domain mean — the section
+            # prose quotes the score instead
+            write(f"tab_dom_{sec}.tex",
+                  f"% single-task domain ({title}): no table, score quoted in prose.\n")
+            continue
         rows = []
         for tn in tasks:
             pretty = F.pretty_task(tn)

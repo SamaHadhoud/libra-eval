@@ -664,7 +664,7 @@ def thinking_divergence(fd: FamilyData):
                 ax.annotate(f"{ys[i]:.1f}%", (xs[i], ys[i]),
                             textcoords="offset points", xytext=(0, yoff),
                             ha="center", fontsize=8, color=INK)
-        ax.set_title(title, fontsize=9.5, loc="left")
+        ax.set_title(title, fontsize=9.5, loc="left", pad=12)
         if is_size:
             ax.set_xscale("log")
         ax.set_xticks(xs)
