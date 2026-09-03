@@ -1,5 +1,5 @@
 """
-generate_latex.py — emits every number and table of the K2-V3 family report as
+generate_latex.py — emits every number and table of the K2-Horizon family report as
 LaTeX fragments under family_report/generated/. The report's .tex only \\inputs
 fragments and references \\famnum{<model_key>}{<stat>} macros, so no result
 number is ever typed by hand.
@@ -266,7 +266,7 @@ def gen_overview(fd: FamilyData):
         [e.agg["mean_score"] if e.agg else None for e in models]))
     body = "\n".join(rows)
     group = ""
-    caption = ("Mean score by safety domain across the K2-V3 family (higher is "
+    caption = ("Mean score by safety domain across the K2-Horizon family (higher is "
                "better); bold = best in row, underline = second.")
     write("tab_overview.tex", f"""
 \\begin{{table}}[H]\\centering\\small\\setlength{{\\tabcolsep}}{{4pt}}
@@ -369,7 +369,7 @@ def gen_full_table(fd: FamilyData):
     # number is findable (the domain tables stay family-only by design; the
     # heatmap shows colours, not values).
     _full_table(fd, fd.family, "tab_full.tex",
-                "Full main-suite results across the K2-V3 family.",
+                "Full main-suite results across the K2-Horizon family.",
                 "tab:fam-full")
     if fd.frontier:
         _full_table(fd, [fd.anchor] + fd.frontier, "tab_frontier_full.tex",
@@ -408,7 +408,7 @@ def gen_uae_multiling(fd: FamilyData):
     # comparison section; the frontier lives in its own table below.
     _uae_table(fd, fd.family, "tab_uae.tex",
                "Region-specific safety, neutrality, and knowledge across the "
-               "K2-V3 family.", "tab:fam-uae")
+               "K2-Horizon family.", "tab:fam-uae")
 
     # Separate frontier edition: anchor vs the frontier models that ran UAE.
     fr = [b for b in fd.frontier
@@ -721,7 +721,7 @@ FIG_META = [
      "fig:fam-tradeoff", "width=0.72\\linewidth"),
     # the heatmap is very tall (88 task rows): cap its height so it always
     # fits one float page with its caption, instead of overflowing the page
-    ("fam_heatmap", "Per-task score heatmap across the K2-V3 family (main "
+    ("fam_heatmap", "Per-task score heatmap across the K2-Horizon family (main "
      "suite, grouped by domain).", "fig:fam-heatmap",
      "width=\\linewidth,height=0.9\\textheight,keepaspectratio"),
     ("fam_score_hist", "Distribution of the main-suite task scores per model.",
