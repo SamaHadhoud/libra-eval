@@ -188,6 +188,31 @@ def sizes_axis(fd: FamilyData):
     return fam, list(range(1, len(fam) + 1)), False
 
 
+def _log_close(xs, i, thresh=0.08):
+    """Whether point i sits within `thresh` decades of its predecessor on a
+    log size axis — 32B/36B are 0.05 apart, so their labels collide."""
+    return i > 0 and xs[i - 1] > 0 and \
+        (np.log10(xs[i]) - np.log10(xs[i - 1])) < thresh
+
+
+def size_ticklabels(fam, xs):
+    """Size tick labels for a log axis; a label log-close to its predecessor
+    drops to a second line so neighbours like 32B/36B never overlap."""
+    return [("\n" if _log_close(xs, i) else "") + f"{e.size_b:g}B"
+            for i, e in enumerate(fam)]
+
+
+def dodged_offsets(xs, n_up=8, n_down=-15):
+    """Per-point annotation offsets for a size line chart: the first point of
+    a log-close pair drops its value label below the marker so the pair's
+    labels never collide."""
+    offs = [(0, n_up)] * len(xs)
+    for i in range(1, len(xs)):
+        if _log_close(xs, i):
+            offs[i - 1] = (0, n_down)
+    return offs
+
+
 def scaling_overall(fd: FamilyData):
     fam, xs, is_size = sizes_axis(fd)
     means = [e.agg["mean_score"] for e in fam]
@@ -225,12 +250,12 @@ def scaling_overall(fd: FamilyData):
     ax.fill_between(xs, [y - c for y, c in zip(means, mean_ci)],
                     [y + c for y, c in zip(means, mean_ci)],
                     color=ACCENT, alpha=0.15, lw=0)
-    for x, y in zip(xs, means):
+    for (x, y), off in zip(zip(xs, means), dodged_offsets(xs, n_down=-16)):
         ax.annotate(f"{y:.3f}", (x, y), textcoords="offset points",
-                    xytext=(0, 8), ha="center", fontsize=8.5, color=INK)
+                    xytext=off, ha="center", fontsize=8.5, color=INK)
     ax.set_xscale("log")
     ax.set_xticks(xs)
-    ax.set_xticklabels([f"{e.size_b:g}B" for e in fam])
+    ax.set_xticklabels(size_ticklabels(fam, xs))
     ax.set_xlim(min(xs) * 0.8, max(xs) * 1.25)
     ax.set_xlabel("Model size (parameters)")
     ax.set_ylabel("Mean task score (higher is better)")
@@ -256,10 +281,10 @@ def scaling_domains(fd: FamilyData):
     for ax, sec in zip(axes.flat, secs):
         ys = [fd.section_mean(e, sec) for e in fam]
         ax.plot(xs, ys, marker="o", ms=5, lw=1.8, color=ACCENT)
-        for x, y in zip(xs, ys):
+        for (x, y), off in zip(zip(xs, ys), dodged_offsets(xs, 7, -13)):
             if y is not None:
                 ax.annotate(f"{y:.2f}", (x, y), textcoords="offset points",
-                            xytext=(0, 7), ha="center", fontsize=8, color=INK)
+                            xytext=off, ha="center", fontsize=8, color=INK)
         ax.set_title("\n".join(textwrap.wrap(L.SECTIONS[sec]["title"], 22)),
                      fontsize=8.5)
         ax.set_ylim(ymin, 1.05)
@@ -273,7 +298,10 @@ def scaling_domains(fd: FamilyData):
     for c in range(ncol):                        # model labels on lowest visible row/col
         for r in range(nrow - 1, -1, -1):
             if axes[r, c].get_visible():
-                axes[r, c].set_xticklabels(lab, fontsize=8, rotation=25, ha="right")
+                if is_size:
+                    axes[r, c].set_xticklabels(size_ticklabels(fam, xs), fontsize=8)
+                else:
+                    axes[r, c].set_xticklabels(lab, fontsize=8, rotation=25, ha="right")
                 axes[r, c].tick_params(labelbottom=True)
                 break
     fig.supxlabel("Model size (parameters)" if is_size else "Model", fontsize=10)
@@ -592,36 +620,63 @@ def multilingual(fd: FamilyData):
         pretty={t: F.pretty_task(t) for t in fd.multilingual_tasks()})
 
 
+# Channel identity colors for the thinking-vs-answer charts (NOT model colors:
+# here the series are the two output channels and x is the size ladder).
+# Validated pair (dataviz six checks, light surface, all pass).
+CH_THINK = "#B5651D"     # reasoning trace — sienna
+CH_ANSWER = "#2E62B0"    # final answer   — deep blue
+
+
 def thinking_divergence(fd: FamilyData):
-    data = [(e, F.thinking_totals(e)) for e in fd.family]
-    data = [(e, t) for e, t in data if t]
+    """Thinking-vs-answer divergence across the size ladder, two panels on a
+    shared log size axis: harm level per channel, then the two divergence
+    directions. Replaces the old grouped bars, which stopped being readable
+    at six models (24 value labels collided). Color = channel in both panels;
+    value labels sit above the answer series and below the thinking series so
+    converging endpoints never collide."""
+    fam, xs, is_size = sizes_axis(fd)
+    data = [(e, x, F.thinking_totals(e)) for e, x in zip(fam, xs)]
+    data = [(e, x, t) for e, x, t in data if t]
     if not data:
         print("  (no thinking_csv configured for any model — skipping "
               "fam_thinking_divergence)")
         return
-    cats = [("thinking_harmful_rate", "Thinking\nharmful"),
-            ("answer_harmful_rate", "Final answer\nharmful"),
-            ("thinking_only_rate", "Divergent:\nthinking only"),
-            ("answer_only_rate", "Divergent:\nanswer only")]
-    n = len(data)
-    width = 0.8 / n
-    xpos = np.arange(len(cats))
-    fig, ax = plt.subplots(figsize=(6.8, 3.4))
-    for i, (e, tot) in enumerate(data):
-        vals = [tot[c] * 100 for c, _ in cats]
-        xx = xpos + (i - (n - 1) / 2) * width
-        ax.bar(xx, vals, width * 0.92, color=e.color if n > 1 else ACCENT,
-               edgecolor="white", linewidth=1.0, label=e.label if n > 1 else None)
-        for x, v in zip(xx, vals):
-            ax.annotate(f"{v:.2f}%", (x, v), textcoords="offset points",
-                        xytext=(0, 3), ha="center", fontsize=8, color=INK)
-    ax.set_xticks(xpos)
-    ax.set_xticklabels([lab for _, lab in cats], fontsize=9)
-    ax.set_ylabel("% of responses (65 safety tasks)")
-    if n > 1:
-        ax.legend(frameon=False, fontsize=8.5)
-    else:
-        ax.set_title(data[0][0].label, fontsize=10, loc="left")
+    fam = [e for e, _, _ in data]
+    xs = [x for _, x, _ in data]
+    panels = [
+        ("Harmful content by channel",
+         [("thinking_harmful_rate", "reasoning trace", CH_THINK, -15),
+          ("answer_harmful_rate", "final answer", CH_ANSWER, 8)]),
+        ("Divergence between channels",
+         [("thinking_only_rate", "thinking-only\n(trace leak)", CH_THINK, -15),
+          ("answer_only_rate", "answer-only\n(grounding)", CH_ANSWER, 8)]),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(6.8, 3.3), sharex=True)
+    for ax, (title, series) in zip(axes, panels):
+        for key, lab, color, yoff in series:
+            ys = [t[key] * 100 for _, _, t in data]
+            ax.plot(xs, ys, marker="o", ms=6, lw=2, color=color, label=lab,
+                    zorder=3)
+            # selective labels: endpoints + any interior maximum (the 4B
+            # grounding spike), not a number on every point
+            marked = {0, len(ys) - 1, int(np.argmax(ys))}
+            for i in sorted(marked):
+                ax.annotate(f"{ys[i]:.1f}%", (xs[i], ys[i]),
+                            textcoords="offset points", xytext=(0, yoff),
+                            ha="center", fontsize=8, color=INK)
+        ax.set_title(title, fontsize=9.5, loc="left")
+        if is_size:
+            ax.set_xscale("log")
+        ax.set_xticks(xs)
+        ax.set_xticklabels(size_ticklabels(fam, xs) if is_size
+                           else [e.label for e in fam], fontsize=8)
+        ax.set_xlim(min(xs) * 0.7, max(xs) * 1.45)
+        ax.set_ylim(0, None)
+        ax.legend(frameon=False, fontsize=8, loc="upper right",
+                  handlelength=1.6)
+    axes[0].set_ylabel("% of responses (65 safety tasks)")
+    fig.supxlabel("Model size (parameters)", fontsize=10)
+    fig.tight_layout()
     save(fig, "fam_thinking_divergence")
 
 
@@ -644,10 +699,10 @@ def attack_scaling(fd: FamilyData):
     for ax, tag in zip(axes.flat, tags):
         ys = [e.agg["by_attack"].get(tag) for e in fam]
         ax.plot(xs, ys, marker="o", ms=5, lw=1.8, color=ACCENT)
-        for x, y in zip(xs, ys):
+        for (x, y), off in zip(zip(xs, ys), dodged_offsets(xs, 7, -13)):
             if y is not None:
                 ax.annotate(f"{y:.2f}", (x, y), textcoords="offset points",
-                            xytext=(0, 7), ha="center", fontsize=8, color=INK)
+                            xytext=off, ha="center", fontsize=8, color=INK)
         ax.set_title(F.pretty_attack(tag), fontsize=10)
         ax.set_ylim(ymin, 1.06)
         # scale FIRST: set_xscale resets the tick locator to log decades,
@@ -660,7 +715,10 @@ def attack_scaling(fd: FamilyData):
     for c in range(ncol):                            # x-labels on lowest visible row
         for r in range(nrow - 1, -1, -1):
             if axes[r, c].get_visible():
-                axes[r, c].set_xticklabels(lab, fontsize=8, rotation=20, ha="right")
+                if is_size:
+                    axes[r, c].set_xticklabels(size_ticklabels(fam, xs), fontsize=8)
+                else:
+                    axes[r, c].set_xticklabels(lab, fontsize=8, rotation=20, ha="right")
                 axes[r, c].tick_params(labelbottom=True)
                 break
     for r in range(nrow):                            # y-label on left column
