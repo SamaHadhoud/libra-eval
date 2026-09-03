@@ -3,18 +3,24 @@
 \caption{Ethics, Values \& Sycophancy: per-task scores.}
 \label{tab:fam-dom-ethics}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-Decoding Trust Machine Ethics & accuracy & 200 & 0.786\\
-Moral Choice & value-alignment & 200 & 0.888\\
-Sycophancy Eval Answer & sycophancy-resistance & 200 & 0.850\\
-Sycophancy Eval Are You Sure & sycophancy-resistance & 200 & 0.780\\
-Sycophancy Eval Mimicry & sycophancy-resistance & 200 & 0.925\\
-Vicuna Bench & quality & 80 & 0.823\\
+Decoding Trust Machine Ethics & 0.786\\
+Moral Choice & 0.888\\
+Sycophancy Eval Answer & 0.850\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.842\\
+Sycophancy Eval Are You Sure & 0.780\\
+Sycophancy Eval Mimicry & 0.925\\
+Vicuna Bench & 0.823\\
+\midrule
+\textbf{Domain mean} & 0.842\\
 \bottomrule
 \end{tabular}}
 \end{table}

@@ -3,32 +3,38 @@
 \caption{Jailbreak \& Adversarial Robustness: per-task scores.}
 \label{tab:fam-dom-jailbreak}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-DAN Jailbreak & safety-refusal-rate & 200 & 0.892\\
-DAN Regular & safety-refusal-rate & 200 & 0.980\\
-GA Jailbreak & safety-refusal-rate & 200 & 0.990\\
-GPTFuzzer & safety-refusal-rate & 100 & 0.980\\
-Hack-a-Prompt & safety-refusal-rate & 200 & 0.755\\
-JailbreakBench & safety-refusal-rate & 100 & 0.990\\
-JBDistill-Bench & safety-refusal-rate & 200 & 0.705\\
-JBShield & safety-refusal-rate & 200 & 0.990\\
-Latent Jailbreak & safety-refusal-rate & 200 & 0.980\\
-LibrAI Adv Deep Inception & safety-refusal-rate & 200 & 0.940\\
-LibrAI Adv Do Anything Now & safety-refusal-rate & 200 & 0.840\\
-LibrAI Adv Effect To Cause & safety-refusal-rate & 200 & 0.970\\
-LibrAI Adv Few Shots & safety-refusal-rate & 200 & 0.995\\
-LibrAI Adv One Sided Statement & safety-refusal-rate & 200 & 0.915\\
-LibrAI Adv Persona Modulation & safety-refusal-rate & 200 & 0.740\\
-LibrAI Adv Prompt Injection & safety-refusal-rate & 200 & 0.970\\
-LibrAI Adv Refusal Suppression & safety-refusal-rate & 200 & 0.915\\
-LibrAI Adv Tense Change & safety-refusal-rate & 200 & 0.985\\
-Stealth Graph & safety-refusal-rate & 200 & 0.870\\
-WildJailbreak & safety-refusal-rate & 200 & 0.950\\
+DAN Jailbreak & 0.892\\
+DAN Regular & 0.980\\
+GA Jailbreak & 0.990\\
+GPTFuzzer & 0.980\\
+Hack-a-Prompt & 0.755\\
+JailbreakBench & 0.990\\
+JBDistill-Bench & 0.705\\
+JBShield & 0.990\\
+Latent Jailbreak & 0.980\\
+LibrAI Adv Deep Inception & 0.940\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.918\\
+LibrAI Adv Do Anything Now & 0.840\\
+LibrAI Adv Effect To Cause & 0.970\\
+LibrAI Adv Few Shots & 0.995\\
+LibrAI Adv One Sided Statement & 0.915\\
+LibrAI Adv Persona Modulation & 0.740\\
+LibrAI Adv Prompt Injection & 0.970\\
+LibrAI Adv Refusal Suppression & 0.915\\
+LibrAI Adv Tense Change & 0.985\\
+Stealth Graph & 0.870\\
+WildJailbreak & 0.950\\
+\midrule
+\textbf{Domain mean} & 0.918\\
 \bottomrule
 \end{tabular}}
 \end{table}

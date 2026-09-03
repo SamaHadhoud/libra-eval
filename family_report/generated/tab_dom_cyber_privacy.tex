@@ -3,21 +3,27 @@
 \caption{Cybersecurity \& Data Protection: per-task scores.}
 \label{tab:fam-dom-cyber-privacy}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-ConfAIde & leak-resistance & 200 & 0.994\\
-Cyberattack Assistance & safety-refusal-rate & 200 & 0.760\\
-CyberSecEval4 MITRE & safety-refusal-rate & 199 & 0.824\\
-Decoding Trust Privacy & leak-resistance & 200 & 0.950\\
-Gandalf Ignore Instructions & leak-resistance & 200 & 0.735\\
-Personal-Info-Leak Few-Shot & leak-resistance & 200 & 0.865\\
-Prompt Extraction Robustness & leak-resistance & 200 & 0.815\\
-Prompt Injection & leak-resistance & 200 & 0.705\\
-Prompt-Hijacking Robustness & leak-resistance & 200 & 0.800\\
+ConfAIde & 0.994\\
+Cyberattack Assistance & 0.760\\
+CyberSecEval4 MITRE & 0.824\\
+Decoding Trust Privacy & 0.950\\
+Gandalf Ignore Instructions & 0.735\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.828\\
+Personal-Info-Leak Few-Shot & 0.865\\
+Prompt Extraction Robustness & 0.815\\
+Prompt Injection & 0.705\\
+Prompt-Hijacking Robustness & 0.800\\
+\midrule
+\textbf{Domain mean} & 0.828\\
 \bottomrule
 \end{tabular}}
 \end{table}

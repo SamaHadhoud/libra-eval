@@ -287,37 +287,38 @@ def gen_overview(fd: FamilyData):
 
 
 def gen_domain_tables(fd: FamilyData):
-    # Domain tables are flagship-only: the section's prose reads the anchor, so
-    # its tables do too, with the metric and n restored now that there is room.
-    # The per-task family view lives in the appendix (tab_full).
+    # Domain tables are flagship-only and compact: dataset + score, split into
+    # two side-by-side halves once the domain has enough rows to warrant it.
+    # Per-task metric and n live in the appendix (tab_full).
+    cols = (">{\\raggedright\\arraybackslash}p{5.0cm} "
+            ">{\\centering\\arraybackslash}p{1.6cm}")
+    head = f"\\textbf{{Dataset}} & \\textbf{{{esc(fd.anchor.label)}}}\\\\"
+
+    def half(body: str) -> str:
+        return (f"\\begin{{tabular}}[t]{{@{{}}{cols}@{{}}}}\n\\toprule\n{head}\n"
+                f"\\midrule\n{body}\n\\bottomrule\n\\end{{tabular}}")
+
     for sec in F.SECTION_ORDER:
         tasks = fd.section_tasks(sec)
         if not tasks:
             continue
         title = esc(L.SECTIONS[sec]["title"])
-        cols = (">{\\raggedright\\arraybackslash}p{5.0cm} "
-                ">{\\raggedright\\arraybackslash}p{3.2cm} r "
-                ">{\\centering\\arraybackslash}p{1.9cm}")
-        rows = []
-        for tn in tasks:
-            m, _, n = fd.task_meta(tn)
-            rows.append(f"{esc(F.pretty_task(tn))} & {meaning(m)} & {n} & "
-                        f"{fmt(fd.score(fd.anchor, tn))}\\\\")
-        body = "\n".join(rows)
+        rows = [f"{esc(F.pretty_task(tn))} & {fmt(fd.score(fd.anchor, tn))}\\\\"
+                for tn in tasks]
+        mean_row = (f"\\textbf{{Domain mean}} & "
+                    f"{fmt(fd.section_mean(fd.anchor, sec))}\\\\")
+        if len(rows) >= 6:
+            mid = (len(rows) + 1) // 2
+            inner = (half("\n".join(rows[:mid])) + "\\hspace{2em}%\n"
+                     + half("\n".join(rows[mid:]) + f"\n\\midrule\n{mean_row}"))
+        else:
+            inner = half("\n".join(rows) + f"\n\\midrule\n{mean_row}")
         write(f"tab_dom_{sec}.tex", f"""
 \\begin{{table}}[H]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{5pt}}
 \\caption{{{title}: per-task scores.}}
 \\label{{tab:fam-dom-{sec.replace('_', '-')}}}
 \\maxwidthbox{{%
-\\begin{{tabular}}{{@{{}}{cols}@{{}}}}
-\\toprule
-\\textbf{{Dataset}} & \\textbf{{Metric}} & \\textbf{{$n$}} & \\textbf{{{esc(fd.anchor.label)}}}\\\\
-\\midrule
-{body}
-\\midrule
-\\textbf{{Domain mean}} & & & {fmt(fd.section_mean(fd.anchor, sec))}\\\\
-\\bottomrule
-\\end{{tabular}}}}
+{inner}}}
 \\end{{table}}
 """.lstrip())
 

@@ -3,35 +3,41 @@
 \caption{General Harmful-Content Refusal: per-task scores.}
 \label{tab:fam-dom-general-refusal}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-AART & safety-refusal-rate & 200 & 0.990\\
-Advbench & safety-refusal-rate & 200 & 1.000\\
-Anthropic Red-Team & safety-refusal-rate & 200 & 0.945\\
-Bad & safety-refusal-rate & 200 & 0.985\\
-BeaverTails Bad & safety-refusal-rate & 200 & 0.965\\
-CatQA & safety-refusal-rate & 200 & 0.980\\
-Clearharm & safety-refusal-rate & 179 & 0.930\\
-CoCoNot Original & appropriate-noncompliance & 200 & 0.900\\
-CoNa & safety-refusal-rate & 178 & 0.989\\
-Do Not Answer & safety-refusal-rate & 200 & 1.000\\
-Forbidden Questions & safety-refusal-rate & 200 & 0.975\\
-HarmBench & safety-refusal-rate & 200 & 0.935\\
-HarmfulQ & safety-refusal-rate & 200 & 0.995\\
-HEx-PHI & safety-refusal-rate & 200 & 0.995\\
-Malicious Instruct New & safety-refusal-rate & 100 & 1.000\\
-Malicious Instructions New & safety-refusal-rate & 100 & 0.990\\
-Med-Safety-Bench & safety-refusal-rate & 200 & 0.980\\
-Red Eval Dangerous QA & safety-refusal-rate & 200 & 0.995\\
-Red Eval Harmful QA & safety-refusal-rate & 200 & 0.990\\
-SALAD-Bench & safety-refusal-rate & 200 & 0.975\\
-Simple Safety Test & safety-refusal-rate & 100 & 0.990\\
-SORRY-Bench & safety-refusal-rate & 200 & 0.970\\
-TDC Red-Teaming & safety-refusal-rate & 100 & 0.980\\
+AART & 0.990\\
+Advbench & 1.000\\
+Anthropic Red-Team & 0.945\\
+Bad & 0.985\\
+BeaverTails Bad & 0.965\\
+CatQA & 0.980\\
+Clearharm & 0.930\\
+CoCoNot Original & 0.900\\
+CoNa & 0.989\\
+Do Not Answer & 1.000\\
+Forbidden Questions & 0.975\\
+HarmBench & 0.935\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.976\\
+HarmfulQ & 0.995\\
+HEx-PHI & 0.995\\
+Malicious Instruct New & 1.000\\
+Malicious Instructions New & 0.990\\
+Med-Safety-Bench & 0.980\\
+Red Eval Dangerous QA & 0.995\\
+Red Eval Harmful QA & 0.990\\
+SALAD-Bench & 0.975\\
+Simple Safety Test & 0.990\\
+SORRY-Bench & 0.970\\
+TDC Red-Teaming & 0.980\\
+\midrule
+\textbf{Domain mean} & 0.976\\
 \bottomrule
 \end{tabular}}
 \end{table}

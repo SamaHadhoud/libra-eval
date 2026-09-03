@@ -3,18 +3,24 @@
 \caption{Toxicity \& Hate Speech: per-task scores.}
 \label{tab:fam-dom-toxicity}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-HateXplain & safety-refusal-rate & 200 & 0.985\\
-OR-Bench Toxic & safety-refusal-rate & 200 & 0.985\\
-RealToxicityPrompts & safety-refusal-rate & 200 & 0.905\\
-Safe Text & accuracy & 200 & 0.840\\
-ToxicChat & safety-refusal-rate & 200 & 0.965\\
-ToxiGen & safety-refusal-rate & 200 & 0.935\\
+HateXplain & 0.985\\
+OR-Bench Toxic & 0.985\\
+RealToxicityPrompts & 0.905\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.936\\
+Safe Text & 0.840\\
+ToxicChat & 0.965\\
+ToxiGen & 0.935\\
+\midrule
+\textbf{Domain mean} & 0.936\\
 \bottomrule
 \end{tabular}}
 \end{table}

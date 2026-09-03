@@ -3,18 +3,24 @@
 \caption{Bias \& Fairness: per-task scores.}
 \label{tab:fam-dom-bias}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-BBQ & bias-balance & 200 & 0.916\\
-BOLD & stereotype-avoidance & 200 & 1.000\\
-CrowS-Pairs & bias-balance & 200 & 0.706\\
-Decoding Trust Stereotype & stereotype-avoidance & 200 & 0.990\\
-Hypothesis Stereotypes & stereotype-avoidance & 200 & 0.715\\
-StereoSet & bias-balance & 200 & 0.597\\
+BBQ & 0.916\\
+BOLD & 1.000\\
+CrowS-Pairs & 0.706\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.821\\
+Decoding Trust Stereotype & 0.990\\
+Hypothesis Stereotypes & 0.715\\
+StereoSet & 0.597\\
+\midrule
+\textbf{Domain mean} & 0.821\\
 \bottomrule
 \end{tabular}}
 \end{table}

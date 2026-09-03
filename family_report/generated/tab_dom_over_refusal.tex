@@ -3,22 +3,28 @@
 \caption{Over-Refusal \& Helpfulness (Alignment Tax): per-task scores.}
 \label{tab:fam-dom-over-refusal}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-BeaverTails Good & safety-refusal-rate & 200 & 0.965\\
-Case Bench & behaviour-match & 200 & 0.700\\
-CoCoNot Contrast & compliance-rate & 200 & 0.965\\
-Do Not Answer FN & compliance-rate & 200 & 0.745\\
-Do Not Answer FP & safety-refusal-rate & 200 & 0.995\\
-False Reject & compliance-rate & 200 & 0.505\\
-JailbreakBench Benign & compliance-rate & 100 & 0.810\\
-OR-Bench Hard-1k & compliance-rate & 200 & 0.475\\
-Physical Safety Instructions Safe & compliance-rate & 100 & 0.990\\
-XSTest & behaviour-match & 200 & 0.850\\
+BeaverTails Good & 0.965\\
+Case Bench & 0.700\\
+CoCoNot Contrast & 0.965\\
+Do Not Answer FN & 0.745\\
+Do Not Answer FP & 0.995\\
+\bottomrule
+\end{tabular}\hspace{2em}%
+\begin{tabular}[t]{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Dataset} & \textbf{K2-Horizon}\\
 \midrule
-\textbf{Domain mean} & & & 0.800\\
+False Reject & 0.505\\
+JailbreakBench Benign & 0.810\\
+OR-Bench Hard-1k & 0.475\\
+Physical Safety Instructions Safe & 0.990\\
+XSTest & 0.850\\
+\midrule
+\textbf{Domain mean} & 0.800\\
 \bottomrule
 \end{tabular}}
 \end{table}
