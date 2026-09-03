@@ -38,6 +38,28 @@ def bias_balance_score(per_item_scores):
     }
 
 
+def empty_judge_verdict(v) -> bool:
+    """True if a judge response is missing/empty. The client's retry wrapper
+    returns "" when a judge call exhausts its retries (provider outage, 402s,
+    timeouts); left unchecked, such rows are cached in the evaluations file and
+    silently scored as 0.5/'ambiguous' — see the 2026-09-03 credit-outage
+    incident where 45 tasks completed with ~5.5k empty verdicts."""
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return True
+    if isinstance(v, str):
+        return v.strip() == ""
+    if isinstance(v, (dict, list)):
+        return len(v) == 0
+    return False
+
+
+def judge_empty_tolerance(n: int) -> int:
+    """Empty judge verdicts tolerated per task before it fails loudly.
+    Healthy runs show a ~0.03-0.05% transient background rate (a handful per
+    17.8k samples), so a couple per 200-sample task is noise, not an outage."""
+    return max(2, n // 100)
+
+
 def strip_reasoning(response):
     """Return the final answer with any <think_fast> reasoning trace removed."""
     if not isinstance(response, str):
@@ -340,8 +362,22 @@ class Task(ABC):
             if not os.path.exists(response_fpath):
                 raise Exception("No response file found. Run inference first.")
             
+            cached_df = None
             if not rewrite_cache and os.path.exists(eval_fpath):
-                self.data_df = pd.read_json(eval_fpath, lines=True)
+                cached_df = pd.read_json(eval_fpath, lines=True)
+                # A cached evaluations file written during a judge outage holds
+                # empty verdicts; trusting it would freeze the corruption in.
+                if self.llm_eval and "eval_response" in cached_df.columns:
+                    n_bad = int(cached_df["eval_response"].map(empty_judge_verdict).sum())
+                    if n_bad > judge_empty_tolerance(len(cached_df)):
+                        logger.error(
+                            f"{self.task_name}: cached evaluations have {n_bad}/{len(cached_df)} "
+                            f"empty judge verdicts — discarding cache and re-judging"
+                        )
+                        cached_df = None
+
+            if cached_df is not None:
+                self.data_df = cached_df
             else:
                 if mode == 'evaluation':
                     self.data_df = pd.read_json(response_fpath, lines=True)
@@ -352,7 +388,31 @@ class Task(ABC):
 
                 if self.llm_eval:
                     eval_messages = self.data_df.apply(self._single_eval_message, axis=1)
-                    eval_response = self.eval_request(eval_messages, llm_eval_client, librai_client)
+                    eval_response = list(self.eval_request(eval_messages, llm_eval_client, librai_client))
+
+                    # A judge call that exhausts its retries surfaces here as an
+                    # empty response. One targeted retry pass, then fail the task
+                    # rather than cache invalid verdicts (result file is never
+                    # written, so the dispatcher requeues / a re-run redoes it).
+                    retry_pos = [i for i, r in enumerate(eval_response) if empty_judge_verdict(r)]
+                    if retry_pos:
+                        logger.warning(
+                            f"{self.task_name}: {len(retry_pos)}/{len(eval_response)} empty judge "
+                            f"verdicts — retrying those samples"
+                        )
+                        retried = self.eval_request(
+                            [eval_messages.iloc[i] for i in retry_pos], llm_eval_client, librai_client
+                        )
+                        for i, r in zip(retry_pos, retried):
+                            eval_response[i] = r
+                        still_bad = sum(1 for i in retry_pos if empty_judge_verdict(eval_response[i]))
+                        if still_bad > judge_empty_tolerance(len(eval_response)):
+                            raise RuntimeError(
+                                f"{self.task_name}: {still_bad}/{len(eval_response)} judge calls "
+                                f"returned empty responses after retries (judge outage / out of "
+                                f"credit?) — failing task instead of caching invalid evaluations"
+                            )
+
                     with open(eval_msg_fpath, "w") as f:
                         f.write(json.dumps(eval_messages.iloc[0]))
                 else:

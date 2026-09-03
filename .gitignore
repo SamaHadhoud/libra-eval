@@ -207,3 +207,6 @@ harmful_check_*/
 # and the eval outputs needed to regenerate them are gitignored, so a fresh
 # clone must ship the built vector figures (overrides the global *.pdf rule).
 !family_report/figures/*.pdf
+family_run_*.yaml
+!family_run.example.yaml
+run_fam_*.sh
