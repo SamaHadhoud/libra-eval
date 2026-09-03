@@ -21,6 +21,12 @@
       "thinking_csv": "thinking_analysis_7b/thinking_vs_response.csv"
     },
     {
+      "key": "k2_32b_mid5_11000",
+      "label": "K2-Horizon 32B",
+      "size_b": 32,
+      "results_dir": "outputs_k2_32b_mid5_11000_200/results"
+    },
+    {
       "key": "k2mova36b_mid5_2500",
       "label": "K2-Horizon 36B",
       "size_b": 36,
@@ -35,7 +41,8 @@
       "thinking_csv": "thinking_analysis_375b/thinking_vs_response.csv"
     }
   ],
-  "_frontier_comment": "External frontier reference models (terra-judged, same 95-task suite, same scorer fixes as the family). Shown as reference columns/series in the overview table, radar, domain-means chart, trade-off chart, and the UAE table — but excluded from the family aggregates, per-task domain tables, and every scaling analysis, so they never pollute a family mean or a size trend.",
+  "baselines": [],
+  "_frontier_comment": "External frontier reference models (terra-judged, same 95-task suite, same scorer fixes as the family). Shown as reference columns/series in the overview table, radar, domain-means chart, trade-off chart, and the UAE table \u2014 but excluded from the family aggregates, per-task domain tables, and every scaling analysis, so they never pollute a family mean or a size trend.",
   "frontier": [
     {
       "key": "deepseek_v4_flash",

@@ -472,9 +472,14 @@ def write_manifest(models: list[Model]):
         if e["key"] not in have and os.path.isdir(os.path.join(REPO, e["results_dir"])):
             fam.append(e)
     fam.sort(key=lambda e: (e.get("size_b") is None, e.get("size_b") or 0))
-    json.dump({"_comment": comment, "family": fam, "baselines": base},
+    # Preserve every other bucket verbatim (frontier, comparisons, …) — the
+    # report reads them and this function only manages family/baselines.
+    out = {k: v for k, v in existing.items()
+           if k not in ("_comment", "family", "baselines")}
+    json.dump({"_comment": comment, "family": fam, "baselines": base, **out},
               open(path, "w"), indent=2)
-    print(f"[manifest] {len(fam)} family + {len(base)} baseline entries -> {path}")
+    print(f"[manifest] {len(fam)} family + {len(base)} baseline entries "
+          f"(+ {', '.join(out) or 'no other buckets'}) -> {path}")
 
 
 def generate_report():

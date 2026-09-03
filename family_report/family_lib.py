@@ -32,7 +32,12 @@ FIGURES = os.path.join(HERE, "figures")
 # (rose vs teal) is inherent to any pastel pink+green combo and is mitigated by
 # the legend + direct value labels every chart carries. Kept clear of the
 # red/amber/green score-band hues so a model is never confused with a status.
-FAMILY_COLORS = ["#5E92D0", "#52B892", "#EA6FA0", "#A75FC9", "#F0A868"]
+# Sixth slot (dark moss, added with the 32B → six sizes): validated pairwise
+# vs all five pastels (ΔE ≥ 22 normal, ≥ 17 tritan), the flagship blue, and the
+# SAFE-band green (ΔE 28) — the dark value also keeps the smallest size legible
+# where its polygon crosses the pastels. A 7th member would wrap the palette
+# again (models get colors by manifest order, modulo) — extend, don't recycle.
+FAMILY_COLORS = ["#5E92D0", "#52B892", "#EA6FA0", "#A75FC9", "#F0A868", "#3D6B35"]
 BASELINE_COLOR = "#9aa0a6"
 # version-comparison models (e.g. K2-V2) — distinct from the family palette.
 # Charcoal, matching the condensed cross-surface report (K2-V3-Family-Red-Teaming)
