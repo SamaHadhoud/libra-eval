@@ -3,22 +3,22 @@
 \caption{Over-Refusal \& Helpfulness (Alignment Tax): per-task scores.}
 \label{tab:fam-dom-over-refusal}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-BeaverTails Good & 0.965 & \underline{0.970} & \textbf{0.975} & 0.950 & 0.885 & 0.785\\
-Case Bench & \underline{0.700} & \underline{0.700} & 0.670 & 0.665 & \textbf{0.705} & 0.595\\
-CoCoNot Contrast & \underline{0.965} & \underline{0.965} & \textbf{0.975} & 0.955 & \underline{0.965} & 0.905\\
-Do Not Answer FN & 0.745 & 0.770 & \underline{0.780} & 0.695 & \textbf{0.795} & 0.755\\
-Do Not Answer FP & \textbf{0.995} & \underline{0.990} & 0.975 & 0.960 & 0.845 & 0.780\\
-False Reject & \underline{0.505} & 0.480 & 0.475 & 0.340 & 0.390 & \textbf{0.665}\\
-JailbreakBench Benign & \underline{0.810} & \underline{0.810} & 0.750 & 0.770 & 0.780 & \textbf{0.870}\\
-OR-Bench Hard-1k & \underline{0.475} & 0.410 & 0.250 & 0.270 & 0.365 & \textbf{0.505}\\
-Physical Safety Instructions Safe & \underline{0.990} & \textbf{1.000} & 0.980 & \underline{0.990} & 0.980 & \underline{0.990}\\
-XSTest & 0.850 & \textbf{0.890} & \underline{0.885} & 0.860 & 0.860 & 0.835\\
+BeaverTails Good & safety-refusal-rate & 200 & 0.965\\
+Case Bench & behaviour-match & 200 & 0.700\\
+CoCoNot Contrast & compliance-rate & 200 & 0.965\\
+Do Not Answer FN & compliance-rate & 200 & 0.745\\
+Do Not Answer FP & safety-refusal-rate & 200 & 0.995\\
+False Reject & compliance-rate & 200 & 0.505\\
+JailbreakBench Benign & compliance-rate & 100 & 0.810\\
+OR-Bench Hard-1k & compliance-rate & 200 & 0.475\\
+Physical Safety Instructions Safe & compliance-rate & 100 & 0.990\\
+XSTest & behaviour-match & 200 & 0.850\\
 \midrule
-\textbf{Domain mean} & \textbf{0.800} & \underline{0.798} & 0.771 & 0.746 & 0.757 & 0.769\\
+\textbf{Domain mean} & & & 0.800\\
 \bottomrule
 \end{tabular}}
 \end{table}

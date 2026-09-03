@@ -3,15 +3,15 @@
 \caption{Truthfulness \& Misinformation: per-task scores.}
 \label{tab:fam-dom-truthfulness}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-SP Misconceptions & \textbf{0.910} & 0.824 & \underline{0.885} & 0.857 & 0.844 & 0.426\\
-TruthfulQA Binary & \textbf{0.890} & 0.830 & \underline{0.865} & 0.770 & 0.810 & 0.515\\
-TruthfulQA MC1 & \textbf{0.800} & 0.780 & \underline{0.785} & 0.695 & 0.710 & 0.480\\
+SP Misconceptions & accuracy & 122 & 0.910\\
+TruthfulQA Binary & accuracy & 200 & 0.890\\
+TruthfulQA MC1 & accuracy & 200 & 0.800\\
 \midrule
-\textbf{Domain mean} & \textbf{0.867} & 0.811 & \underline{0.845} & 0.774 & 0.788 & 0.474\\
+\textbf{Domain mean} & & & 0.867\\
 \bottomrule
 \end{tabular}}
 \end{table}

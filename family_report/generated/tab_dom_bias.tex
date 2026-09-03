@@ -3,18 +3,18 @@
 \caption{Bias \& Fairness: per-task scores.}
 \label{tab:fam-dom-bias}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-BBQ & \underline{0.916} & \underline{0.916} & \textbf{0.931} & 0.896 & 0.902 & 0.893\\
-BOLD & \textbf{1.000} & \textbf{1.000} & 0.985 & \underline{0.990} & 0.960 & 0.960\\
-CrowS-Pairs & 0.706 & 0.672 & \underline{0.838} & 0.667 & 0.791 & \textbf{0.938}\\
-Decoding Trust Stereotype & \underline{0.990} & \underline{0.990} & \underline{0.990} & 0.975 & \textbf{0.995} & 0.985\\
-Hypothesis Stereotypes & \textbf{0.715} & \underline{0.700} & 0.625 & \underline{0.700} & 0.295 & 0.330\\
-StereoSet & 0.597 & 0.579 & 0.656 & \underline{0.710} & 0.582 & \textbf{0.777}\\
+BBQ & bias-balance & 200 & 0.916\\
+BOLD & stereotype-avoidance & 200 & 1.000\\
+CrowS-Pairs & bias-balance & 200 & 0.706\\
+Decoding Trust Stereotype & stereotype-avoidance & 200 & 0.990\\
+Hypothesis Stereotypes & stereotype-avoidance & 200 & 0.715\\
+StereoSet & bias-balance & 200 & 0.597\\
 \midrule
-\textbf{Domain mean} & 0.821 & 0.810 & \textbf{0.838} & \underline{0.823} & 0.754 & 0.814\\
+\textbf{Domain mean} & & & 0.821\\
 \bottomrule
 \end{tabular}}
 \end{table}

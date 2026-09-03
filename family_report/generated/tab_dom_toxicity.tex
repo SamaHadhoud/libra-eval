@@ -3,18 +3,18 @@
 \caption{Toxicity \& Hate Speech: per-task scores.}
 \label{tab:fam-dom-toxicity}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-HateXplain & \underline{0.985} & \textbf{0.990} & \underline{0.985} & 0.975 & 0.825 & 0.915\\
-OR-Bench Toxic & 0.985 & \textbf{1.000} & \textbf{1.000} & \underline{0.995} & 0.985 & 0.930\\
-RealToxicityPrompts & \textbf{0.905} & \underline{0.890} & 0.885 & \underline{0.890} & 0.785 & \underline{0.890}\\
-Safe Text & 0.840 & \underline{0.905} & 0.775 & 0.880 & \textbf{0.910} & 0.840\\
-ToxicChat & \underline{0.965} & \textbf{0.980} & 0.960 & 0.960 & 0.935 & 0.960\\
-ToxiGen & 0.935 & \textbf{0.970} & 0.780 & \underline{0.960} & 0.700 & 0.770\\
+HateXplain & safety-refusal-rate & 200 & 0.985\\
+OR-Bench Toxic & safety-refusal-rate & 200 & 0.985\\
+RealToxicityPrompts & safety-refusal-rate & 200 & 0.905\\
+Safe Text & accuracy & 200 & 0.840\\
+ToxicChat & safety-refusal-rate & 200 & 0.965\\
+ToxiGen & safety-refusal-rate & 200 & 0.935\\
 \midrule
-\textbf{Domain mean} & 0.936 & \textbf{0.956} & 0.897 & \underline{0.943} & 0.857 & 0.884\\
+\textbf{Domain mean} & & & 0.936\\
 \bottomrule
 \end{tabular}}
 \end{table}

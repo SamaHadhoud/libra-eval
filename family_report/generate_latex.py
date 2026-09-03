@@ -11,7 +11,7 @@ Emitted files (all under generated/):
   preamble.tex        \\famnum accessor + \\task macro — \\input once in the preamble
   numbers.tex         every stat as a \\famnum register — \\input after preamble.tex
   tab_overview.tex    domains x models mean-score table
-  tab_dom_<sec>.tex   per-domain task table, one score column per model
+  tab_dom_<sec>.tex   per-domain task table, anchor scores only (family in tab_full)
   tab_full.tex        appendix longtable: all main tasks x models
   tab_uae.tex         UAE tasks: family models + frontier reference models
   tab_multilingual.tex
@@ -286,23 +286,24 @@ def gen_overview(fd: FamilyData):
 """.lstrip())
 
 
-def _task_rows(fd: FamilyData, tasks: list[str], models) -> str:
-    # Domain tables show dataset + one score column per model only; the metric
-    # and n live in the full results table (tab_full) to keep these readable.
-    rows = []
-    for tn in tasks:
-        cells = " & ".join(rank_cells([fd.score(e, tn) for e in models]))
-        rows.append(f"{esc(F.pretty_task(tn))} & {cells}\\\\")
-    return "\n".join(rows)
-
-
 def gen_domain_tables(fd: FamilyData):
+    # Domain tables are flagship-only: the section's prose reads the anchor, so
+    # its tables do too, with the metric and n restored now that there is room.
+    # The per-task family view lives in the appendix (tab_full).
     for sec in F.SECTION_ORDER:
         tasks = fd.section_tasks(sec)
         if not tasks:
             continue
         title = esc(L.SECTIONS[sec]["title"])
-        cols = ">{\\raggedright\\arraybackslash}p{5.0cm} " + _mcols(len(fd.family), "1.9cm")
+        cols = (">{\\raggedright\\arraybackslash}p{5.0cm} "
+                ">{\\raggedright\\arraybackslash}p{3.2cm} r "
+                ">{\\centering\\arraybackslash}p{1.9cm}")
+        rows = []
+        for tn in tasks:
+            m, _, n = fd.task_meta(tn)
+            rows.append(f"{esc(F.pretty_task(tn))} & {meaning(m)} & {n} & "
+                        f"{fmt(fd.score(fd.anchor, tn))}\\\\")
+        body = "\n".join(rows)
         write(f"tab_dom_{sec}.tex", f"""
 \\begin{{table}}[H]\\centering\\footnotesize\\setlength{{\\tabcolsep}}{{5pt}}
 \\caption{{{title}: per-task scores.}}
@@ -310,11 +311,11 @@ def gen_domain_tables(fd: FamilyData):
 \\maxwidthbox{{%
 \\begin{{tabular}}{{@{{}}{cols}@{{}}}}
 \\toprule
-\\textbf{{Dataset}} & {_model_heads(fd.family)}\\\\
+\\textbf{{Dataset}} & \\textbf{{Metric}} & \\textbf{{$n$}} & \\textbf{{{esc(fd.anchor.label)}}}\\\\
 \\midrule
-{_task_rows(fd, tasks, fd.family)}
+{body}
 \\midrule
-\\textbf{{Domain mean}} & {" & ".join(rank_cells([fd.section_mean(e, sec) for e in fd.family]))}\\\\
+\\textbf{{Domain mean}} & & & {fmt(fd.section_mean(fd.anchor, sec))}\\\\
 \\bottomrule
 \\end{{tabular}}}}
 \\end{{table}}
@@ -365,9 +366,9 @@ def _full_table(fd: FamilyData, models, fname: str, caption: str, label: str):
 
 def gen_full_table(fd: FamilyData):
     # Appendix reference tables: the family alone, and (separately) the anchor
-    # vs the frontier reference models — the one place every per-task frontier
-    # number is findable (the domain tables stay family-only by design; the
-    # heatmap shows colours, not values).
+    # vs the frontier reference models. With the domain tables anchor-only,
+    # these are the one place every per-task family and frontier number is
+    # findable (the heatmap shows colours, not values).
     _full_table(fd, fd.family, "tab_full.tex",
                 "Full main-suite results across the K2-Horizon family.",
                 "tab:fam-full")

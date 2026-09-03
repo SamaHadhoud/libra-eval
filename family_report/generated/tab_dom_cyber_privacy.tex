@@ -3,21 +3,21 @@
 \caption{Cybersecurity \& Data Protection: per-task scores.}
 \label{tab:fam-dom-cyber-privacy}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-ConfAIde & \textbf{0.994} & \underline{0.955} & 0.884 & 0.898 & 0.864 & 0.949\\
-Cyberattack Assistance & 0.760 & 0.875 & \textbf{0.950} & 0.870 & \underline{0.880} & 0.785\\
-CyberSecEval4 MITRE & 0.824 & \underline{0.894} & \textbf{0.940} & 0.865 & 0.777 & 0.885\\
-Decoding Trust Privacy & \underline{0.950} & \underline{0.950} & 0.940 & 0.940 & 0.930 & \textbf{1.000}\\
-Gandalf Ignore Instructions & 0.735 & \textbf{0.890} & 0.600 & 0.760 & 0.715 & \underline{0.825}\\
-Personal-Info-Leak Few-Shot & 0.865 & 0.875 & 0.870 & 0.935 & \textbf{0.955} & \underline{0.940}\\
-Prompt Extraction Robustness & \textbf{0.815} & \underline{0.695} & 0.680 & 0.680 & 0.675 & 0.625\\
-Prompt Injection & \textbf{0.705} & \underline{0.680} & 0.670 & 0.605 & 0.630 & 0.590\\
-Prompt-Hijacking Robustness & \textbf{0.800} & \underline{0.759} & 0.745 & 0.745 & 0.670 & 0.583\\
+ConfAIde & leak-resistance & 200 & 0.994\\
+Cyberattack Assistance & safety-refusal-rate & 200 & 0.760\\
+CyberSecEval4 MITRE & safety-refusal-rate & 199 & 0.824\\
+Decoding Trust Privacy & leak-resistance & 200 & 0.950\\
+Gandalf Ignore Instructions & leak-resistance & 200 & 0.735\\
+Personal-Info-Leak Few-Shot & leak-resistance & 200 & 0.865\\
+Prompt Extraction Robustness & leak-resistance & 200 & 0.815\\
+Prompt Injection & leak-resistance & 200 & 0.705\\
+Prompt-Hijacking Robustness & leak-resistance & 200 & 0.800\\
 \midrule
-\textbf{Domain mean} & \underline{0.828} & \textbf{0.841} & 0.809 & 0.811 & 0.788 & 0.798\\
+\textbf{Domain mean} & & & 0.828\\
 \bottomrule
 \end{tabular}}
 \end{table}

@@ -3,32 +3,32 @@
 \caption{Jailbreak \& Adversarial Robustness: per-task scores.}
 \label{tab:fam-dom-jailbreak}
 \maxwidthbox{%
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} >{\centering\arraybackslash}p{1.9cm} @{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}p{3.2cm} r >{\centering\arraybackslash}p{1.9cm}@{}}
 \toprule
-\textbf{Dataset} & \textbf{K2-Horizon} & \textbf{K2-Horizon 36B} & \textbf{K2-Horizon 32B} & \textbf{K2-Horizon 7B} & \textbf{K2-Horizon 4B} & \textbf{K2-Horizon 1B}\\
+\textbf{Dataset} & \textbf{Metric} & \textbf{$n$} & \textbf{K2-Horizon}\\
 \midrule
-DAN Jailbreak & 0.892 & 0.858 & 0.838 & \textbf{0.945} & 0.780 & \underline{0.935}\\
-DAN Regular & \underline{0.980} & \textbf{0.985} & 0.970 & 0.950 & 0.882 & 0.860\\
-GA Jailbreak & \textbf{0.990} & 0.960 & 0.930 & \underline{0.975} & 0.850 & 0.910\\
-GPTFuzzer & \underline{0.980} & \textbf{0.990} & \underline{0.980} & \textbf{0.990} & 0.970 & \textbf{0.990}\\
-Hack-a-Prompt & 0.755 & 0.810 & 0.810 & \underline{0.815} & \underline{0.815} & \textbf{0.855}\\
-JailbreakBench & \textbf{0.990} & \underline{0.985} & 0.980 & 0.980 & 0.950 & 0.925\\
-JBDistill-Bench & 0.705 & \textbf{0.797} & \underline{0.772} & 0.735 & 0.453 & 0.472\\
-JBShield & 0.990 & \underline{0.995} & \textbf{1.000} & 0.980 & \underline{0.995} & 0.930\\
-Latent Jailbreak & 0.980 & \underline{0.985} & \underline{0.985} & \textbf{0.990} & 0.905 & 0.495\\
-LibrAI Adv Deep Inception & \textbf{0.940} & 0.870 & \underline{0.875} & \underline{0.875} & 0.810 & 0.775\\
-LibrAI Adv Do Anything Now & \underline{0.840} & 0.838 & 0.777 & \textbf{0.910} & 0.795 & \textbf{0.910}\\
-LibrAI Adv Effect To Cause & \textbf{0.970} & \textbf{0.970} & \underline{0.935} & 0.930 & 0.770 & 0.805\\
-LibrAI Adv Few Shots & \textbf{0.995} & \textbf{0.995} & 0.980 & \underline{0.990} & 0.935 & 0.950\\
-LibrAI Adv One Sided Statement & \textbf{0.915} & 0.890 & \underline{0.905} & 0.875 & 0.705 & 0.815\\
-LibrAI Adv Persona Modulation & 0.740 & \underline{0.800} & 0.720 & \textbf{0.865} & 0.705 & \underline{0.800}\\
-LibrAI Adv Prompt Injection & \underline{0.970} & 0.955 & \textbf{0.975} & 0.950 & 0.910 & 0.845\\
-LibrAI Adv Refusal Suppression & 0.915 & 0.900 & \textbf{0.930} & \underline{0.920} & 0.875 & 0.785\\
-LibrAI Adv Tense Change & \textbf{0.985} & \underline{0.970} & \textbf{0.985} & \underline{0.970} & 0.940 & 0.895\\
-Stealth Graph & 0.870 & \underline{0.890} & \textbf{0.938} & 0.810 & 0.733 & 0.640\\
-WildJailbreak & \underline{0.950} & \textbf{0.965} & 0.930 & 0.948 & 0.905 & 0.797\\
+DAN Jailbreak & safety-refusal-rate & 200 & 0.892\\
+DAN Regular & safety-refusal-rate & 200 & 0.980\\
+GA Jailbreak & safety-refusal-rate & 200 & 0.990\\
+GPTFuzzer & safety-refusal-rate & 100 & 0.980\\
+Hack-a-Prompt & safety-refusal-rate & 200 & 0.755\\
+JailbreakBench & safety-refusal-rate & 100 & 0.990\\
+JBDistill-Bench & safety-refusal-rate & 200 & 0.705\\
+JBShield & safety-refusal-rate & 200 & 0.990\\
+Latent Jailbreak & safety-refusal-rate & 200 & 0.980\\
+LibrAI Adv Deep Inception & safety-refusal-rate & 200 & 0.940\\
+LibrAI Adv Do Anything Now & safety-refusal-rate & 200 & 0.840\\
+LibrAI Adv Effect To Cause & safety-refusal-rate & 200 & 0.970\\
+LibrAI Adv Few Shots & safety-refusal-rate & 200 & 0.995\\
+LibrAI Adv One Sided Statement & safety-refusal-rate & 200 & 0.915\\
+LibrAI Adv Persona Modulation & safety-refusal-rate & 200 & 0.740\\
+LibrAI Adv Prompt Injection & safety-refusal-rate & 200 & 0.970\\
+LibrAI Adv Refusal Suppression & safety-refusal-rate & 200 & 0.915\\
+LibrAI Adv Tense Change & safety-refusal-rate & 200 & 0.985\\
+Stealth Graph & safety-refusal-rate & 200 & 0.870\\
+WildJailbreak & safety-refusal-rate & 200 & 0.950\\
 \midrule
-\textbf{Domain mean} & 0.918 & \textbf{0.920} & 0.911 & \underline{0.920} & 0.834 & 0.820\\
+\textbf{Domain mean} & & & 0.918\\
 \bottomrule
 \end{tabular}}
 \end{table}
