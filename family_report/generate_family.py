@@ -101,6 +101,7 @@ def radar(fd: FamilyData, name: str = "fam_radar", models=None, rmin=None):
     N = len(secs)
     angles = np.linspace(0, 2 * np.pi, N, endpoint=False)
     loop = np.concatenate([angles, angles[:1]])
+    fam_edition = models is None
     models = fd.family if models is None else models
     if rmin is not None:
         RMIN = rmin
@@ -144,11 +145,21 @@ def radar(fd: FamilyData, name: str = "fam_radar", models=None, rmin=None):
     else:
         fam_keys = {e.key for e in fd.family}
         comp_keys = {e.key for e in fd.comparisons}
+
+        def disp(e):
+            # Family edition: every legend entry carries a size, so the
+            # unsuffixed flagship ("K2-Horizon") gets its size appended here.
+            # Comparison editions keep the plain flagship label (report rule:
+            # no suffix means the 375B).
+            if fam_edition and e.size_b and f"{e.size_b:g}B" not in e.label:
+                return f"{e.label} {e.size_b:g}B"
+            return e.label
+
         for e in models:
             vals = [fd.section_mean(e, s) or 0.0 for s in secs]
             vloop = vals + vals[:1]
             if e.key in fam_keys:
-                ax.plot(loop, vloop, color=e.color, lw=2.2, zorder=4, label=e.label)
+                ax.plot(loop, vloop, color=e.color, lw=2.2, zorder=4, label=disp(e))
                 ax.fill(loop, vloop, color=e.color, alpha=0.10, zorder=2)
             elif e.key in comp_keys:
                 # version-comparison model (e.g. K2-V2): solid but unfilled,
