@@ -218,12 +218,17 @@ def gen_numbers(fd: FamilyData):
     put("family", "n_models", len(fd.family))
     put("family", "n_tasks", len(fd.main_tasks))
     # Collapse a shared first-word prefix so the list reads
-    # "K2V3 375B, 36B, 7B, ..." instead of repeating "K2V3" five times.
+    # "K2-Horizon 375B, 36B, 7B, ..." instead of repeating the family name per
+    # size (report style rule). The unsuffixed flagship label ("K2-Horizon")
+    # counts as the bare prefix and gets its size appended from the manifest.
     labels = [e.label for e in fd.family]
-    first = labels[0].split(" ", 1)
-    if len(first) == 2 and all(
-            l.startswith(first[0] + " ") and len(l.split(" ", 1)) == 2 for l in labels):
-        listed = [labels[0]] + [l.split(" ", 1)[1] for l in labels[1:]]
+    prefix = labels[0].split(" ", 1)[0]
+    if all(l == prefix or l.startswith(prefix + " ") for l in labels):
+        def _suffix(e):
+            parts = e.label.split(" ", 1)
+            return parts[1] if len(parts) == 2 else f"{e.size_b:g}B"
+        listed = [f"{prefix} {_suffix(fd.family[0])}"] + \
+            [_suffix(e) for e in fd.family[1:]]
     else:
         listed = labels
     put("family", "model_list", esc(", ".join(listed)))
@@ -321,6 +326,9 @@ DATASET_CITES = {
     "Personal-Info-Leak Few-Shot": "personalinfoleak",
     "Physical Safety Instructions Safe": "safetunedllamas",
     "Physical Safety Instructions Unsafe": "safetunedllamas",
+    # Purple Llama / CyberSecEval prompt-injection test set (same source family
+    # as Cyberattack Assistance and the MITRE task).
+    "Prompt Injection": "cyberseceval",
     "Prompt Extraction Robustness": "tensortrust",
     "Prompt-Hijacking Robustness": "tensortrust",
     "RealToxicityPrompts": "rtp",

@@ -173,6 +173,9 @@ def radar(fd: FamilyData, name: str = "fam_radar", models=None, rmin=None):
                   ncol=2 if len(models) == 4 else min(len(models), 3),
                   fontsize=8.5)
     save(fig, name)
+    # Callers that draw a companion radar reuse this floor so the two panels
+    # genuinely share one radial scale (the report caption promises it).
+    return RMIN
 
 
 def sizes_axis(fd: FamilyData):
@@ -932,7 +935,7 @@ if __name__ == "__main__":
     print(f"charts for: {[e.label for e in fd.family]}"
           f"  frontier: {[e.label for e in fd.frontier]}"
           f"  comparisons: {[e.label for e in fd.comparisons]}")
-    radar(fd)
+    fam_rmin = radar(fd)
     scaling_overall(fd)
     scaling_domains(fd)
     domain_bars(fd)                                      # sampling-noise CI
@@ -958,9 +961,9 @@ if __name__ == "__main__":
         frontier_models = [fd.anchor] + fd.frontier
         # condensed-report edition: predecessor (solid unfilled) + frontier
         # (dashed) around the anchor, radial axis pinned to the family radar's
-        # 0.1 floor so the two radars share a scale side by side
+        # actual floor so the two radars share a scale side by side
         radar(fd, name="fam_frontier_radar",
-              models=[fd.anchor] + fd.comparisons + fd.frontier, rmin=0.1)
+              models=[fd.anchor] + fd.comparisons + fd.frontier, rmin=fam_rmin)
         domain_bars(fd, name="fam_frontier_domain_bars", models=frontier_models)
         uae_frontier(fd)
     print("done.")
